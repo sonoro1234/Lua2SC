@@ -18,9 +18,16 @@ OSCPACK_DIR with path to oscpack (1_1_0 or greater)
 LUA_INCLUDE_DIR with the lua source include directory
 LUA_LIBRARY with the path to lua.dll
 
-run lua lua2sc.lua
-
-
 ------Windows--------
 
 windows users can try the already build binary folder Lua2SC-bin
+
+--------------To first try---------------------
+
+run lua lua2sc.lua
+
+1- set Debug/settings
+2- Supercollider/BootSC (wait until booted)
+3- open lua/examples/example.lua
+4- Debug/run  (F6)
+5- Debug/Cancel run (F5)
