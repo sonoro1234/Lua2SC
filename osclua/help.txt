@@ -1,0 +1,38 @@
+     toOSC(table) 
+
+        Converts a table into an OSC message. The table should be formatted as follows:
+
+            {oscaddress, {value1, value2, value3...}}
+            
+
+        toOSC("/test/message", {1, "hello", true}) is valid, for example.
+        If you want to use OSC bundles, just put each message inside a subtable and call toOSC (it will convert it to a bundle automatically). Make the first element the timetag:
+
+            {timetag, {oscaddr1, {val1, val2, val3...}}, {oscaddr2, {val1, val2, val3...}},...}
+            
+
+        You can nest bundles if you wish. If you want to specify types other than float, integer, string and bool you can explicitly set the type. To do this, instead of passing a bare value, pass a table, where the first element is the type name, and the second is the value. For example:
+
+         toOSC("/test/message", {{"float", 1.0}, {"rgbacolor", 2113140}, {"blob", "someblobtext"}} 
+
+        Valid values for the type are:
+            float
+            double
+            boolean
+            int32
+            int64
+            timetag (the value should be a number)
+            char (the value can either be a number or a single-character string)
+            blob (use a string as the value)
+            symbol (string as value)
+            midi (number as value, which should specify the 4 bytes of a midi message)
+            rgbacolor (32 bit int as value)
+            infinite (does not take a value)
+            nil (does not take a value)
+			
+			"[" and "]" are used for osc arrays as in:
+			toOSC{"/test",{"arraytest","[",1,2,3,4,"]"}}
+
+    fromOSC(string, fulltypes=false) 
+
+        Converts a binary OSC message to a table, in the same format as toOSC. If it's a bundle the first element will be the timetag, otherwise it's the address of a plain message. NB: it's up to you to deal with the timetag if you want to! By default, all values will be converted to basic Lua types (number, string, boolean). If you set fulltypes, a table with all the types explicitly given will be returned (same format as toOSC uses, each entry is a table with type name and value). 
