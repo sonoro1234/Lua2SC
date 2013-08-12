@@ -36,6 +36,11 @@ Master.inserts={
 				{"Compander",{slopeAbove=1/3,bypass=0}},
 				{"Limiter",{thresh=3,bypass=1}},
 			}
+			
+--midi input			
+instgui=InstrumentsGUI("plukV")
+MidiToOsc.AddChannel(0,instgui,{0.2})
+
 FreqScope()
 
 theMetro:start()
