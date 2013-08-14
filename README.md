@@ -9,7 +9,7 @@ plus some custom modules: osclua, pmidi, random.
 ------Linux and Mac OS-----------
 
 First you should build lua 5.1 or 5.2
-build lualanes ()
+build lualanes 
 build wxlua as a module (most difficult part)
 build luasocket
 build bitOp (in case you are in 5.1)
