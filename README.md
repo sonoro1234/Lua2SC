@@ -31,3 +31,5 @@ run lua lua2sc.lua
 3- open lua/examples/example.lua
 4- Debug/run  (F6)
 5- Debug/Cancel run (F5)
+
+![Alt text](lua2sc_.jpg )
