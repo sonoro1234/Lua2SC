@@ -94,6 +94,7 @@ local ID_FINDPREV         = NewID()
 local ID_REPLACE          = NewID()
 local ID_GOTOLINE         = NewID()
 local ID_SORT             = NewID()
+local ID_FIND_SOURCE	= NewID()
 -- Debug menu
 --local ID_TOGGLEBREAKPOINT = NewID()
 local ID_COMPILE          = NewID()
@@ -223,6 +224,7 @@ function DoDir(func,path,pattern,recur,level)
 end
 
 function abriredit(eventFileName_,line)
+	eventFileName_ = wx.wxFileName(eventFileName_):GetFullPath()
 	--print("abriredit",eventFileName_,line)
 	if line then line=line-1 end
 	for id, document in pairs(openDocuments) do
@@ -1453,8 +1455,14 @@ function loadfilefrompath(cad)
 	error("could not loadfilefrompath "..cad) 
 end
 function loadinEnv(file,env)
+	local function newindex(t,key,val)
+		local info=debug.getinfo(2)
+		--print ("setting "..key.." from line "..info.currentline.." in file "..info.short_src)
+		sckeywordsSource[key] = {currentline = info.currentline,source = info.source}
+		rawset(t,key,val)
+	end
 	if not env then
-		env = setmetatable({}, {__index = _G}) 
+		env = setmetatable({}, {__index = _G,__newindex=newindex}) 
 		env.require = newrequire
 		env.package = setmetatable({}, {__index = _G.package})
 		env.package.loaded = {}
@@ -1519,6 +1527,7 @@ function SetupKeywords(editor, useLuaParser)
 		--]]
 		---[[
 		if not sckeywords then
+			sckeywordsSource = {}
 			local env = loadinEnv"sc.synthdefsc"
 			loadinEnv("sc.playerssc",env)
 			loadinEnv("sc.stream",env)
@@ -1531,6 +1540,9 @@ function SetupKeywords(editor, useLuaParser)
 					for i2,v2 in pairs(value) do
 						if type(v2)=="function" then
 							table.insert(keyword_table, index.."."..i2.." ")
+							local info = debug.getinfo(v2)
+							sckeywordsSource[index.."."..i2] = {currentline = info.linedefined,source = info.source}
+							--print(index.."."..i2,info.linedefined,info.source)
 							--table.insert(keyword_table, index.." ")
 							--table.insert(keyword_table, "."..i2.." ")
 						end
@@ -2358,6 +2370,8 @@ function InitFindMenu()
         { ID_FINDPREV,   "Find &Previous\tShift-F3", "Repeat the search backwards in the file" },
         { ID_REPLACE,    "&Replace\tCtrl-H",         "Replaces the specified text with different text" },
         { },
+		{ID_FIND_SOURCE, "Find Source" , "Opens source file from keyword."},
+		{},
         { ID_GOTOLINE,   "&Goto line\tCtrl-G",       "Go to a selected line" },
         { },
         { ID_SORT,       "&Sort",                    "Sort selected lines"}}
@@ -2368,7 +2382,23 @@ function InitFindMenu()
             findReplace:Show(false)
         end)
 	frame:Connect(ID_FIND, wx.wxEVT_UPDATE_UI, OnUpdateUIEditMenu)
-	
+	frame:Connect(ID_FIND_SOURCE, wx.wxEVT_UPDATE_UI, OnUpdateUIEditMenu)
+	frame:Connect(ID_FIND_SOURCE, wx.wxEVT_COMMAND_MENU_SELECTED,
+        function (event)
+            local editor = currentSTC --GetEditor()
+			if editor then
+				local startSel = editor:GetSelectionStart()
+				local endSel   = editor:GetSelectionEnd()
+				if (startSel ~= endSel) and (editor:LineFromPosition(startSel) == editor:LineFromPosition(endSel)) then
+					local searchtex = editor:GetSelectedText()
+					local v = sckeywordsSource[searchtex]
+					if v then
+						abriredit(v.source:sub(2),v.currentline)
+						--print(v.source:sub(2),v.currentline)
+					end
+				end
+			end
+        end)
 	frame:Connect(ID_REPLACE, wx.wxEVT_COMMAND_MENU_SELECTED,
 			function (event)
 				findReplace:GetSelectedString()
@@ -3594,6 +3624,9 @@ function ScriptRun(typerun)
 		end
 		return res
 	end
+	local function guiAddWindow(window)
+		scriptguilinda:send("guiModify",{"addWindow",CopyControl(window)})
+	end
 	-- tipex tag label name menu panel
 	local function guiAddControl(control)
 		--print("guiAddControl",control.tag)
@@ -3787,6 +3820,7 @@ function ScriptRun(typerun)
 		required={},
 		globals={print=thread_print,
 				prerror=thread_error_print,
+				guiAddWindow=guiAddWindow,
 				guiAddControl=guiAddControl,
 				guiDeleteControl=guiDeleteControl,
 				guiDeletePanel=guiDeletePanel,
@@ -4797,6 +4831,10 @@ function ClearScriptGUI()
 	for i,v in ipairs(theScriptGUI.Controls) do
 		theScriptGUI.Controls[i]=nil
 	end
+	for i,v in ipairs(theScriptGUI.ScriptWindows) do
+		v:Close()
+		theScriptGUI.ScriptWindows[i]=nil
+	end
 	-- local cont=theScriptGUI.Controls
 	-- cont={}
 	-- local sizers=theScriptGUI.Sizers
@@ -4816,10 +4854,12 @@ function CreateScriptGUI()
 	if theScriptGUI.window then return end
 	local Controls={}
 	local Sizers={}
+	local ScriptWindows = {}
 	--setmetatable(Controls,{__mode = "v"})
 	--setmetatable(Sizers,{__mode = "v"})
 	theScriptGUI.Controls=Controls
 	theScriptGUI.Sizers=Sizers
+	theScriptGUI.ScriptWindows=ScriptWindows
 	--makes control.control control.label control.insobj control.tipex
 	local function val2pos(val)
 		return (1-val)*10000
@@ -4877,16 +4917,18 @@ function CreateScriptGUI()
 		control.typex=co.typex
 		control.pos = co.pos
 		control.span = co.span
+		local ScriptGUI = ScriptWindows[co.window] or ScriptGUI
 		if co.typex=="toggle" then
 			control.control=wx.wxToggleButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20))
 		elseif co.typex=="button" then
 			control.control=wx.wxButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20))
 		elseif co.typex=="vslider" then
-			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value) , 0, 10000, wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxSL_VERTICAL )
+			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxSL_VERTICAL )
 			if co.label then
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
 			end
 		elseif co.typex=="hslider" then
+			co.value = co.value or 0
 			local size = (co.width and co.height) and wx.wxSize(co.width,co.height) or wx.wxDefaultSize
 			control.control=wx.wxSlider(ScriptGUI,co.tag, co.value*10000 , 0, 10000, wx.wxDefaultPosition,size,wx.wxSL_HORIZONTAL)
 			if co.label then
@@ -5151,8 +5193,50 @@ function CreateScriptGUI()
 		panelSizer:Hide(collapSizer,true)
 		return collapSizer
 	end
+	local function CommadEventProcess(event)
+		local val
+		local str
+		local id=event:GetId()
+		local evtype=event:GetEventType()
+		if evtype==wx.wxEVT_COMMAND_TOGGLEBUTTON_CLICKED then
+			val=event:IsChecked() and 1 or 0
+		elseif evtype==wx.wxEVT_COMMAND_BUTTON_CLICKED  then
+			val=1
+		elseif evtype==wx.wxEVT_SCROLL_THUMBRELEASE or evtype==wx.wxEVT_SCROLL_THUMBTRACK then
+			val=pos2val(event:GetPosition())
+		elseif evtype==wx.wxEVT_COMMAND_CHOICE_SELECTED  then
+			val=event:GetSelection()
+			str=event:GetString()
+		elseif evtype==wx.wxEVT_COMMAND_TEXT_ENTER  then 
+			--val=event:GetSelection()
+			str=event:GetString()
+			val=str
+		else
+			event:Skip()
+			return
+		end
+		--print("_valueChangedCb",id,val,str)
+		scriptlinda:send("_valueChangedCb",{id,val,str})
+		event:Skip()
+	end
+	local function ConnectComands(win)
+		local win = win or ScriptGUI
+		local wxEVT_Array=wxlua.GetBindings()[4].GetEventArray --wxcore events
+		for i = 1, #wxEVT_Array do
+            --if not skipEVTs[wxEVT_Array[i].name] then
+                win:Connect(wx.wxID_ANY, wxEVT_Array[i].eventType, CommadEventProcess)
+            --end
+        end
+	end
+	function addWindow(win)
+		ScriptWindows[win.tag] = wx.wxFrame(frame,wx.wxID_ANY,"window script",wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxMINIMIZE_BOX + wx.wxMAXIMIZE_BOX + wx.wxRESIZE_BORDER + wx.wxSYSTEM_MENU + wx.wxCAPTION + wx.wxCLIP_CHILDREN + wx.wxFRAME_FLOAT_ON_PARENT)
+		ConnectComands(ScriptWindows[win.tag])
+		ScriptWindows[win.tag]:Show()
+		--print("window added",ScriptWindows[win.tag])
+	end
 	--{type,parent,cols,rows,tag(auto),name}
 	function AddPanel(pan)
+		local ScriptGUI = pan.window or ScriptGUI
 		pan.parent=pan.parent or "main"
 		local panel
 		if pan.type=="vbox" then
@@ -5254,6 +5338,8 @@ function CreateScriptGUI()
 						DeletePanel(val[2])
 					elseif val[1]=="emptyPanel" then
 						EmptyPanel(val[2])
+					elseif val[1]=="addWindow" then
+						addWindow(val[2])
 					else
 						assert(false)
 					end
@@ -5289,40 +5375,7 @@ function CreateScriptGUI()
 			event:Skip()
 		end)
 
-	local function CommadEventProcess(event)
-		local val
-		local str
-		local id=event:GetId()
-		local evtype=event:GetEventType()
-		if evtype==wx.wxEVT_COMMAND_TOGGLEBUTTON_CLICKED then
-			val=event:IsChecked() and 1 or 0
-		elseif evtype==wx.wxEVT_COMMAND_BUTTON_CLICKED  then
-			val=1
-		elseif evtype==wx.wxEVT_SCROLL_THUMBRELEASE or evtype==wx.wxEVT_SCROLL_THUMBTRACK then
-			val=pos2val(event:GetPosition())
-		elseif evtype==wx.wxEVT_COMMAND_CHOICE_SELECTED  then
-			val=event:GetSelection()
-			str=event:GetString()
-		elseif evtype==wx.wxEVT_COMMAND_TEXT_ENTER  then 
-			--val=event:GetSelection()
-			str=event:GetString()
-			val=str
-		else
-			event:Skip()
-			return
-		end
-		--print("_valueChangedCb",id,val,str)
-		scriptlinda:send("_valueChangedCb",{id,val,str})
-		event:Skip()
-	end
-	local function ConnectComands()
-		local wxEVT_Array=wxlua.GetBindings()[4].GetEventArray --wxcore events
-		for i = 1, #wxEVT_Array do
-            --if not skipEVTs[wxEVT_Array[i].name] then
-                ScriptGUI:Connect(wx.wxID_ANY, wxEVT_Array[i].eventType, CommadEventProcess)
-            --end
-        end
-	end
+
     ScriptGUI:Connect( wx.wxEVT_CLOSE_WINDOW,
             function (event)
 				print("ScriptGUI wxEVT_CLOSE_WINDOW")

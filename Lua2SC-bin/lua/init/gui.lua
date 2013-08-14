@@ -157,6 +157,7 @@ function IDGenerator(ini)
 end
 GetTag=IDGenerator(0)	
 GetTagPanel=IDGenerator(0)
+GetTagWindow=IDGenerator(0)
 function doAddControl(constructor)
 	if constructor.clabel then constructor.label = constructor.clabel end
 	guiAddControl(constructor)
@@ -173,6 +174,8 @@ function doAddControl(constructor)
 end
 
 function addControl(constructor)
+	--defaults
+	--constructor.value = constructor.value or 0
 	--dont use the same constructor table twice
     for i,v in pairs(guiControlTable) do
 			assert(v~=constructor)
@@ -222,5 +225,11 @@ function closeControl(const)
 	guiControlTable[const.tag]=nil
 	const.tag=nil
 	return res
+end
+
+function addWindow(win)
+	win.tag = GetTagWindow()
+	guiAddWindow(win)
+	return win.tag
 end
 
