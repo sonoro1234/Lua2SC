@@ -1402,9 +1402,7 @@ setfenv = setfenv or function(f, t)
         name = debug.getupvalue(f, up)
     until name == '_ENV' or name == nil
     if name then
-
-debug.upvaluejoin(f, up, function() return name end, 1) -- use unique upvalue
-
+		debug.upvaluejoin(f, up, function() return name end, 1) -- use unique upvalue
         debug.setupvalue(f, up, t)
     end
 end
@@ -3618,6 +3616,8 @@ function ScriptRun(typerun)
 				res[k]=v
 			elseif typev=="table" and (k=="pos" or k=="menu") then
 				res[k]=v
+			elseif typev=="function" then --and (k=="DrawCb") then
+				res[k]=v
 			else
 				--print("No CopyControl",k,v)
 			end
@@ -4604,6 +4604,41 @@ function wxFreqScope(parent,name,label,id,co)
 	FreqScopeClass.notclosed=true
 	return FreqScopeClass 
 end
+function wxGLCanvas(parent,name,label,id,co)
+	id = id or wx.wxID_ANY
+	local height=co.height or 150
+	local width= co.width or 200
+	
+	local wxwindow = wx.wxGLCanvas(parent, id, wx.wxDefaultPosition, wx.wxSize(width,height), wx.wxEXPAND)
+	local canvas = wxwindow
+	local context = wx.wxGLContext(canvas)
+	local mouseLD = co.mouseLD or function() end
+	require"luagl"
+	local Draw = co.DrawCb
+	local CanvasClass={value=0,window=canvas,height=height,width=width,customclass="CanvasClass"}
+	wxwindow:Connect(wx.wxEVT_LEFT_DOWN,function (event)
+			mx = event:GetX()
+			my = event:GetY()
+			mouseLD(mx,my,CanvasClass)
+			wxwindow:Refresh()
+			--if (not wxwindow:HasCapture()) then wxwindow:CaptureMouse() end
+			event:Skip()
+	end )
+	function CanvasClass.SetValue(_,val)
+		for k,v in pairs(val) do
+			CanvasClass[k]=v
+		end
+		wxwindow:Refresh()
+	end
+	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
+			local dc = wx.wxPaintDC(wxwindow)
+			canvas:SetCurrent(context)
+			Draw(CanvasClass)
+			canvas:SwapBuffers()
+			dc:delete() 
+	end)
+	return CanvasClass
+end
 ---------------------------wxScope
 function wxScope(parent,name,label,id,co)
 	id = id or wx.wxID_ANY
@@ -4965,6 +5000,9 @@ function CreateScriptGUI()
 		elseif co.typex=="scope" then
 			control.control=wxScope(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
 			control.customclass=true
+		elseif co.typex=="glcanvas" then
+			control.control=wxGLCanvas(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
+			control.customclass=true
 		else
 			print(co.typex," control not implemented ",co.type)
 			control= {control=false}
@@ -5063,6 +5101,8 @@ function CreateScriptGUI()
 					co.control:SetSelection(val)
 				elseif co.typex=="text" then
 					co.control:SetValue(tostring(val))
+				elseif co.typex=="glcanvas" then
+					co.control:SetValue(val)
 				else
 					DisplayOutput("SetValueControl bad typex",true)
 					prtable(co)

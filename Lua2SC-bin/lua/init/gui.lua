@@ -130,12 +130,13 @@ function GUIconstructor:guiSetScaledValue(value,docallback)
 	--update the control itself
 	guiSetValue(self.tag, realValue)
 	
+	if self.label then
 	if self.typex=="combo" then
 		self:setLabel(self.menu[value+1])
 	else
 		self:setLabel(self.FormatLabel(value,self))
 	end
-	
+	end
 	--igual se quita
 	if self.callback and docallback then
 		if self.typex=="combo" then
