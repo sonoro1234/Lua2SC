@@ -1,0 +1,10 @@
+require"sc.callback_wrappers"
+require"sc.udpSC"
+InitUDP()
+require"sc.gui"
+require"sc.playerssc"
+require"sc.miditoosc"
+require"sc.playersscgui"
+require"sc.scbuffer"
+require"sc.MetronomLanes"
+MASTER_INIT1()

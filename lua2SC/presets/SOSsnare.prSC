@@ -1,0 +1,8 @@
+local preset = {}
+preset["inst"] = "SOSsnare"
+preset["params"] = {}
+preset["params"]["sustain"] = 0.22079443805739
+preset["params"]["snare_tightness"] = 2448.2435135338
+preset["params"]["snare_level"] = 86.106575685195
+preset["params"]["drum_mode_level"] = 0.34580170616085
+return preset 

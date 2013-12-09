@@ -1,0 +1,20 @@
+local preset = {}
+preset["inst"] = "help_plucksynth"
+preset["params"] = {}
+preset["params"]["facatt"] = 6
+preset["params"]["rho"] = 7850
+preset["params"]["facK"] = 1500
+preset["params"]["r"] = 0.0010000000474975
+preset["params"]["facF0"] = 1.4981377356421
+preset["params"]["facR"] = 0.92805983030752
+preset["params"]["release"] = 0.24060026814821
+preset["params"]["pos"] = 0.85714286565781
+preset["params"]["c1"] = 1
+preset["params"]["FEc2"] = 33.563984126221
+preset["params"]["FEc1"] = -27.009335655848
+preset["params"]["FEatt"] = 6
+preset["params"]["facM"] = 2.7601212875134
+preset["params"]["L"] = 0.64999997615814
+preset["params"]["c3"] = 35
+preset["params"]["facrel"] = 1.4199993466417
+return preset 

@@ -17,4 +17,4 @@ ADD_LIBRARY(osclua SHARED osclua.cpp)
 set_target_properties(osclua PROPERTIES PREFIX "")
 TARGET_LINK_LIBRARIES(osclua ${LUA_LIBRARY} oscpack)
 
-INSTALL (TARGETS osclua RUNTIME DESTINATION .)
+INSTALL (TARGETS osclua RUNTIME DESTINATION luabin)

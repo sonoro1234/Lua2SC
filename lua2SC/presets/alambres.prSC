@@ -1,0 +1,10 @@
+local preset = {}
+preset["inst"] = "test"
+preset["params"] = {}
+preset["params"]["objects"] = 5.3617457654614
+preset["params"]["GAIN"] = 0.056504812359857
+preset["params"]["fdecay"] = 0.41927045579269
+preset["params"]["sys_dec"] = 0.64974640038568
+preset["params"]["sound_dec"] = 0.039355631959893
+preset["params"]["t_gate"] = 1
+return preset 

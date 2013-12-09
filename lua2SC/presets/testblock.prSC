@@ -1,0 +1,9 @@
+local preset = {}
+preset["inst"] = "block"
+preset["params"] = {}
+preset["params"]["bwr"] = 0.43665655937388
+preset["params"]["ffreq"] = 801.90003593471
+preset["params"]["decay"] = 0.20855530545933
+preset["params"]["fattack"] = 11852.106226852
+preset["params"]["bwri"] = 0.02
+return preset 

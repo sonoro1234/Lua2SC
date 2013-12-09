@@ -1,0 +1,9 @@
+local preset = {}
+preset["inst"] = "bow"
+preset["params"] = {}
+preset["params"]["loudness"] = 64
+preset["params"]["vibgain"] = 64
+preset["params"]["bowpressure"] = 64
+preset["params"]["vibfreq"] = 64
+preset["params"]["bowposition"] = 64
+return preset 

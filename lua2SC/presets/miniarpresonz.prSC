@@ -1,0 +1,18 @@
+local preset = {}
+preset["inst"] = "KarplusMiniArp"
+preset["params"] = {}
+preset["params"]["wideF3"] = 0,30000001192093
+preset["params"]["freqR2"] = 1358,7701349185
+preset["params"]["delayComp"] = 0
+preset["params"]["coef"] = 0,89999997615814
+preset["params"]["wideF2"] = 0,08444463946753
+preset["params"]["wideF1"] = 0,73000001907349
+preset["params"]["L2"] = 14,907558588271
+preset["params"]["L3"] = 1
+preset["params"]["freqR1"] = 1800
+preset["params"]["coef2"] = -0,60000002384186
+preset["params"]["L1"] = 1
+preset["params"]["freqR3"] = 1750
+preset["params"]["excit"] = 0,10000000149012
+preset["params"]["decay"] = 10
+return preset 

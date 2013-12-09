@@ -1,0 +1,1 @@
+path to lua\lua.exe lua2sc.lua

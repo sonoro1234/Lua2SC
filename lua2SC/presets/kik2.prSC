@@ -1,0 +1,10 @@
+local preset = {}
+preset["inst"] = "kik"
+preset["params"] = {}
+preset["params"]["decay2"] = 0.15000000596046
+preset["params"]["decay1"] = 0.30000001192093
+preset["params"]["decay1L"] = 0.80000001192093
+preset["params"]["ratio"] = 3.6853888080566
+preset["params"]["preamp"] = 1
+preset["params"]["sweeptime"] = 0.050000000745058
+return preset 

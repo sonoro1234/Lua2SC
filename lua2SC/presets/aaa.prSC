@@ -1,0 +1,10 @@
+local preset = {}
+preset["inst"] = "help_dwgpluck"
+preset["params"] = {}
+preset["params"]["pos"] = 0.85714286565781
+preset["params"]["mp"] = 0.750443944252
+preset["params"]["c1"] = 1.1818331988691
+preset["params"]["gc"] = 1.6755455517067
+preset["params"]["c3"] = 157.4225254938
+preset["params"]["mistune"] = 1.11186193236
+return preset 

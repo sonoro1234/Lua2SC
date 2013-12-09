@@ -1,0 +1,22 @@
+local preset = {}
+preset["inst"] = "bar"
+preset["params"] = {}
+preset["params"]["kaes"] = {}
+preset["params"]["kaes"][1] = 0,95756202936172
+preset["params"]["kaes"][2] = 0,80201756954193
+preset["params"]["kaes"][3] = 0,52383309602737
+preset["params"]["kaes"][4] = 0,95818722248077
+preset["params"]["kaes"][5] = 0,92603707313538
+preset["params"]["Kgain"] = 0,049325238913298
+preset["params"]["loss"] = 0,99000000953674
+preset["params"]["texci2"] = 0,0099999997764826
+preset["params"]["t_gate"] = 1
+preset["params"]["delays"] = {}
+preset["params"]["delays"][1] = 0,0044808145612478
+preset["params"]["delays"][2] = 0,0070367022417486
+preset["params"]["delays"][3] = 0,0029381359927356
+preset["params"]["delays"][4] = 0,005557136144489
+preset["params"]["delays"][5] = 0,0070666158571839
+preset["params"]["delays"][6] = 0,0060405884869397
+preset["params"]["texci1"] = 0,019999999552965
+return preset 

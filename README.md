@@ -2,7 +2,7 @@ Lua2SC
 ======
 
 Lua client for supercollider scsynth and supernova.
-Pure lua implementation based on standard portable modules: lualanes, wxlua, luasocket, bitOp 
+Pure lua implementation based on standard portable modules: lualanes, wxlua, luasocket, 
 plus some custom modules: osclua, pmidi, random.
 
 
@@ -12,7 +12,6 @@ First you should build lua 5.1 or 5.2
 build lualanes 
 build wxlua as a module (most difficult part)
 build luasocket
-build bitOp (in case you are in 5.1)
 
 Then build this repo:
 with CMake you need to provide:
@@ -24,7 +23,7 @@ LUA_LIBRARY with the path to lua.dll
 
 ------Windows--------
 
-windows users can try the already build binary folder Lua2SC-bin
+windows users can try the already build binary folder luabin
 
 --------------To first try---------------------
 
