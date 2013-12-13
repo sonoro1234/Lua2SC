@@ -1,5 +1,6 @@
 -- this file is for using sclua
-
+pp = package.cpath:gsub("%?","?51")
+package.cpath = package.cpath .. package.cpath:gsub("%?","?51")
 function Window(title,x,y,w,h)
 	require"iuplua"
 	x = x or 200
