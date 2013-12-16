@@ -46,14 +46,17 @@ function ValsToOsc(msg,lista)
 			table.insert(msg,{"]"})
 		end
 	end
+	return msg
 end
 -----------------------------------------------------
 -- reads lista={name=value,name2=value...} into osc msg
-function getMsgLista(msg,lista)
+function getMsgLista(msg,lista) 
 	ValsToOsc(msg[2],lista)
+	return msg
 end
 function getMsgValue(msg,name,value)
-	ValsToOsc(msg[2],{name=value})
+	ValsToOsc(msg[2],{[name]=value})
+	return msg
 end
 
 ----------------------------------------------------------------
