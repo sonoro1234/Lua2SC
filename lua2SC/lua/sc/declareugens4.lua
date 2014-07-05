@@ -237,6 +237,11 @@ function MarkovSynth.ar(...)
 	local   inp, isRecording, waitTime, tableSize   = assign({ 'inp', 'isRecording', 'waitTime', 'tableSize' },{ 0.0, 1, 2, 10 },...)
 	return MarkovSynth:MultiNew{2,inp,isRecording,waitTime,tableSize}
 end
+OteyPianoStrings=UGen:new{name='OteyPianoStrings'}
+function OteyPianoStrings.ar(...)
+	local   freq, vel, gate, release, rmin, rmax, rampl, rampr, rcore, lmin, lmax, lampl, lampr, rho, e, zb, zh, mh, k, alpha, p, hpos, loss, detune   = assign({ 'freq', 'vel', 'gate', 'release', 'rmin', 'rmax', 'rampl', 'rampr', 'rcore', 'lmin', 'lmax', 'lampl', 'lampr', 'rho', 'e', 'zb', 'zh', 'mh', 'k', 'alpha', 'p', 'hpos', 'loss', 'detune' },{ 440, 1, 1, 0.1, 0.35, 2, 4, 8, 1, 0.07, 1.4, -4, 4, 1, 1, 1, 0, 1, 1, 1, 1, 0.142, 1, 0.0003 },...)
+	return OteyPianoStrings:MultiNew{2,freq,vel,gate,release,rmin,rmax,rampl,rampr,rcore,lmin,lmax,lampl,lampr,rho,e,zb,zh,mh,k,alpha,p,hpos,loss,detune}
+end
 Pulse=UGen:new{name='Pulse'}
 function Pulse.kr(...)
 	local   freq, width, mul, add   = assign({ 'freq', 'width', 'mul', 'add' },{ 440.0, 0.5, 1.0, 0.0 },...)
@@ -309,6 +314,11 @@ FreqShift=UGen:new{name='FreqShift'}
 function FreqShift.ar(...)
 	local   inp, freq, phase, mul, add   = assign({ 'inp', 'freq', 'phase', 'mul', 'add' },{ nil, 0.0, 0.0, 1.0, 0.0 },...)
 	return FreqShift:MultiNew{2,inp,freq,phase}:madd(mul,add)
+end
+OteySoundBoard=UGen:new{name='OteySoundBoard'}
+function OteySoundBoard.ar(...)
+	local   inp, c1, c3, mix   = assign({ 'inp', 'c1', 'c3', 'mix' },{ 0, 20, 20, 0.8 },...)
+	return OteySoundBoard:MultiNew{2,inp,c1,c3,mix}
 end
 CoinGate=UGen:new{name='CoinGate'}
 function CoinGate.kr(...)
@@ -721,6 +731,11 @@ function Clipper4.ar(...)
 	local   inp, lo, hi   = assign({ 'inp', 'lo', 'hi' },{ nil, -0.8, 0.8 },...)
 	return Clipper4:MultiNew{2,inp,lo,hi}
 end
+PVSynth=UGen:new{name='PVSynth'}
+function PVSynth.ar(...)
+	local   pvbuffer, numBins, binStart, binSkip, filePointer, freqMul, freqAdd, mul, add   = assign({ 'pvbuffer', 'numBins', 'binStart', 'binSkip', 'filePointer', 'freqMul', 'freqAdd', 'mul', 'add' },{ nil, 0, 0, 1, 0, 1.0, 0.0, 1.0, 0.0 },...)
+	return PVSynth:MultiNew{2,pvbuffer,numBins,binStart,binSkip,filePointer,freqMul,freqAdd}:madd(mul,add)
+end
 SendPeakRMS=UGen:new{name='SendPeakRMS'}
 function SendPeakRMS.kr(...)
 	local   sig, replyRate, peakLag, cmdName, replyID   = assign({ 'sig', 'replyRate', 'peakLag', 'cmdName', 'replyID' },{ nil, 20.0, 3, '/reply', -1 },...)
@@ -729,11 +744,6 @@ end
 function SendPeakRMS.ar(...)
 	local   sig, replyRate, peakLag, cmdName, replyID   = assign({ 'sig', 'replyRate', 'peakLag', 'cmdName', 'replyID' },{ nil, 20.0, 3, '/reply', -1 },...)
 	return SendPeakRMS:MultiNew{2,sig,replyRate,peakLag,cmdName,replyID}
-end
-PVSynth=UGen:new{name='PVSynth'}
-function PVSynth.ar(...)
-	local   pvbuffer, numBins, binStart, binSkip, filePointer, freqMul, freqAdd, mul, add   = assign({ 'pvbuffer', 'numBins', 'binStart', 'binSkip', 'filePointer', 'freqMul', 'freqAdd', 'mul', 'add' },{ nil, 0, 0, 1, 0, 1.0, 0.0, 1.0, 0.0 },...)
-	return PVSynth:MultiNew{2,pvbuffer,numBins,binStart,binSkip,filePointer,freqMul,freqAdd}:madd(mul,add)
 end
 LPCSynth=UGen:new{name='LPCSynth'}
 function LPCSynth.ar(...)
@@ -1030,15 +1040,6 @@ function Duty.ar(...)
 	local   dur, reset, level, doneAction   = assign({ 'dur', 'reset', 'level', 'doneAction' },{ 1.0, 0.0, 1.0, 0 },...)
 	return Duty:MultiNew{2,dur,reset,level,doneAction}
 end
-Squiz=UGen:new{name='Squiz'}
-function Squiz.kr(...)
-	local   inp, pitchratio, zcperchunk, memlen, mul, add   = assign({ 'inp', 'pitchratio', 'zcperchunk', 'memlen', 'mul', 'add' },{ nil, 2, 1, 0.1, 1, 0 },...)
-	return Squiz:MultiNew{1,inp,pitchratio,zcperchunk,memlen}:madd(mul,add)
-end
-function Squiz.ar(...)
-	local   inp, pitchratio, zcperchunk, memlen, mul, add   = assign({ 'inp', 'pitchratio', 'zcperchunk', 'memlen', 'mul', 'add' },{ nil, 2, 1, 0.1, 1, 0 },...)
-	return Squiz:MultiNew{2,inp,pitchratio,zcperchunk,memlen}:madd(mul,add)
-end
 WhiteNoise=UGen:new{name='WhiteNoise'}
 function WhiteNoise.kr(...)
 	local   mul, add   = assign({ 'mul', 'add' },{ 1.0, 0.0 },...)
@@ -1047,6 +1048,15 @@ end
 function WhiteNoise.ar(...)
 	local   mul, add   = assign({ 'mul', 'add' },{ 1.0, 0.0 },...)
 	return WhiteNoise:MultiNew{2}:madd(mul,add)
+end
+Squiz=UGen:new{name='Squiz'}
+function Squiz.kr(...)
+	local   inp, pitchratio, zcperchunk, memlen, mul, add   = assign({ 'inp', 'pitchratio', 'zcperchunk', 'memlen', 'mul', 'add' },{ nil, 2, 1, 0.1, 1, 0 },...)
+	return Squiz:MultiNew{1,inp,pitchratio,zcperchunk,memlen}:madd(mul,add)
+end
+function Squiz.ar(...)
+	local   inp, pitchratio, zcperchunk, memlen, mul, add   = assign({ 'inp', 'pitchratio', 'zcperchunk', 'memlen', 'mul', 'add' },{ nil, 2, 1, 0.1, 1, 0 },...)
+	return Squiz:MultiNew{2,inp,pitchratio,zcperchunk,memlen}:madd(mul,add)
 end
 SVF=UGen:new{name='SVF'}
 function SVF.kr(...)
@@ -1269,8 +1279,8 @@ function Ball.ar(...)
 end
 OteyPiano=UGen:new{name='OteyPiano'}
 function OteyPiano.ar(...)
-	local   freq, amp, gate, release   = assign({ 'freq', 'amp', 'gate', 'release' },{ 440, 0.5, 1, 0.1 },...)
-	return OteyPiano:MultiNew{2,freq,amp,gate,release}
+	local   freq, vel, gate, release, rmin, rmax, rampl, rampr, rcore, lmin, lmax, lampl, lampr, rho, e, zb, zh, mh, k, alpha, p, hpos, loss, detune   = assign({ 'freq', 'vel', 'gate', 'release', 'rmin', 'rmax', 'rampl', 'rampr', 'rcore', 'lmin', 'lmax', 'lampl', 'lampr', 'rho', 'e', 'zb', 'zh', 'mh', 'k', 'alpha', 'p', 'hpos', 'loss', 'detune' },{ 440, 1, 1, 0.1, 0.35, 2, 4, 8, 1, 0.07, 1.4, -4, 4, 1, 1, 1, 0, 1, 1, 1, 1, 0.142, 1, 0.0003 },...)
+	return OteyPiano:MultiNew{2,freq,vel,gate,release,rmin,rmax,rampl,rampr,rcore,lmin,lmax,lampl,lampr,rho,e,zb,zh,mh,k,alpha,p,hpos,loss,detune}
 end
 KeyTrack=UGen:new{name='KeyTrack'}
 function KeyTrack.kr(...)
@@ -1663,10 +1673,10 @@ function DynKlang.ar(...)
 	local   specificationsArrayRef, freqscale, freqoffset   = assign({ 'specificationsArrayRef', 'freqscale', 'freqoffset' },{ nil, 1.0, 0.0 },...)
 	return DynKlang:MultiNew{2,specificationsArrayRef,freqscale,freqoffset}
 end
-BowSoundBoard=UGen:new{name='BowSoundBoard'}
-function BowSoundBoard.ar(...)
+DWGSoundBoard=UGen:new{name='DWGSoundBoard'}
+function DWGSoundBoard.ar(...)
 	local   inp, c1, c3, mix, d1, d2, d3, d4, d5, d6, d7, d8   = assign({ 'inp', 'c1', 'c3', 'mix', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8' },{ 0, 20, 20, 0.8, 199, 211, 223, 227, 229, 233, 239, 241 },...)
-	return BowSoundBoard:MultiNew{2,inp,c1,c3,mix,d1,d2,d3,d4,d5,d6,d7,d8}
+	return DWGSoundBoard:MultiNew{2,inp,c1,c3,mix,d1,d2,d3,d4,d5,d6,d7,d8}
 end
 Klank=UGen:new{name='Klank'}
 function Klank.ar(...)

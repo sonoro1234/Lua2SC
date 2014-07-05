@@ -1,4 +1,5 @@
 Settings={
+--[[
 	options={
 		midiin={},
 		midiout={},
@@ -8,6 +9,7 @@ Settings={
 		SC_UDP_PORT=57110,
 		SC_AUDIO_DEVICE=""
 	},
+	--]]
 	ID_CANCEL_BUTTON=NewID(),
 	ID_SAVE_BUTTON=NewID(),
 	ID_RESET_MIDI_BUTTON=NewID(),
@@ -20,7 +22,7 @@ function Settings:ConfigSave(config)
 	config:save_table("settings",self.options)
 end
 function Settings:ConfigRestore(config)
-	self.options = config:load_table("settings") or self.options
+	self.options = config:load_table("settings") --or this_file_settings.options
 	--erase inexistent devices
 	self.MIDIdev=pmidi.GetMidiDevices()
 	local midiout={}
@@ -60,7 +62,7 @@ function Settings:FindSynthPath(event)
 end
 function Settings:Create(parent)
 	
-	self:ConfigRestore(Config)
+	self:ConfigRestore(file_settings)
 	self.window=wx.wxFrame(parent,wx.wxID_ANY,"Settings",wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxDEFAULT_FRAME_STYLE + wx.wxFRAME_FLOAT_ON_PARENT)
 	local this=self.window
 	
@@ -207,18 +209,20 @@ function Settings:Create(parent)
 			--if midilane.status == "running" or midilane.status == "waiting" then
 				--pmidi.exit_midi_thread()	
 			--end
-			thread_print("cancel midilane ",midilane:cancel(0.2))
-			thread_print(Settings.options.midiin,Settings.options.midiout,lanes,scriptlinda,midilinda)
-			midilane=pmidi.gen(Settings.options.midiin,Settings.options.midiout,lanes,scriptlinda,midilinda,
-			{print=thread_print,
-			prerror=thread_error_print,
-			prtable=prtable,
-			idlelinda = idlelinda})
+			--thread_print("cancel midilane ",midilane:cancel(0.2))
+			MidiClose()
+			--thread_print(Settings.options.midiin,Settings.options.midiout,lanes,scriptlinda,midilinda)
+			--midilane=pmidi.gen(Settings.options.midiin,Settings.options.midiout,lanes,scriptlinda,midilinda,
+			--{print=thread_print,
+			--prerror=thread_error_print,
+			--prtable=prtable,
+			--idlelinda = idlelinda})
+			MidiOpen(self.options)
 			--lanes.timer( midilinda, "wait", 1, 0 )	--wait a second
 			--local key,val=midilinda:receive("wait") 
 			--thread_print("status",midilane.status)
 			--checkend(midilane)
-			assert(midilane,"midilane could not be created")
+			--assert(midilane,"midilane could not be created")
 		end)
 	this:Connect(self.ID_SAVE_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
 		function(event)
@@ -233,7 +237,7 @@ function Settings:Create(parent)
 			self.options.SC_UDP_PORT=udpTC:GetValue()
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
 			--prtable(self.MIDIdev)
-			self:ConfigSave(Config)
+			self:ConfigSave(file_settings)
 			this:Close() 
 		end)
 	return self;

@@ -454,6 +454,7 @@ function MidiToOsc.midi2osc(midiEvent)
 		table.insert(on[2],"out")
 		table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
 		udp:send(toOSC(on))
+		--sendBundle(on,lanes.now_secs())
 		MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
     elseif midiEvent.type==midi.noteOff then
 		--prtable(MidiToOsc)
@@ -464,6 +465,8 @@ function MidiToOsc.midi2osc(midiEvent)
 			if nodo then
 				local off = {"/n_set",{nodo,"gate",{"float",0}}}
 				udp:send(toOSC(off))
+				--sendBundle(off,lanes.now_secs())
+				
 				--local off = {"/n_free",{nodo}}
 				--udp:send(toOSC(off))
 			end

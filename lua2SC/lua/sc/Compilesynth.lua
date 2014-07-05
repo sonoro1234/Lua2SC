@@ -1,6 +1,5 @@
 --require"init.init"
-require "sc.synthdefSC"
-require("sc.udpSC")
+require "sc.synthdefsc"
 sintes={}
 --require "synthdefSCGUI"
 ---------------------------------------------------------------------------------------------
@@ -92,12 +91,12 @@ vumeter1=SynthDef("vumeter1",{busin=0,rate=20,lag=3,id=-1},function()
 					local canales = In.ar(busin, 1);
 
 					local numsamp=SampleRate.ir()/rate
-					local squared=canales[1]:squared()
+					local squared=canales:squared() --canales[1]:squared()
 					local rms = RunningSum.ar(squared, numsamp)/numsamp
 
 					rms = rms:sqrt()
 
-					local peaks=PeakFollower.ar(canales[1], 0.99999)
+					local peaks=PeakFollower.ar(canales, 0.99999)
 						--SendPeakRMS.ar(canales, rate,lag,"/vumeter",id)
 					--SendReply.ar(trig,"/vumeter",{peaks:ampdb(),rms:ampdb()}, id)	
 					SendReply.ar(trig,"/vumeter",{peaks,rms}, id)	

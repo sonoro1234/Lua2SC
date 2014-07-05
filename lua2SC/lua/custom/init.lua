@@ -22,7 +22,9 @@ function lanesloop(wait)
 			local key,val= scriptlinda:receive(wait or 0,"script_exit","tempo","play","/metronom","metronomLanes","beat","beatRequest","_valueChangedCb","_midiEventCb","OSCReceive")
 			if key then
 				--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
-				if key=="beat" then
+				if key == lanes.cancel_error then
+					return false
+				elseif key=="beat" then
 					theMetro:play(nil,val)
 				elseif key=="tempo" then
 					theMetro:play(val)
@@ -62,13 +64,14 @@ function postload1()
 	_initCb()
 	--while lanesloop() do end
 	while true do
-		iup.LoopStep()
+		if iup then iup.LoopStep() end
 		for i=1,10 do
 			local res = lanesloop(0.01)
 			if not res then return end
 			if res == "timeout" then break end
 		end
 	end
+	print("postload1 exit")
 end
 
 function postload2()
@@ -76,4 +79,6 @@ function postload2()
 		print("SCRIPT: to reset\n")
 		_resetCb()
 	end
+	print("SCRIPT: closing iup\n")
+	iup.Close()
 end

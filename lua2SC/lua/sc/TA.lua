@@ -133,7 +133,7 @@ function _TAmt.__call(t,ini,ends,step)
 	for i=ini,ends,step do
 		res[#res + 1]= t[i]
 	end 
-	return self:new(res)
+	return t:new(res) --self:new(res)
 end
 function _TAmt:Do(f,...)
 	local res={}
@@ -187,6 +187,9 @@ function _TAmt:reverse()
 end
 function _TAmt:mirror()
 	return self..self(1,#self - 1):reverse()
+end
+function _TAmt:mirror2()
+	return self..self:reverse()
 end
 function _TAmt:clump2(n)
 	local res = {}

@@ -1,6 +1,7 @@
 	local ID_DUMPTREE       = NewID()
 	local ID_DUMPOSC       = NewID()
 	local ID_BOOTSC       = NewID()
+	local ID_BOOTSC_internal       = NewID()
 	local ID_QUITSC       = NewID()
 	local ID_AUTODETECTSC       = NewID()
 
@@ -10,6 +11,7 @@ function InitSCMenu()
 		{ ID_DUMPTREE,              "Dump SC Tree",               "Dumps SC Tree in SC console" },
 		{ ID_DUMPOSC,              "Dump OSC",               "Dumps OSC" , wx.wxITEM_CHECK },
 		{ ID_BOOTSC,              "Boot SC",               "Boots SC" },
+		{ ID_BOOTSC_internal,              "Boot SC internal",               "Boots SC internal" },
 		{ ID_QUITSC,              "Quit SC",               "Quits SC" },
 		{ ID_AUTODETECTSC,              "Autodetect SC",               "Autodetect SC", wx.wxITEM_CHECK  },
         }
@@ -17,17 +19,17 @@ function InitSCMenu()
 	frame:Connect(ID_DUMPTREE,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			--linda:send("dumpTree",1)
-			SCUDP:dumpTree(true)	
+			SCSERVER:dumpTree(true)	
 		end)
 	frame:Connect(ID_DUMPOSC,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			--linda:send("dumpTree",1)
-			SCUDP:dumpOSC(event:IsChecked())	
+			SCSERVER:dumpOSC(event:IsChecked())	
 		end)
 	frame:Connect(ID_AUTODETECTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			if event:IsChecked() then
-				SCUDP:sync()
+				SCSERVER:sync()
 				lanes.timer(idlelinda,"statusSC",1,0)
 			else
 				while idlelinda:receive(0,"statusSC") do end
@@ -36,8 +38,14 @@ function InitSCMenu()
 			end
 		end)
 	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,BootSC)
+	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
+		SCSERVER:init("internal",file_settings:load_table("settings"),mainlinda)
+		ClearLog(ScLog)
+		lanes.timer(idlelinda,"statusSC",1,0)
+	end)
 	frame:Connect(ID_QUITSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function(event)
-				SCUDP:quit()
+				SCSERVER:quit()
+				SCSERVER:close()
 				if SCProcess then
 					local c,er = SCProcess:cancel(0.3)
 					print("SCProcess",c,er)
@@ -46,18 +54,23 @@ function InitSCMenu()
 						SCProcess=nil
 					end
 				end
+				prtable(lanes.threads())
 			end)
 	frame:Connect(ID_DUMPTREE, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCUDP.udp~=nil)
+				event:Enable(SCSERVER.inited~=nil)
 			end)
 	frame:Connect(ID_DUMPOSC, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCUDP.udp~=nil)
+				event:Enable(SCSERVER.inited~=nil)
 			end)
 	frame:Connect(ID_BOOTSC, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(SCProcess==nil)
+			end)
+	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
+			function (event)
+				event:Enable(jit and SCProcess==nil)
 			end)
 	-- frame:Connect(ID_QUITSC, wx.wxEVT_UPDATE_UI,
 			-- function (event)
@@ -88,7 +101,7 @@ function SCProcess_Loop(cmd)
 		else
 			print( "after normal return" )
 		end
-		exe:close()
+		if exe then exe:close() end
 		print( "finalizer ok" )
 	end
 	print("soy sc loop ....")
@@ -107,6 +120,7 @@ function SCProcess_Loop(cmd)
 	repeat
 		--print(stdout:read("*all") or stderr:read("*all") or "nil")
 		exe:flush()
+		--io.write("reading line bootsc\n")
 		local line=exe:read("*l")
 		if line then
 			print(line)
@@ -118,31 +132,33 @@ function SCProcess_Loop(cmd)
 end		
 
 function BootSC() 
-	local path=wx.wxFileName.SplitPath(Settings.options.SCpath)
+	SCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
+	
+	local this_file_settings = file_settings:load_table("settings")
+	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
 	wx.wxSetWorkingDirectory(path)
-	wx.wxSetEnv("SC_SYSAPPSUP_PATH",path)
-	--wx.wxSetEnv("SC_PLUGIN_PATH",path.."\\plugins") 
-	if Settings.options.SC_SYNTHDEF_PATH~="default" then
-		wx.wxSetEnv("SC_SYNTHDEF_PATH",Settings.options.SC_SYNTHDEF_PATH)
+	wx.wxSetEnv("SC_SYSAPPSUP_PATH",path) 
+	if this_file_settings.SC_SYNTHDEF_PATH~="default" then
+		wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
 	end
-	local plugpath=[["]]..path..[[\plugins"]]
-	for i,v in ipairs(Settings.options.SC_PLUGIN_PATH) do
+	local plugpath=[["]]..path..[[/plugins"]]
+	for i,v in ipairs(this_file_settings.SC_PLUGIN_PATH) do
 		if(v=="default") then
 		else	
 			plugpath=plugpath..[[;"]]..v..[["]]
 		end
 	end
-	--local cmd="\"\""..Settings.options.SCpath.."\"".." -u "..Settings.options.SC_UDP_PORT.." -H ASIO ".."-U \""..path.."\\plugins\"\""
-	local cmd=[[""]]..Settings.options.SCpath..[["]]..[[ -v 2 ]]..[[ -u ]]..Settings.options.SC_UDP_PORT..[[ -o 2 -i 2 ]]..[[ -H "]]..Settings.options.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
-	--local cmd=[["]]..Settings.options.SCpath..[["]]	
+	--local cmd="\"\""..this_file_settings.options.SCpath.."\"".." -u "..this_file_settings.options.SC_UDP_PORT.." -H ASIO ".."-U \""..path.."\\plugins\"\""
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..[[ -v 2 ]]..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 ]]..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)
-		local str=""
-		for i=1, select('#', ...) do
-			str = str .. tostring(select(i, ...))
-		end
-		str = str .. "\n"
-		idlelinda:send("proutSC",str)
+		--local str=""
+		--for i=1, select('#', ...) do
+		--	str = str .. tostring(select(i, ...))
+		--end
+		--str = str .. "\n"
+		idlelinda:send("proutSC",table.concat({...}).."\n")
 	end
 	local process_gen=lanes.gen("*",--"base,math,os,package,string,table",
 		{
@@ -164,9 +180,7 @@ function BootSC()
 		SCProcess=nil
 	else
 		ClearLog(ScLog)
-		--DisplayLog("Process id is: "..tostring(pid).."\n", ScLog)
-		--SCUDP:dumpOSC()
-		SCUDP:sync()
+		udpsclinda:send("Detect",1)
 		lanes.timer(idlelinda,"statusSC",1,0)
 	end
 	menuBar:Check(ID_DUMPOSC, false)

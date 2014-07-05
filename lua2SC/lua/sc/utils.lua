@@ -119,7 +119,7 @@ function TableFill(n,func)
 	return res
 end
 function isSimpleTable(t)
-	return (type(t)=="table" and getmetatable(t)==nil)
+	return (type(t)=="table" and (getmetatable(t)==nil or getmetatable(t)==_TAmt))
 end
 
 function functabla(t,f)
@@ -155,12 +155,24 @@ function WrapAtSimple(t,i)
 		return t
 	end
 end
-
+function copy_function(f)
+	local f2 = loadstring(string.dump(f))
+	local i = 1
+	while true do
+		local name,value = debug.getupvalue(f,i)
+		if not name then break end
+		debug.setupvalue(f2,i,value)
+		i = i + 1
+	end
+	return f2
+end
 function deepcopy(object)
     local lookup_table = {}
     local function _copy(object)
 		--assert(object~=REST)
-        if type(object) ~= "table" then
+		if type(object) == "function" then
+			return copy_function(object)
+        elseif type(object) ~= "table" then
             return object
         elseif lookup_table[object] then
             return lookup_table[object]
@@ -179,7 +191,9 @@ function deepcopy_values(object)
     local lookup_table = {}
     local function _copy(object)
 		--assert(object~=REST)
-        if type(object) ~= "table" then
+        if type(object) == "function" then
+			return copy_function(object)
+        elseif type(object) ~= "table" then
             return object
         elseif lookup_table[object] then
             return lookup_table[object]
@@ -281,10 +295,11 @@ function tb2stSerialize(t)
 		if type(t)=="table" then
 			local str2="{"
 			for k,v in pairs(t) do
+				local Kstring = basicSerialize(k)
 				if type(v)=="number" then
-					str2=str2.."["..tostring(k).."]="..string.format("%0.17g",v)..","
+					str2=str2.."["..Kstring.."]="..string.format("%0.17g",v)..","
 				else
-					str2=str2.."["..tostring(k).."]=".._tb2st(v)..","
+					str2=str2.."["..Kstring.."]=".._tb2st(v)..","
 				end
 			end
 			str2=str2.."}"

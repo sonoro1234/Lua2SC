@@ -1,4 +1,5 @@
 --- stream classes that respond to :nextval() and :reset()
+--@module stream
 require("sc.utils")
 require("sc.utilsstream")
 require("sc.combinatorics")
@@ -7,8 +8,8 @@ require("sc.combinatorics")
 -- @type PriorityQ
 PriorityQ = {}
 --- Creates a PriorityQ
--- @tparam table o initial values
--- @treturn PriorityQ
+-- @param o table of initial values
+-- @return PriorityQ
 function PriorityQ:new(o)
 	o = o or {}
 	o.queue = {}
@@ -16,10 +17,10 @@ function PriorityQ:new(o)
 	self.__index = self
 	return o
 end
--- put something in queue items get ordered by time and index after
--- @tparam number time
+--- put something in queue items get ordered by time and index after
+-- @param time
 -- @param item anything
--- @tparam number index
+-- @param index
 function PriorityQ:put(time,item,index)
 	self.queue[#self.queue + 1] = {time , item, index}
 	table.sort(self.queue , function(a,b) 
@@ -31,9 +32,9 @@ function PriorityQ:put(time,item,index)
 							end)
 end
 --- pops the first item
--- @treturn number time
+-- @return  time
 -- @return  item
--- @treturn number index
+-- @return  index
 function PriorityQ:pop()
 	local res = self.queue[#self.queue]
 	self.queue[#self.queue] = nil
@@ -46,14 +47,15 @@ end
 --- Stream Class. Has metatable for mul add sub div
 -- @type Stream
 Stream = {reps=1,creps=0,recur=nil}
-Stream.isStream=true
+Stream.isStream = true
 --- Creates a Stream
--- @tparam table o provides initial values
--- @treturn Stream
+-- @param o provides initial values
+-- @return Stream
 function Stream:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	--copy metamethods from parent
 	local m=getmetatable(self)
     if m then
         for k,v in pairs(m) do
@@ -74,8 +76,8 @@ function Stream:reset()
 	end
 end
 --- Set the number of repetitions of stream
--- @tparam integer n number of repeats
--- @treturn Stream self
+-- @param n number of repeats
+-- @return Stream self
 function Stream:rep(n)
 	if type(n)=="table" then
 		assert(n.isStream,"Received a not stream table for repetitions")
@@ -136,8 +138,10 @@ end
 Stream.__sub = function (a,b)
 	return a +(-b)
 end
---- FuncStream. Derived from Stream. Custom function as stream provider
+
+--- Derived from Stream. Custom function as stream provider
 -- @type FuncStream
+-- @usage FuncStream:new{}
 FuncStream = Stream:new{verb=nil,argus=nil}
 function FuncStream:pnext(e)
 	if self.creps == self.reps then 
@@ -148,13 +152,13 @@ function FuncStream:pnext(e)
 		return self.verb(unpack(self.argus))
 	end
 end
----  @section end
+-- @section end
 
 --- Returns FuncStream with function v
--- @tparam function v :the function
--- @tparam integer r number of repetitions
+-- @param v :the function
+-- @param r integer number of repetitions
 -- @param ... optional arguments to function
--- @treturn FuncStream
+-- @return FuncStream
 function FS(v,r,...)
 	r= r or 1
 	assert(type(v)=="function")
@@ -162,31 +166,27 @@ function FS(v,r,...)
 	return FuncStream:new{verb=v,argus={...},reps=r}
 end
 --- Returns FuncStream performing weigthed choices
--- @tparam table a list to choose from.
--- @tparam table b list of weigths
--- @tparam integer r number of repetitions
--- @treturn FuncStream
+-- @param a list to choose from.
+-- @param b list of weigths
+-- @param r number of repetitions
+-- @return #FuncStream
 -- @usage st = FS(function() return 3 end,-1)
 -- print(st:nextval())
 function WRS(a,b,r)
 	r = r or 1
-	--math.randomseed (os.time())
-	--return FuncStream:new{verb=wchoice,argus=a,argusb=b,reps=r}
 	return FS(wchoice,r,a,b)
 end
 --- Returns FuncStream performing choices from list.
--- @tparam table a list to choose from.
--- @tparam integer r number of repetitions
--- @treturn FuncStream
+-- @param a list to choose from.
+-- @param r number of repetitions
+-- @return FuncStream
 function RS(a,r)
 	r = r or 1
-	--math.randomseed (os.time())
-	--return FuncStream:new{verb=choose,argus=a,reps=r}
 	return FS(choose,r,a)
 end
 --- Returns FuncStream performing choices from list infinite times.
--- @tparam table a list to choose from.
--- @treturn FuncStream
+-- @param a list to choose from.
+-- @return FuncStream
 function RSinf(a)
 	return RS(a,-1)
 end
@@ -228,11 +228,11 @@ function ListStream:pnext(e)
 end
 --- For lists of items responding to merge (PS for example)
 -- @param t key-val table to be merged with items in ListStream
-function ListStream:merge(t)
-	for i,v in ipairs(self.list) do
-		v:merge(t)
-	end
-end
+--function ListStream:merge(t)
+--	for i,v in ipairs(self.list) do
+--		v:merge(t)
+--	end
+--end
 function ListStream:reset()
 	assert(#self.list > 0,"ListStream without list")
 	for i,v in ipairs(self.list) do
@@ -242,24 +242,26 @@ function ListStream:reset()
 	end
 	Stream.reset(self)
 end
---- @section end
+-- @section end
 
 --- Creates a ListStream from t with r repetitions
--- @tparam table t list of events to provide in a infinite loop on each call to next
--- @tparam int r number of repetitions of list t until ending stream
--- @treturn table ListStream
+-- @param t list of events to provide in a infinite loop on each call to next
+-- @param r number of repetitions of list t until ending stream
+-- @return ListStream
 -- @see ListStream
 function LS(t,r)
 	r = r or 1
 	if(type(t)~="table" or  t.isStream) then 
-		prtable(t)
-		error("ListStream Error: List should be a not stream table!!",2) 
+		--prtable(t)
+		--error("ListStream Error: List should be a not stream table!!",2) 
+		t = {t}
 	end
+
 	return ListStream:new({reps=r,list=t})
 end
 --- Creates a ListStream from t with infinite repetitions
--- @tparam table t list of events to provide in a infinite loop on each call to next
--- @treturn table ListStream
+-- @param t list of events to provide in a infinite loop on each call to next
+-- @return ListStream
 -- @see ListStream
 function LOOP(t)
 	return LS(t,-1)
@@ -638,6 +640,7 @@ function PS(...)
 	end
 	return ps
 end
+
 function StreamWrap(t)
 	for k,v in pairs(t) do
 		assert(type(k)~="number","PS item without key")
@@ -669,16 +672,19 @@ function KEY(key)
 	return KeyStream:new{key=key}
 end
 ------------paralel stream
-ParalelStream = Stream:new{ stlist = nil }
+ParalelStream = Stream:new{ stlist = nil,memlist = {} }
 ParalelStream.isParalelStream = true
-function ParalelStream:pnext()
+function ParalelStream:pnext(e)
+	--e = e or {}
 	if not self.PQ then self:reset() end
 	local t,st,k = self.PQ:pop()
-	local res = st:nextval()
+	local res = st:nextval(memlist)
 	if not res then self.PQ= nil; return res end
 	local tdelta = res.delta
+	-- to tell the player when call nextval again
 	res.delta = math.min(self.PQ:topPrio() - t, res.delta)
 	self.PQ:put(tdelta + t, st,k)
+	--memlist = res
 	return res
 end
 function ParalelStream:merge(t)
@@ -738,6 +744,27 @@ function Pclump(n,pat)
 	end
 	return PclumpSt:new{N=n,pat=pat}
 end
+--------RepeaterSt
+-- gets a value from pat and repeats n times
+RepeaterSt = Stream:new{}
+function RepeaterSt:pnext(e)
+	local n = self.N:nextval(e)
+	local val = self.pat:nextval(e)
+	if val then
+		return LS({val},n)
+	else
+		return nil
+	end
+end
+function REP(n,pat)
+	if type(n) ~="table" or not n.isStream then --no es stream
+			n=ConstantStream:new{value=n}
+	end
+	if type(pat) ~="table" or not pat.isStream then --no es stream
+			pat=ConstantStream:new{value=pat}
+	end
+	return RepeaterSt:new{N=n,pat=pat}
+end
 -----StreamTuple
 StreamTuple = Stream:new{}
 function StreamTuple:pnext(e)
@@ -750,7 +777,7 @@ function StreamTuple:pnext(e)
 			return nil
 		end
 	end
-	return {list2}
+	return list2
 end
 function StreamTuple:reset()
 	for i,v in ipairs(self.stlist) do
@@ -759,6 +786,7 @@ function StreamTuple:reset()
 	self.recur=nil
 end
 function TUPLE(t)
+	assert(isSimpleTable(t))
 	for k,v in ipairs(t) do
 		if type(v) ~="table" or v.nextval == nil then --no es stream
 			t[k]=ConstantStream:new{value=v}
@@ -807,13 +835,13 @@ function PdefStream:input(pat)
 	self.stlist = pat
 	return deepcopy(self)
 end
------------------------------------------------------------------
 
+-----------------------------------------------------------------
 StreamFunc = Stream:new()
 function StreamFunc:pnext(e)
-	local ret=self.argus:nextval(e)
+	local ret = self.argus:nextval(e)
 	if ret == nil then self.argus:reset() return nil end
-	ret=self.func(ret,e)
+	ret = self.func(ret,e)
 	return ret
 end
 function StreamFunc:reset()
@@ -840,9 +868,9 @@ function quantize(val,q)
 	return math.floor(val/q + 0.5)*q
 end
 --- Quantizes numbers provided by a stream to multiples of q
--- @tparam number q length of quantization
--- @tparam Stream pat a stream of numbers
--- @treturn Stream
+-- @param q length of quantization
+-- @param pat a stream of numbers
+-- @return Stream
 function Quant(q,pat)
 	return SF(pat,function(val) return math.floor(val/q + 0.5)*q end)
 end

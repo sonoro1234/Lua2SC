@@ -92,6 +92,7 @@ function M.midi_thread(inp,out)
 		end)
 	set_error_reporting("extended")
 	set_debug_threadname("midi_thread")
+	lanes = require"lanes"
 	print("PMIDI: Opening midi devices")
 	local MIDIdev=pmidi.GetMidiDevicesByName()
 	for name,use in pairs(inp) do
@@ -162,9 +163,16 @@ function M.midi_thread(inp,out)
 	print("PMIDI: midi_thread exit")
 end
 --]]
+--[[
+function M.midi_thread(inp,out)
+	
+	--print("PMIDI: Opening midi devices")
+
+end
+--]]
 ---[[
 function M.gen(inp,out,thelanes,callbacklinda,midilin,globals)
-	globals.lanes=thelanes
+	--globals.lanes = thelanes
 	--midilinda=thelanes.linda()
 	assert(midilin,"must provide a linda for sending")
 	midilinda=midilin
@@ -173,12 +181,13 @@ function M.gen(inp,out,thelanes,callbacklinda,midilin,globals)
 	globals.callbacklinda=callbacklinda
 	local generator=thelanes.gen("*",--"base,math,os,package,string,table",
 		{
-		required={"pmidi"},
-		globals=globals,
-		priority=0},
+		required = {"pmidi"},
+		globals = globals,
+		priority = 0
+		},
 		pmidi.midi_thread)
-		--print("generado")
-		return generator(inp,out)
+
+	return generator(inp,out)
 end
 
 --]]	

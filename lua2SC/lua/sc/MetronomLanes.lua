@@ -4,7 +4,7 @@ require"sc.playersppq"
 
 theMetro={bpm=120,bps=2,beat=0,rate=100,ppqPos=0,playing=0,frame=1,playNotifyCb={},abstime=0}
 --EP for computing abstime
---[[
+---[[
 function updateAbsTime(p)
 	p.abstimeAcum = p.abstimeAcum + (p.ppqPos - p.ppqPosSave )/theMetro.bps
 	p.ppqPosSave = p.ppqPos
@@ -76,13 +76,17 @@ function theMetro:stop()
 	lanes.timer(scriptlinda,"metronomLanes",0)
 end
 
+function theMetro:ppq2time(ppq)
+	return self.timestamp + (ppq - self.oldppqPos) / self.bps
+end
+
 function setMetronomLanes(timestamp)
 	--print("setMetronomLanes")
 	if theMetro.oldtimestamp then
 		theMetro.realperiod = timestamp - theMetro.oldtimestamp
-		local errorl =(theMetro.realperiod - theMetro.period)/theMetro.period
-		if  math.abs(errorl) >= 1 then
-			prerror("error metronomLanes ",errorl,lanes.now_secs()-timestamp)
+		local errorl =(theMetro.realperiod - theMetro.period) --*theMetro.rate
+		if  math.abs(errorl) >= theMetro.period then
+			--prerror("error metronomLanes ",errorl,lanes.now_secs()-timestamp)
 		end
 	else
 		theMetro.realperiod = theMetro.period

@@ -1,4 +1,23 @@
 
+	---[===[
+local oldpr=print
+require("wx")
+print=oldpr
+
+os.setlocale("C")	--to let serialize work for numbers
+local ID_IDCOUNTER = wx.wxID_HIGHEST + 1
+function NewID()
+    ID_IDCOUNTER = ID_IDCOUNTER + 1
+    return ID_IDCOUNTER
+end
+
+
+
+Config = require"ide.config"
+Config:init("Lua2SCIDE", "sonoro")
+config = Config.config
+
+require"ide.settings"
 require"ide.perspectives"
 require"ide.findreplace"
 require"ide.scriptgui"
@@ -8,7 +27,9 @@ IdentifiersList = require"ide.identifiers"
 CallStack = require"ide.callstack"
 require"ide.help"
 require"ide.toppanel"
-require"ide.scriptrun"
+require"ide.idescriptrun"
+
+
 ---------------------------------
 -- Equivalent to C's "cond ? a : b", all terms will be evaluated
 function iff(cond, a, b) if cond then return a else return b end end
@@ -88,7 +109,7 @@ end
 
 function abriredit(eventFileName_,line)
 	eventFileName_ = wx.wxFileName(eventFileName_):GetFullPath()
-	print("abriredit",eventFileName_,line)
+	--print("abriredit",eventFileName_,line)
 	if line then line=line-1 end
 	--try to reuse
 	for id, document in pairs(openDocuments) do
@@ -102,7 +123,7 @@ function abriredit(eventFileName_,line)
 		----------------------------
 		--if filePath and string.upper(filePath) == string.upper(eventFileName_) then
 		if filePath and filePath == eventFileName_ then
-			print("reuse ",filePath , eventFileName_)
+			--print("reuse ",filePath , eventFileName_)
 			editor:MarkerDeleteAll(CURRENT_LINE_MARKER)
 			local selection = document.index
 			notebook:SetSelection(selection)
@@ -128,6 +149,29 @@ function abriredit(eventFileName_,line)
 	else
 		return false
 	end
+end
+function ideGetScriptLaneStatus()
+	local tmplinda = lanes.linda()
+	mainlinda:send("GetScriptLaneStatus",tmplinda)
+	local key,val=tmplinda:receive(3,"GetScriptLaneStatusResp")
+	if key then
+		return val
+	else --timeout
+		return nil
+	end
+end
+function checkendScript(lane)
+	if not lane then return true end
+	local status=ideGetScriptLaneStatus()
+	if status=="error" or status=="done" or status=="cancelled" or status=="killed" then
+		print("checkend status ",status)
+	end
+	if status=="error" or status=="done" or status=="cancelled" then --or status=="killed" then
+		print("checkend ffinished",status)
+		EnableDebugCommands(false,false)
+		return true
+	end
+	return false
 end
 function checkend(lane)
 	if not lane then return true end
@@ -216,6 +260,11 @@ function CreateLog()
 	--errorLog:Show(false)
 	errorLog:SetFont(font)
 	errorLog:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, font)
+	--errorLog:SetCodePage(wxstc.wxSTC_CP_UTF8)
+	errorLog:SetCodePage(0)
+	for i = 0, 32 do
+        errorLog:StyleSetCharacterSet(i, wxstc.wxSTC_CHARSET_ANSI)
+    end
 	errorLog:StyleClearAll()
 	errorLog:StyleSetForeground(1,  wx.wxColour(128, 0, 0)) -- error
 	errorLog:SetMarginWidth(1, 16) -- marker margin
@@ -236,6 +285,8 @@ end
 
 function AppInit()
 
+
+
 	frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, "Lua2SC",wx.wxDefaultPosition, wx.wxSize(800, 600),wx.wxBORDER_SIMPLE + wx.wxDEFAULT_FRAME_STYLE )
 	-- wrap into protected call as DragAcceptFiles fails on MacOS with
 	-- wxwidgets 2.8.12 even though it should work according to change notes
@@ -253,9 +304,9 @@ function AppInit()
 	manager = Manager() 
 	manager:SetManagedWindow(managedpanel);
 		
-	statusBar = frame:CreateStatusBar( 4 )
+	statusBar = frame:CreateStatusBar( 5 )
 	local status_txt_width = statusBar:GetTextExtent("OVRW")
-	frame:SetStatusWidths({-1, status_txt_width, status_txt_width, status_txt_width*5})
+	frame:SetStatusWidths({-1, status_txt_width, status_txt_width, status_txt_width*5,-1})
 	frame:SetStatusText("Welcome to Lua2SC")
 	
 	toppanel = CreateTopPanel()
@@ -367,9 +418,9 @@ function AppInit()
 	frame:SetMenuBar(menuBar)
 	manager:Update()
 	--------
-	midilane=pmidi.gen(Settings.options.midiin,Settings.options.midiout,lanes,scriptlinda,midilinda,{print=thread_print,
-	prerror=thread_error_print,
-	prtable=prtable,idlelinda = idlelinda})
+	--midilane = pmidi.gen(this_file_settings.options.midiin, this_file_settings.options.midiout, lanes ,scriptlinda,midilinda,{print=thread_print,
+	--prerror=thread_error_print,
+	--prtable=prtable,idlelinda = idlelinda})
 	
 	-- print"globals"
 	-- for k,v in pairs(_G) do
@@ -378,8 +429,35 @@ function AppInit()
 	-- print("ID_CANCEL_BUTTON",ID_CANCEL_BUTTON)
 end
 
-
+--from ZeroBrane
+function fixUTF8(s, replacement)
+  local p, len, invalid = 1, #s, {}
+  while p <= len do
+    if     p == s:find("[%z\1-\127]", p) then p = p + 1
+    elseif p == s:find("[\194-\223][\128-\191]", p) then p = p + 2
+    elseif p == s:find(       "\224[\160-\191][\128-\191]", p)
+        or p == s:find("[\225-\236][\128-\191][\128-\191]", p)
+        or p == s:find(       "\237[\128-\159][\128-\191]", p)
+        or p == s:find("[\238-\239][\128-\191][\128-\191]", p) then p = p + 3
+    elseif p == s:find(       "\240[\144-\191][\128-\191][\128-\191]", p)
+        or p == s:find("[\241-\243][\128-\191][\128-\191][\128-\191]", p)
+        or p == s:find(       "\244[\128-\143][\128-\191][\128-\191]", p) then p = p + 4
+    else
+      s = s:sub(1, p-1)..replacement..s:sub(p+1)
+      table.insert(invalid, p)
+    end
+  end
+  return s, invalid
+end
+function fixSTCOutput(s)
+	return s:gsub("[\128-\255]","\022")
+end
 function DisplayOutput(message, iserror)
+	--print("DisplayOutput",message)
+	--message = wx.wxString(message):ToUTF8()
+	--message = fixUTF8(message,"\022")
+	message = fixSTCOutput(message)
+	--print("DisplayOutput",message)
 	local wlen=string.len(message)
 	local pos=errorLog:GetLength()
     
@@ -417,7 +495,7 @@ function ConfigSaveOpenDocuments(config)
 												document = document}
 	end
 	table.sort(sortedDocs, function(a, b) return string.upper(a.name) < string.upper(b.name) end)
-	for i,v in pairs(sortedDocs) do
+	for i,v in ipairs(sortedDocs) do
 		config_openDocuments[#config_openDocuments +1]=v.document.filePath
 		print(v.document.filePath)
 	end
@@ -426,15 +504,17 @@ function ConfigSaveOpenDocuments(config)
 	config:save_table("openDocuments",config_openDocuments)
 end
 function ConfigLoadOpenDocuments(config)
+	--print"ConfigLoadOpenDocuments"
 	local config_openDocuments = config:load_table("openDocuments")
-	
+	--prtable(config_openDocuments)
 	if config_openDocuments then
 		for i,v in ipairs(config_openDocuments) do
+			print(v)
 			abriredit(v)
 		end
 		lastDirectory = config_openDocuments.lastDirectory
 	end
-
+	--print"ConfigLoadOpenDocuments end"
 end
 -- ----------------------------------------------------------------------------
 -- Get/Set notebook editor page, use nil for current page, returns nil if none
@@ -463,7 +543,7 @@ end
 -- ----------------------------------------------------------------------------
 -- Update the statusbar text of the frame using the given editor.
 --  Only update if the text has changed.
-statusTextTable = { "OVR?", "R/O?", "Cursor Pos" }
+statusTextTable = { "OVR?", "R/O?", "Cursor Pos","CodeP" }
 
 function UpdateStatusText(editor)
     local texts = { "", "", "" }
@@ -474,11 +554,12 @@ function UpdateStatusText(editor)
 
         texts = { iff(editor:GetOvertype(), "OVR", "INS"),
                   iff(editor:GetReadOnly(), "R/O", "R/W"),
-                  "Ln "..tostring(line + 1).." Col "..tostring(col) }
+                  "Ln "..tostring(line + 1).." Col "..tostring(col), 
+				  "CodeP "..tostring(editor:GetCodePage())}
     end
 
     if frame then
-        for n = 1, 3 do
+        for n = 1, 4 do
             if (texts[n] ~= statusTextTable[n]) then
                 frame:SetStatusText(texts[n], n)
                 statusTextTable[n] = texts[n]
@@ -985,7 +1066,10 @@ function AppIDLE(event)
 			---[[
 			--if not timer:IsRunning() then print("timer stoped") end
 			--if not checkstatus(script_lane) then print(script_lane.status)  end
-			if checkend(script_lane) then script_lane=nil  end
+			if checkendScript(script_lane) then 
+				script_lane = nil 
+				collectgarbage()
+			end
 			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive" ) -- "beatResponse",
 			if val then
 				--print("idlelinda receive ",key,val)
@@ -1015,7 +1099,7 @@ function AppIDLE(event)
 					putTextToClipBoard(val)
 				elseif key=="statusSC" then 
 					--thread_print("timerstatus")
-					SCUDP:status()
+					SCSERVER:status()
 				
 				elseif key=="/status.reply" then 
 					toppanel:printStatus(val)
@@ -1024,7 +1108,6 @@ function AppIDLE(event)
 					OSCFunc.handleOSCReceive(val)
 				elseif key=="QueueAction" then 
 					doQueueAction(val)
-					--SCUDP.udp:send(toOSC{"/b_getn",{0,0,512}})
 				elseif key=="DoDir" then
 					--print("receive DoDir")
 					local res={}
@@ -1146,10 +1229,7 @@ function thread_error_print(...)
 	idlelinda:send("prout",{strconcat(...),true})
 end
 
-function send_debuginfo(source,line,stack,vars,activate)
-	idlelinda:send("debugger",{source,line,stack,vars,activate})
-	--idlelinda:send("debugger",{source,line,stack,nil,activate})
-end
+
 
 function putTextToClipBoard(text)
 	local clipboard=wx.wxClipboard.Get()
@@ -1172,7 +1252,8 @@ function CloseWindow(event)
     end
 	print("Main frame Closing")
 	while script_lane do
-		local cancelled,err=script_lane:cancel(0.1)
+		--local cancelled,err=script_lane:cancel(0.1)
+		local cancelled,err = ideCancelScript(0.1)
 		print("script cancel on close",cancelled,err)
 		if cancelled then
 			script_lane = nil
@@ -1186,12 +1267,17 @@ function CloseWindow(event)
 	Config:delete() -- always delete the config
 	config=nil
     event:Skip()
-	SCUDP.quit()
-	QuitSC()
-	SCUDP:close()
-	midilane:cancel(0.1)
+	SCSERVER:quit()
+	--QuitSC()
+	SCSERVER:close()
+	--midilane:cancel(0.1)
+	--MidiClose()
 	--pmidi.exit_midi_thread()
 	print("Main frame Closed")
 end
 
+AppInit()
 
+wx.wxGetApp():MainLoop()
+
+--]===]

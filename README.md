@@ -6,28 +6,31 @@ Pure lua implementation based on standard portable modules: lualanes, wxlua, lua
 plus some custom modules: osclua, pmidi, random.
 
 
-------Linux and Mac OS-----------
+------Building-----------
 
-First you should build lua 5.1 or 5.2
+1 - Need to have lua 5.1 or 5.2 or luajit with lualanes wxlua luasocket or
+build lua 5.1 or 5.2
 build lualanes 
 build wxlua as a module (most difficult part)
 build luasocket
 
-Then build this repo:
-with CMake you need to provide:
+2 - Then build this repo:
 
-PORTMIDI_DIR with path to portmidi
-OSCPACK_DIR with path to oscpack (1_1_0 or greater)
+you need to provide in build/toolchain.cmake:
 LUA_INCLUDE_DIR with the lua source include directory
-LUA_LIBRARY with the path to lua.dll
+LUA_LIBRARY with the path to luaXX.dll (luaXX.so)
 
-------Windows--------
+from build directory run:
+init_cmake.bat (or copy to init_cmake.sh)
+make install
 
-windows users can try the already build binary folder luabin
+you will get Lua2SC directory inside build.
+this directory can be copied anywhere.
+
 
 --------------To first try---------------------
 
-run lua lua2sc.lua
+run: lua lua2sc.lua
 
 1- set Debug/settings
 2- Supercollider/BootSC (wait until booted)

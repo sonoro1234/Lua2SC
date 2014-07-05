@@ -131,14 +131,15 @@ end
 
 function loadfilefrompath(cad)
 	-- TODO win32,linux,mac?
-	cad = string.gsub(cad, "%.","/")
+	cad = string.gsub(cad, "%.",path_sep) --"/")
 	------------------------------------
 	local paths = stsplit(package.path,";")
 	for i, path in ipairs(paths) do
 		local file=string.gsub(path,"?",cad)
 		local exist = io.open(file)
-		exist:close()
+
 		if exist then
+			exist:close()
 			local chunk,errorst = loadfile(file)
 			print("loadfilefrompath",file,errorst)
 			if chunk then
@@ -266,6 +267,8 @@ function SetupKeywords(editor, useLuaParser)
 		--]]
 		---[[
 		if not sckeywords then
+			require"random" -- dont want to require dll in env TODO:solve it other way
+			require"socket" -- dont want to require dll in env TODO:solve it other way
 			sckeywordsSource = {}
 			local env = loadinEnv"sc.callback_wrappers"
 			loadinEnv"sc.synthdefsc"
@@ -273,6 +276,9 @@ function SetupKeywords(editor, useLuaParser)
 			loadinEnv("sc.stream",env)
 			loadinEnv("sc.utils",env)
 			loadinEnv("sc.miditoosc",env)
+			loadinEnv("sc.scbuffer",env)
+			loadinEnv("sc.routines",env)
+			loadinEnv("oscfunc",env)
 			local keyword_table = {}
             for index, value in pairs(env) do
 				if type(value)=="function" then
@@ -301,7 +307,9 @@ function SetupKeywords(editor, useLuaParser)
             sckeywords = table.concat(keyword_table)
 			--print(sckeywords)
         end
-        editor:SetKeyWords(5, sckeywords)
+		--sckeywordsSource = {}
+		--sckeywords = ""
+        editor:SetKeyWords(5, sckeywords or "")
 		--]]
     else
         editor:SetLexer(wxstc.wxSTC_LEX_NULL)
@@ -312,7 +320,9 @@ function SetupKeywords(editor, useLuaParser)
 end
 
 function CreateAutoCompList(key_) -- much faster than iterating the wx. table
-    local key = key_:gsub("%.","%%%.") 
+	--escape magic characters ^$()%.[]*+-?
+	local key = key_:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]","%%%1")
+	--print("CreateAutoCompList",key_,key)
 	local a, b = string.find(sckeywords, " "..key, 1)
     local key_list = ""
 
@@ -343,6 +353,7 @@ function CreateEditor(name)
 
     editor:SetFont(font)
     editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, font)
+	editor:SetCodePage(0)
     for i = 0, 32 do
         editor:StyleSetFont(i, font)
     end
@@ -670,6 +681,7 @@ function CreateEditor(name)
 			posFind=editor:FindText(posFind+wlen,len,what,flags)
 		end
 	end
+	---[[
 	editor:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
             function (event)
 				local startSel = editor:GetSelectionStart()
@@ -682,6 +694,7 @@ function CreateEditor(name)
 					editor:SetStyling(editor:GetLength(),0)
 				end
             end)
+			--]]
     editor:Connect(wx.wxEVT_SET_FOCUS,
             function (event)
 				currentSTC=editor

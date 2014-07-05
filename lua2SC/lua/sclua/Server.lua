@@ -8,6 +8,7 @@ local Bus_metatable = require('sclua.Bus')
 local Server_metatable = {}
 Server_metatable.__index = Server_metatable
 
+local BASE_NODE = 0
 function Server(IP, port)
 	local s = setmetatable({
 		IP = IP or '127.0.0.1',
@@ -25,7 +26,7 @@ function Server(IP, port)
 			name = name,
 			args = parseArgsX(args),
 		}, Synth_metatable)
-		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, 0, 1, unpack(synthTab.args))
+		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, 0, BASE_NODE, unpack(synthTab.args))
 		return synthTab
 	end
 

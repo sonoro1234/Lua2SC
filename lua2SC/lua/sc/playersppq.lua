@@ -20,18 +20,23 @@ table.insert(onFrameCallbacks,function()
 end)
 ---replaces original-------work with ppq
 eventQueue = {}
+eventQueueDirty = false
 function eventCompare(a, b)
     return b.delta>a.delta         
 end 
 function scheduleEvent(event)
     local q
     q = copyMidiEvent(event)
-    table.insert(eventQueue, q)        
+    table.insert(eventQueue, q)
+	eventQueueDirty = true
 end
 function doSchedule(window)
 	--print(" "..window.." ")
     --ensure the table is in order
-    table.sort(eventQueue, eventCompare)   
+	if eventQueueDirty then
+		table.sort(eventQueue, eventCompare)
+		eventQueueDirty = false
+	end
 
     --send all events in this window
     local  continue = 0
@@ -87,7 +92,7 @@ function getNote(nv, mode)
 	else
 		error("mode "..tostring(mode).." not found")
 	end
-	if math.floor(nv) ~= nv then
+	if math.floor(nv) ~= nv then --fractional 0.5 between two degrees
 		local nota1 = getNote(math.floor(nv),mode)
 		local nota2 = getNote(math.floor(nv + 1),mode)
 		--print("getNote",nota1,nota2,nv % 1)
@@ -96,7 +101,7 @@ function getNote(nv, mode)
 		nv = nv - 1
 		local nota = nv % #mode_notes
 		local octava = math.floor(nv / #mode_notes)
-		return mode_notes[nota + 1]+octava * 12
+		return mode_notes[nota + 1] + octava * 12
 	end
 	
 end
@@ -314,7 +319,9 @@ function EventPlayer:playEvent(lista,beatTime, beatLen,delta)
 	for i=1,maxlen do
 		res[i]= {}
 		for k,v in pairs(lista) do
-			res[i][k] = deepcopy(WrapAt(v,i))
+			--need deepcopy in case item is altered in playOneEvent
+			--and is a table reference (ex:ctrl_function)
+			res[i][k] = deepcopy(WrapAtSimple(v,i)) 
 		end
 		res[i].dur = nil
 		res[i].delta = nil

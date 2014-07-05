@@ -28,7 +28,7 @@ function assign(defs,defv,...)
 			if defs[k] then
 				def[defs[k]]=v
 			else
-				error("bad arg index:"..k)
+				error("bad arg index:"..k.."from only "..#defs.."args",3)
 			end
 		else
 			def[k]=v
@@ -58,11 +58,7 @@ local function concatTables(...)
 	return res
 end
 local function isSimpleTable(t)
-	if (type(t)=="table" and getmetatable(t)==nil) then
-		return true
-	else
-		return false
-	end
+	return (type(t)=="table" and (getmetatable(t)==nil or getmetatable(t)==_TAmt))
 end
 function AtUG(v,i)
 	if type(v)=="table" and not v.isUGen then
@@ -333,6 +329,7 @@ function UGen:new(o)
 		-- assert(not (self[key]==nil),"index not defined:"..key)
 		-- return self[key]
 	-- end
+	-- for copying parent metamethods (__add, ...)
 	local m=getmetatable(self)
     if m then
         for k,v in pairs(m) do
@@ -373,11 +370,25 @@ function UGen:MultiNew(args)
 	end
 	--print(self.name,"MultiNew size:",size)
 	if size==0 then return self:new1(unpack(args)) end
+	------------------
+--[[
+	if size==1 then --collapse size 1 arrays
+		local argscolap = {}
+		for k,v in ipairs(args) do
+			if type(v)=="table" and not v.isUGen and not v.isRef then
+				argscolap[#argscolap +1]=WrapAt(v,i)
+			else
+				argscolap[#argscolap +1]=v
+			end
+		end
+	end
+--]]
+	------------------
 	local results=UGenArr:new()--{}
 	--local results={}
 	for i=1,size do
 		local newargs={}
-		for k,v in pairs(args) do
+		for k,v in ipairs(args) do
 			if type(v)=="table" and not v.isUGen and not v.isRef then
 				newargs[#newargs +1]=WrapAt(v,i)
 			else
@@ -386,6 +397,7 @@ function UGen:MultiNew(args)
 		end
 		results[i]=self:MultiNew(newargs)
 	end
+	if size == 1 then return results[1] end --collapse
 	return results
 end
 UGen.__mul=function(a,b)
@@ -572,7 +584,10 @@ function UGen:linexp(inMin, inMax, outMin, outMax, clip)
 	end
 	return LinExp.ar(self:prune(inMin, inMax, clip),inMin, inMax, outMin, outMax)
 end
-
+function UGen:varlag(time, curvature, warp, start)
+	time = time or 0.1;curvature = curvature or 0; warp = warp or 5
+	return VarLag:MultiNew{self.calcrate,self, time, curvature, warp, start}
+end
 --for Mix and MultiNew():madd and table with * or +
 UGenArr={name="UGenArr",isUGenArr=true}
 function UGenArr:new(o)
@@ -721,6 +736,7 @@ function MultiOutUGen:initOutputs(size,rate)
 	for i=1,size do
 		self.channels[#self.channels +1]=OutputProxy.create(self,i)
 	end
+	--if size == 1 then self.channels = self.channels[1] end
 	return self.channels
 end
 Out=UGen:new({name="Out",isOutUGen=true})
@@ -730,7 +746,7 @@ function Out:donew(rate,...)
 	--print(select('#',...))
 	--prtable{...}
 	local channels=select(select('#',...),...)
-	--get everything but last in ... (Must take care about nils)
+	--get everything but last in ... which is channels(Must take care about nils)
 	local args={...}
 	args[#args]=nil
 	--append channels to arg
@@ -739,6 +755,8 @@ function Out:donew(rate,...)
 	else
 		for i,v in ipairs(channels) do args[#args+1]=v end
 	end
+	--prtable("chanels",channels)
+	--prtable("args",args)
 	--return self:new1(rate,unpack(args))
 	return self:MultiNew{rate,unpack(args)}
 end
@@ -1610,7 +1628,7 @@ function SYNTHDef:send(block)
 	if not self.compiledStr then self:makeDefStr() end
 	if block==nil then block=true end
 	if block then
---[[
+---[[
 		udpB:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
 		local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
 		msg=fromOSC(dgram)
@@ -1618,15 +1636,17 @@ function SYNTHDef:send(block)
 		assert(msg[2][1]=="/d_recv")
 		assert(msg[1]=="/done")
 --]]
-		udp:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
+--[[
+		udpB:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
 		while true do
-			local dgram = assert(udp:receive(),"Not receiving from SCSYNTH\n")
+			local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
 			if dgram then
 				msg=fromOSC(dgram)
 				print(prOSC(msg))
 				break
 			end
 		end
+--]]
 	else
 		udp:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
     end
@@ -1923,4 +1943,19 @@ Diwhite=UGen:new{name='Diwhite'}
 function Diwhite.create(lo,hi,length)
 	lo=lo or 0;hi=hi or 1;length=length or math.huge;
 	return Diwhite:MultiNew{3,length,lo,hi}
+end
+BeatTrack=MultiOutUGen:new{name='BeatTrack'}
+function BeatTrack.kr(...)
+	local   chain, lock   = assign({ 'chain', 'lock' },{ nil, 0 },...)
+	return BeatTrack:MultiNew{1,4,chain,lock}
+end
+MFCC=MultiOutUGen:new{name='MFCC'}
+function MFCC.kr(...)
+	local   chain, numcoeff   = assign({ 'chain', 'numcoeff' },{ nil, 13 },...)
+	return MFCC:MultiNew{1,numcoeff,chain,numcoeff}
+end
+FFTPeak=MultiOutUGen:new{name='FFTPeak'}
+function FFTPeak.kr(...)
+	local   buffer, freqlo, freqhi   = assign({ 'buffer', 'freqlo', 'freqhi' },{ nil, 0, 50000 },...)
+	return FFTPeak:MultiNew{1,2,buffer,freqlo,freqhi}
 end

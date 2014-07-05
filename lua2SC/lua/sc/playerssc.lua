@@ -1,19 +1,24 @@
-require("sc.udpSC")
 require( "sc.playersppq")
+require"sc.sc_comm"
 
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
 --------------------------------------------------------
 OsceventQueue = {}
+OsceventQueueDirty = false
 function OsceventCompare(a, b)
     return b.time>a.time       
 end 
 function scheduleOscEvent(event,time)
-    table.insert(OsceventQueue,{time=time,event=event})        
+    table.insert(OsceventQueue,{time=time,event=event}) 
+	OsceventQueueDirty = true
 end
 function doOscSchedule(window)
 	--print("doOscSchedule")
     --ensure the table is in order
-    table.sort(OsceventQueue, OsceventCompare)   
+	if OsceventQueueDirty then
+		table.sort(OsceventQueue, OsceventCompare)
+		OsceventQueueDirty = false
+	end
 
     --send all events in this window
     local  continue = 0
@@ -26,7 +31,8 @@ function doOscSchedule(window)
 			end
 
 			--udp:send(toOSC(OsceventQueue[1]))
-			sendBundle(OsceventQueue[1].event, theMetro.timestamp + (OsceventQueue[1].time - theMetro.oldppqPos) / theMetro.bps)
+			--sendBundle(OsceventQueue[1].event, theMetro.timestamp + (OsceventQueue[1].time - theMetro.oldppqPos) / theMetro.bps)
+			sendBundle(OsceventQueue[1].event, theMetro:ppq2time(OsceventQueue[1].time))
             table.remove(OsceventQueue, 1)  
             continue = 1
         end              
@@ -85,7 +91,7 @@ function scEventPlayer:Release()
 	--udp:send(toOSC(msg))
 	sendBundle(msg,lanes.now_secs())
 	self.node = nil
-	--self.havenode = false
+	self.havenode = false
 end
 function scEventPlayer:FreeNode()
 	--print("Freenode",self.name,self.node)
@@ -136,7 +142,8 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 		--scheduleOscEvent(msg)
 		--dont scheudule order is important for same delta
 		--udp:send(toOSC(msg))
-		sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
+		--sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
+		sendBundle(msg,theMetro:ppq2time(beatTime))
 	--end
 	-- the gui updates every half beat
 	if _GUIAUTOMATE then
@@ -515,7 +522,7 @@ function OscEventPlayer:GetNode(beatTime)
 		if self.poly < #self.NodeQueue  then
 			local nodeout = self.NodeQueue[1]
 			local msg = {"/n_set",{nodeout,"gate",{"float",0}}}
-			sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
+			sendBundle(msg,theMetro:ppq2time(beatTime))
 			--msg={"/n_free",{nodeout}}
 			--sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
 			--print("polyfree",self.NodeQueue[1])
@@ -548,7 +555,9 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	lista.note=nil;lista.degree=nil;lista.freq=nil
 	--legato
 	local legato
-	if lista.legato then beatLen = beatLen * lista.legato;legato=lista.legato;lista.legato=nil end
+	if lista.legato then 
+		beatLen = beatLen * lista.legato;legato=lista.legato;lista.legato=nil 
+	end
 
 	--inst = lista.inst or "default";
 	local inst = lista.inst or self.inst
@@ -587,27 +596,43 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 		on ={"/s_new", {inst, self.node, 0, self.instr_group}}
 	end
 	--]]
+	local dontfree = self.dontfree
 	if self.mono then
-		if self.node then
+		if self.havenode then
 			lista.type = "n_set"
 		end
-		--if legato and legato < 1 then
-		if beatLen < delta then
-			self.dontfree = false
+		if legato and legato < 1 then
+		--if beatLen < delta then
+			dontfree = false
 		else
-			self.dontfree = true
+			dontfree = true
 		end
+	elseif lista.type == "n_set" then
+		dontfree = true
 	end
+	
+	local on
 	if lista.type == "n_set" then
-		if not self.node then return end
+		if not self.node then print("n_set without node") return end
 		on ={"/n_set", {self.node}}
 	else
 		self.node = self:GetNode(beatTime)
-		--self.havenode = true
+		self.havenode = true
 		on ={"/s_new", {inst, self.node, 0, self.instr_group}}
 	end
 	lista.type = nil
+---[[
+	-- get functions
+	local listafunc = {}
+	for k,v in pairs(lista) do
+		--if type(v)=="function" then
+		if type(v)=="table" and v.is_ctrl_mapper then
+			listafunc[k]=v
+			lista[k]=nil
+		end
+	end
 	--
+--]]
 	getMsgLista(on,lista)
 
 	table.insert(on[2],"out")
@@ -617,7 +642,13 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 		table.insert(on[2],"freq")
 		table.insert(on[2],{"float",freq})
 	end
-	sendBundle(on,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
+	sendBundle(on,theMetro:ppq2time(beatTime))
+	--send functions
+	for k,v in pairs(listafunc) do
+		--v(k,self,beatTime,beatLen)
+		v:verb(k,self,beatTime,beatLen)
+	end
+	---
 	if _GUIAUTOMATE then
 		self.autom_dur=self.autom_dur+ beatLen
 		if self.autom_dur >= 0.5 then
@@ -626,16 +657,16 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 			self:sendToRegisteredControls()
 		end
 	end
-	if self.dontfree == false then
+	if dontfree == false then
 			local off = {"/n_set",{self.node,"gate",{"float",0}}}
 			scheduleOscEvent(off,beatTime + beatLen)
 			--if self.mono then
 			--	self.node = nil
 			--end
-			if not self.monogate then
-				self.node = nil
-			end
-			--self.havenode = false
+			--if not self.monogate then
+				--self.node = nil
+			--end
+			self.havenode = false
 	end	
 end
 --------------------------------------Inicio

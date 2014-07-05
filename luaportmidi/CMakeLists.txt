@@ -1,10 +1,8 @@
 PROJECT(luaportmidi C)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-if (NOT PORTMIDI_DIR)
-	message(FATAL_ERROR "PORTMIDI_DIR is not set")
-endif()
+set(PORTMIDI_DIR ${CMAKE_SOURCE_DIR}/portmidi)
+
 add_subdirectory(${PORTMIDI_DIR} ${CMAKE_BINARY_DIR}/portmidi EXCLUDE_FROM_ALL)
-#set(PORTMIDI_LIBRARY ${CMAKE_BINARY_DIR}/portmidi/libportmidi_s.a)
 set(PORTMIDI_INCLUDES ${PORTMIDI_DIR}/pm_common)
 set(PORTTIME_INCLUDES ${PORTMIDI_DIR}/porttime)
 INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
@@ -21,5 +19,5 @@ TARGET_LINK_LIBRARIES(pmidi ${LUA_LIBRARY} portmidi-static winmm)
 SET_TARGET_PROPERTIES(pmidi PROPERTIES PREFIX "" OUTPUT_NAME core)
 
 INSTALL (TARGETS pmidi RUNTIME DESTINATION luabin/pmidi)
-install(FILES pmidi.lua DESTINATION luabin)
+install(FILES pmidi.lua DESTINATION lua)
 

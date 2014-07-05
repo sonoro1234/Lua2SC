@@ -1,4 +1,4 @@
-require "sc.udpSC"
+
 
 Buffers={}
 SCBuffer={filename=nil,samples=0,channels=1,inisample=0,leaveopen=0}

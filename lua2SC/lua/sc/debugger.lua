@@ -29,6 +29,7 @@ local function debugger_copy(object)
     end
     return _copy(object)
 end
+
 function Debugger.get_call_stack(inilevel)
 	local stack = {}
 	local vars = {}
@@ -68,6 +69,22 @@ local function getstacklevel()
 end
 local function is_stacklevel_lower(level)
 	return not debug.getinfo(level,"l")
+end
+function Debugger.hook_call_ret(event)
+	local func = debug.getinfo(2,"f").func
+
+	if Debugger.functable[func]==nil then
+		local debuginfo = debug.getinfo(2,"SL")
+		local activelines = debuginfo.activelines
+		local source = debuginfo.source
+	
+		for i,line in ipairs(activelines) do
+			if Debugger.breakpoints[line] and Debugger.breakpoints[line][source] then
+				Debugger.functable[func] = true
+			end
+		end
+		Debugger.functable[func] = false
+	end
 end
 local cancelcount = 0
 function Debugger.debug_hook (event, line)
@@ -140,6 +157,7 @@ function Debugger:init(bp)
 	self.step_over = false
 	self.step_into = false
 	self.laststacklevel = {} 
+	self.functable = {}
 	self.breakpoints = bp.breakpoints or {}
 	repeat
 		local key,val= debuggerlinda:receive(0,"continue","debug_exit","step_into","step_over","step_out","brpoints","break")

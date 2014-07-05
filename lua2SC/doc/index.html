@@ -24,87 +24,588 @@
 
 <div id="navigation">
 <br/>
-<h1>Lua2SC</h1>
+<h1>ldoc</h1>
 
 
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_PriorityQ">Class PriorityQ </a></li>
+<li><a href="#Class_Stream">Class Stream </a></li>
+<li><a href="#Class_FuncStream">Class FuncStream </a></li>
+<li><a href="#Class_ListStream">Class ListStream </a></li>
+</ul>
 
 
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
-  <li><a href="modules/combinatorics.html">combinatorics</a></li>
-  <li><a href="modules/debugger.html">debugger</a></li>
-  <li><a href="modules/metronomlanes.html">metronomlanes</a></li>
-  <li><a href="modules/miditoosc.html">miditoosc</a></li>
-  <li><a href="modules/number2string.html">number2string</a></li>
-  <li><a href="modules/stream.html">stream</a></li>
-  <li><a href="modules/synthdefsc.html">synthdefsc</a></li>
-  <li><a href="modules/synthdefscread.html">synthdefscread</a></li>
-  <li><a href="modules/udpsc.html">udpsc</a></li>
-  <li><a href="modules/utils.html">utils</a></li>
-  <li><a href="modules/utilsstream.html">utilsstream</a></li>
+  <li><strong>stream</strong></li>
 </ul>
 
 </div>
 
 <div id="content">
 
+<h1>Module <code>stream</code></h1>
+<p>stream classes that respond to :nextval() and :reset()</p>
+<p></p>
 
 
-<h2>Modules</h2>
-<table class="module_list">
+<h2><a href="#Class_PriorityQ">Class PriorityQ </a></h2>
+<table class="function_list">
 	<tr>
-		<td class="name"  nowrap><a href="modules/combinatorics.html">combinatorics</a></td>
-		<td class="summary">Combinatorics functions</td>
+	<td class="name" nowrap><a href="#PriorityQ:new">PriorityQ:new (o)</a></td>
+	<td class="summary">Creates a PriorityQ</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/debugger.html">debugger</a></td>
-		<td class="summary">debugger module</td>
+	<td class="name" nowrap><a href="#PriorityQ:put">PriorityQ:put (time, item, index)</a></td>
+	<td class="summary">put something in queue items get ordered by time and index after</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/metronomlanes.html">metronomlanes</a></td>
-		<td class="summary">MetronomLanes</td>
+	<td class="name" nowrap><a href="#PriorityQ:pop">PriorityQ:pop ()</a></td>
+	<td class="summary">pops the first item</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/miditoosc.html">miditoosc</a></td>
-		<td class="summary">miditoosc</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/number2string.html">number2string</a></td>
-		<td class="summary">number to string conversion functions
-  Copyright (C) 2012 Victor Bombi</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/stream.html">stream</a></td>
-		<td class="summary">stream classes that respond to :nextval() and :reset()</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/synthdefsc.html">synthdefsc</a></td>
-		<td class="summary">utility functions
-allow defaults as in:
-function fun4d(defval)
-	local an,en,inp = assign({"an","en","inp"},{1,2,3},defval)
-	print("fun4d",an,en,inp)
-end
-fun4d{en=67,5}</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/synthdefscread.html">synthdefscread</a></td>
-		<td class="summary">functions for reading synthdef supercollider files
-  Copyright (C) 2012 Victor Bombi</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/udpsc.html">udpsc</a></td>
-		<td class="summary">udp comunication</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/utils.html">utils</a></td>
-		<td class="summary">several utility functions</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/utilsstream.html">utilsstream</a></td>
-		<td class="summary">utilsstream</td>
+	<td class="name" nowrap><a href="#PriorityQ:topPrio">PriorityQ:topPrio ()</a></td>
+	<td class="summary">gets first item time</td>
 	</tr>
 </table>
+<h2><a href="#Class_Stream">Class Stream </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Stream:new">Stream:new (o)</a></td>
+	<td class="summary">Creates a Stream</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Stream:reset">Stream:reset ()</a></td>
+	<td class="summary">Puts Stream in the initial position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Stream:rep">Stream:rep (n)</a></td>
+	<td class="summary">Set the number of repetitions of stream</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Stream:nextval">Stream:nextval (e)</a></td>
+	<td class="summary">Recursive function for streams inside streams</td>
+	</tr>
+</table>
+<h2><a href="#Class_FuncStream">Class FuncStream </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#FuncStream:FS">FuncStream:FS (v, r, ...)</a></td>
+	<td class="summary">Returns FuncStream with function v</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FuncStream:WRS">FuncStream:WRS (a, b, r)</a></td>
+	<td class="summary">Returns FuncStream performing weigthed choices</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FuncStream:RS">FuncStream:RS (a, r)</a></td>
+	<td class="summary">Returns FuncStream performing choices from list.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FuncStream:RSinf">FuncStream:RSinf (a)</a></td>
+	<td class="summary">Returns FuncStream performing choices from list infinite times.</td>
+	</tr>
+</table>
+<h2><a href="#Class_ListStream">Class ListStream </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ListStream:merge">ListStream:merge (t)</a></td>
+	<td class="summary">For lists of items responding to merge (PS for example)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream:LS">ListStream:LS (t, r)</a></td>
+	<td class="summary">Creates a ListStream from t with r repetitions</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream:LOOP">ListStream:LOOP (t)</a></td>
+	<td class="summary">Creates a ListStream from t with infinite repetitions</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream.ParalelStream">ListStream.ParalelStream</a></td>
+	<td class="summary">paralel stream</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream.MergeStream">ListStream.MergeStream</a></td>
+	<td class="summary">Merge stream</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream.PclumpSt">ListStream.PclumpSt</a></td>
+	<td class="summary">Pclump</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream.StreamTuple">ListStream.StreamTuple</a></td>
+	<td class="summary">StreamTuple</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListStream:Quant">ListStream:Quant (q, pat)</a></td>
+	<td class="summary">Quantizes numbers provided by a stream to multiples of q</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Class_PriorityQ"></a>Class PriorityQ </h2>
+          Priority queue
+    <dl class="function">
+    <dt>
+    <a name = "PriorityQ:new"></a>
+    <strong>PriorityQ:new (o)</strong>
+    </dt>
+    <dd>
+    Creates a PriorityQ
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">o</span>
+         table of initial values
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        PriorityQ
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PriorityQ:put"></a>
+    <strong>PriorityQ:put (time, item, index)</strong>
+    </dt>
+    <dd>
+    put something in queue items get ordered by time and index after
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">time</span>
+
+        </li>
+        <li><span class="parameter">item</span>
+         anything
+        </li>
+        <li><span class="parameter">index</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PriorityQ:pop"></a>
+    <strong>PriorityQ:pop ()</strong>
+    </dt>
+    <dd>
+    pops the first item
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        time</li>
+        <li>
+        item</li>
+        <li>
+        index</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PriorityQ:topPrio"></a>
+    <strong>PriorityQ:topPrio ()</strong>
+    </dt>
+    <dd>
+    gets first item time
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2><a name="Class_Stream"></a>Class Stream </h2>
+          Has metatable for mul add sub div
+    <dl class="function">
+    <dt>
+    <a name = "Stream:new"></a>
+    <strong>Stream:new (o)</strong>
+    </dt>
+    <dd>
+    Creates a Stream
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">o</span>
+         provides initial values
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Stream
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Stream:reset"></a>
+    <strong>Stream:reset ()</strong>
+    </dt>
+    <dd>
+    Puts Stream in the initial position
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Stream:rep"></a>
+    <strong>Stream:rep (n)</strong>
+    </dt>
+    <dd>
+    Set the number of repetitions of stream
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">n</span>
+         number of repeats
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Stream self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Stream:nextval"></a>
+    <strong>Stream:nextval (e)</strong>
+    </dt>
+    <dd>
+    Recursive function for streams inside streams
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        next value in stream
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2><a name="Class_FuncStream"></a>Class FuncStream </h2>
+          Derived from Stream. Custom function as stream provider
+    <dl class="function">
+    <dt>
+    <a name = "FuncStream:FS"></a>
+    <strong>FuncStream:FS (v, r, ...)</strong>
+    </dt>
+    <dd>
+    Returns FuncStream with function v
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v</span>
+         :the function
+        </li>
+        <li><span class="parameter">r</span>
+         integer number of repetitions
+        </li>
+        <li><span class="parameter">...</span>
+         optional arguments to function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        FuncStream
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "FuncStream:WRS"></a>
+    <strong>FuncStream:WRS (a, b, r)</strong>
+    </dt>
+    <dd>
+    Returns FuncStream performing weigthed choices
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         list to choose from.
+        </li>
+        <li><span class="parameter">b</span>
+         list of weigths
+        </li>
+        <li><span class="parameter">r</span>
+         number of repetitions
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #FuncStream
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">st = FS(<span class="keyword">function</span>() <span class="keyword">return</span> <span class="number">3</span> <span class="keyword">end</span>,-<span class="number">1</span>)
+ <span class="global">print</span>(st:nextval())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "FuncStream:RS"></a>
+    <strong>FuncStream:RS (a, r)</strong>
+    </dt>
+    <dd>
+    Returns FuncStream performing choices from list.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         list to choose from.
+        </li>
+        <li><span class="parameter">r</span>
+         number of repetitions
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        FuncStream
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "FuncStream:RSinf"></a>
+    <strong>FuncStream:RSinf (a)</strong>
+    </dt>
+    <dd>
+    Returns FuncStream performing choices from list infinite times.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         list to choose from.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        FuncStream
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2><a name="Class_ListStream"></a>Class ListStream </h2>
+          Stream that iterates over a list
+    <dl class="function">
+    <dt>
+    <a name = "ListStream:merge"></a>
+    <strong>ListStream:merge (t)</strong>
+    </dt>
+    <dd>
+    For lists of items responding to merge (PS for example)
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         key-val table to be merged with items in ListStream
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ListStream:LS"></a>
+    <strong>ListStream:LS (t, r)</strong>
+    </dt>
+    <dd>
+    Creates a ListStream from t with r repetitions
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         list of events to provide in a infinite loop on each call to next
+        </li>
+        <li><span class="parameter">r</span>
+         number of repetitions of list t until ending stream
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        ListStream
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Class_ListStream">ListStream</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "ListStream:LOOP"></a>
+    <strong>ListStream:LOOP (t)</strong>
+    </dt>
+    <dd>
+    Creates a ListStream from t with infinite repetitions
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         list of events to provide in a infinite loop on each call to next
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        ListStream
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Class_ListStream">ListStream</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "ListStream.ParalelStream"></a>
+    <strong>ListStream.ParalelStream</strong>
+    </dt>
+    <dd>
+    paralel stream
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ListStream.MergeStream"></a>
+    <strong>ListStream.MergeStream</strong>
+    </dt>
+    <dd>
+    Merge stream
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ListStream.PclumpSt"></a>
+    <strong>ListStream.PclumpSt</strong>
+    </dt>
+    <dd>
+    Pclump
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ListStream.StreamTuple"></a>
+    <strong>ListStream.StreamTuple</strong>
+    </dt>
+    <dd>
+    StreamTuple
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ListStream:Quant"></a>
+    <strong>ListStream:Quant (q, pat)</strong>
+    </dt>
+    <dd>
+    Quantizes numbers provided by a stream to multiples of q
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">q</span>
+         length of quantization
+        </li>
+        <li><span class="parameter">pat</span>
+         a stream of numbers
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Stream
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->

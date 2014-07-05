@@ -103,6 +103,8 @@ function compositionN(n,p)
 	assert(n > 0) 
 	assert(p > 0)
 	assert (n >= p)
+	assert(n == math.floor(n))
+	assert(p == math.floor(p))
 	if p==1 then return {n} end
 	local holes=seriesFill(n-1)
 	local ht=chooseN(holes,p-1)
@@ -118,6 +120,7 @@ function compositionN(n,p)
 end
 --with m minimum part
 function compositionNR(n,p,m)
+	assert(m == math.floor(m))
 	local res=compositionN(n-(m-1)*p,p)
 	for i,v in ipairs(res) do
 		res[i] = v + m - 1

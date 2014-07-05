@@ -26,12 +26,12 @@ function nextNodeID()
 	nodeID = nodeID + 1
 	return nodeID
 end
-
+nextNodeID = GetNode or nextNodeID 
 function nextGroupID()
 	groupID = groupID + 1
 	return groupID
 end
-
+nextGroupID = GetNode or nextGroupID 
 function nextBusIndex()
 	busIndex = busIndex + 1
 	return busIndex

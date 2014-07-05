@@ -1,8 +1,7 @@
 PROJECT(osclua CXX)
 cmake_minimum_required(VERSION 2.8)
-if (NOT OSCPACK_DIR)
-	message(FATAL_ERROR "OSCPACK_DIR is not set")
-endif()
+set(OSCPACK_DIR ${CMAKE_SOURCE_DIR}/oscpack_1_1_0)
+
 set(oscpack_src
     ${OSCPACK_DIR}/osc/OscOutboundPacketStream.cpp
 	${OSCPACK_DIR}/osc/OscReceivedElements.cpp

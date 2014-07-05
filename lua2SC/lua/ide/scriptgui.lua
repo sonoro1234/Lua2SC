@@ -134,7 +134,7 @@ function wxVuMeter(parent,name,label,id,params)
 	assert(params.node)
 	assert(params.busin)
 	local msg ={"/s_new", {params.vumeter, params.node, 1, 0,"rate",{"float",10},"lag",{"float",0},"id",id,"busin",params.busin}}
-	SCUDP.udp:send(toOSC(msg))
+	SCSERVER:send(toOSC(msg))
 	
 	local height=params.height or 200
 	local width= params.width or 10
@@ -432,51 +432,14 @@ function wxFreqScope(parent,name,label,id,co)
 	co.rate = co.rate or 4
 	co.scopebufnum = co.scopebufnum or 0
 	local fftsize=co.rate * co.bins
-	--[[
-	local msg
-	for i=0,3 do
-		OSCFunc.newfilter("/b_info",i,function(msg)
-				DisplayOutput("/b_info: ".."buffer:"..msg[2][1].." frames:"..msg[2][2].." channels:"..msg[2][3].." samprate:"..msg[2][4].."\n")
-			end,true)
-		SCUDP.udp:send(toOSC{"/b_query",{{"int32",i}}})
-	end
-	--]]
-	--[[
-	msg ={"/b_alloc",{ 0, co.bins, 1}}
-	SCUDP.udpBlock:send(toOSC(msg))
-	local dgram2 = assert(SCUDP.udpBlock:receive(),"Not receiving from SCSYNTH\n")
-	DisplayOutput(tb2st(fromOSC(dgram2)).."\n")
-	msg ={"/b_alloc",{ 1, fftsize, 1}}
-	SCUDP.udpBlock:send(toOSC(msg))
-	dgram2 = assert(SCUDP.udpBlock:receive(),"Not receiving from SCSYNTH\n")
-	DisplayOutput(tb2st(fromOSC(dgram2)).."\n")
-	--]]
-	
-	
-	--msg ={"/s_new", {co.scope, co.node, 1, 0, "in",{"int32",co.busin}, "busin",{"int32",co.busin},"rate",{"int32",co.rate},"phase",{"float",co.phase}, "fftbufnum", {"int32",1}, "scopebufnum", {"int32",0},"fftsize", {"int32",fftsize}}}
+
+
 	local msg ={"/s_new", {co.scope, co.node, 1, 0, "in",{"int32",co.busin}, "busin",{"int32",co.busin},"rate",{"int32",co.rate},"phase",{"float",co.phase}, "scopebufnum", {"int32",co.scopebufnum},"fftsize", {"int32",fftsize}}}
-	--SCUDP.udp:send(toOSC(msg))
+
 	
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
-	SCUDP.udp:send(toOSC(msg))
+	SCSERVER:send(toOSC(msg))
 	
-	--[[
-	for i=0,3 do
-		OSCFunc.newfilter("/b_info",i,function(msg)
-				DisplayOutput("/b_info: ".."buffer:"..msg[2][1].." frames:"..msg[2][2].." channels:"..msg[2][3].." samprate:"..msg[2][4].."\n")
-			end,true)
-		SCUDP.udp:send(toOSC{"/b_query",{{"int32",i}}})
-	end
-	--]]
-	--[[
-	for i=0,3 do
-		SCUDP.udpBlock:send(toOSC{"/b_query",{{"int32",i}}})
-		local dgram2 = assert(SCUDP.udpBlock:receive(),"Not receiving from SCSYNTH\n")
-		msg=fromOSC(dgram2)
-		assert(msg[1]=="/b_info")
-		DisplayOutput("/b_info: ".."buffer:"..msg[2][1].." frames:"..msg[2][2].." channels:"..msg[2][3].." samprate:"..msg[2][4].."\n")
-	end
-	--]]
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
@@ -607,10 +570,10 @@ function wxFreqScope(parent,name,label,id,co)
 			if FreqScopeClass.notclosed then
 				--print("set freqscope",co.scopebufnum)
 				FreqScopeClass:SetValue(msg[2])
-				QueueAction(0.1,{function() SCUDP.udp:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+				QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 			end
 		end)
-	QueueAction(0.1,{function() SCUDP.udp:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+	QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 	FreqScopeClass.notclosed=true
 	return FreqScopeClass 
 end
@@ -670,7 +633,9 @@ function wxScope(parent,name,label,id,co)
 	--SCUDP.udp:send(toOSC(msg))
 	--prtable(msg)
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
-	SCUDP.udp:send(toOSC(msg))
+	--local msg2 = {"/b_alloc",{ co.scopebufnum, co.bins, 1}}
+	--SCUDP.udp:send(toOSC(msg2))
+	SCSERVER:send(toOSC(msg))
 		
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
@@ -775,10 +740,10 @@ function wxScope(parent,name,label,id,co)
 			if FreqScopeClass.notclosed then
 				--print("set scope",co.scopebufnum)
 				FreqScopeClass:SetValue(msg[2])
-				QueueAction(0.1,{function() SCUDP.udp:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+				QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 			end
 		end)
-	QueueAction(0.1,{function() SCUDP.udp:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+	QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 	FreqScopeClass.notclosed=true
 	return FreqScopeClass 
 end

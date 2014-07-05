@@ -1,15 +1,16 @@
 -- this file is for using sclua
-pp = package.cpath:gsub("%?","?51")
-package.cpath = package.cpath .. package.cpath:gsub("%?","?51")
+package.cpath = package.cpath .. package.cpath:gsub("%?","?"..table.concat{_VERSION:match("(%d).(%d)")})
 function Window(title,x,y,w,h)
 	require"iuplua"
+	require( "iupluagl" )
 	x = x or 200
 	y = y or 200
 	w = w or 200
 	h = h or 200
-	local win = {}
-	local canvas = iup.canvas{}
-	win.dlg = iup.dialog{canvas; title=title,size=tostring(w).."x"..tostring(h)}
+	local size=tostring(w).."x"..tostring(h)
+	local win = {dim={w,h}}
+	local canvas = iup.glcanvas{buffer="DOUBLE", rastersize = size}--"640x480"}
+	win.dlg = iup.dialog{canvas; title=title,size=size}
 	win.dlg:showxy(x, y)
 	function canvas:button_cb(but, pressed, x, y, status)
 		--print(but, pressed, x, y, status)
@@ -33,6 +34,14 @@ function Window(title,x,y,w,h)
 			win.key(win,ev,c)
 		end
 	end
+	function canvas:action(posx,posy)
+		if win.draw then
+			iup.GLMakeCurrent(canvas)
+			win.draw(win)
+			iup.GLSwapBuffers(canvas)
+			gl.Flush()
+		end
+	end
 	win.canvas = canvas
 	--[[
 	local winmt = {}
@@ -47,7 +56,7 @@ function Window(title,x,y,w,h)
 end
 
 --require"osclua"
---require"sc.udpSC"
+
 
 local oscout = {}
 function oscout:send(...)
