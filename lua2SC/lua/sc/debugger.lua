@@ -70,22 +70,7 @@ end
 local function is_stacklevel_lower(level)
 	return not debug.getinfo(level,"l")
 end
-function Debugger.hook_call_ret(event)
-	local func = debug.getinfo(2,"f").func
 
-	if Debugger.functable[func]==nil then
-		local debuginfo = debug.getinfo(2,"SL")
-		local activelines = debuginfo.activelines
-		local source = debuginfo.source
-	
-		for i,line in ipairs(activelines) do
-			if Debugger.breakpoints[line] and Debugger.breakpoints[line][source] then
-				Debugger.functable[func] = true
-			end
-		end
-		Debugger.functable[func] = false
-	end
-end
 local cancelcount = 0
 function Debugger.debug_hook (event, line)
 	--print(event, line)
@@ -95,11 +80,12 @@ function Debugger.debug_hook (event, line)
 		if cancel_test() then
 			error(lanes.cancel_error)
 		end
+		if debuggerlinda:receive(0,"break") then
+			Debugger.step_into = true
+			Debugger.step_over = false
+		end
 	end
-	if debuggerlinda:receive(0,"break") then
-		Debugger.step_into = true
-		Debugger.step_over = false
-	end
+
 	if Debugger.breakpoints[line] or Debugger.step_into or Debugger.step_over then
 		local thread = coroutine.running() or 0
 		local debuginfo = debug.getinfo(2,"S")
