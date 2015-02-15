@@ -75,8 +75,8 @@ function SetLuaPath(arg)
 	local dllstr = is_windows and "dll" or "so"
 	package.path = lua2scpath .. "lua" .. sep .. "?.lua;"  .. package.path 
 	package.cpath = lua2scpath .. "luabin" .. sep .. "?." .. dllstr .. ";"  .. package.cpath
-	print(package.path)
-	print(package.cpath)
+	--print(package.path)
+	--print(package.cpath)
 end
 
 SetLuaPath(arg) 
@@ -84,7 +84,6 @@ require("pmidi")
 print("pmidi",pmidi,pmidi.core)
 require("sc.utils")
 require("random") 	--not nedded here but to avoid lanes wx crash
-
 
 require("osclua")
 toOSC=osclua.toOSC
@@ -129,18 +128,32 @@ function MidiClose()
 	end
 end
 require"oscfunc"
---SCUDP:init(file_config:load_table("settings"),true,udpsclinda) --with receive
 SCSERVER = require"scserver"
---require"ide.ide"
+
 require"ide.ide_lane"
-idelane = ide_lane(lanes)
+
 
 ----------------------------------
 MidiOpen(file_config:load_table("settings"))
-require"scriptrun"
---lanes.timer(mainlinda,"wait",1,0)
---mainlinda:receive("wait")
---mainlinda:send("ScriptRun",{typerun=2,script=[[C:\LUA\lua2sc\test\SSSSS.lua]]})
+
+--[=[ run without ide 
+SCSERVER:init("internal",file_config:load_table("settings"),udpsclinda)
+lanes.timer(mainlinda,"wait",3,0)
+mainlinda:receive("wait")
+mainlinda:send("ScriptRun",{typerun=1,Debuggerbp=nil,debugging=false,script=[[C:\LUA\luabin5.1.5STATIC\lua\scripts\tintinabulli.lua]],typeshed=false})
+--lanes.timer(mainlinda,"ide_exit",90,0)
+lanes.timer(scriptlinda,"script_exit",90,0)
+function thread_print(...)
+	for i,v in ipairs{...} do io.write(tostring(v).."\t") end io.write("\n")
+end
+function thread_error_print(...)
+	for i,v in ipairs{...} do io.write(tostring(v).."\t") end io.write("\n")
+end
+NO_IDE = true
+--]=]
+
+if not NO_IDE then idelane = ide_lane(lanes) end
+
 print"going into mainloop"
 while true do
 	local key,val = mainlinda:receive("sendsc","initsc","closesc","MidiClose","MidiOpen","ide_exit","ScriptRun","CancelScript","GetScriptLaneStatus")
@@ -156,6 +169,8 @@ while true do
 		elseif key == "MidiOpen" then
 			MidiOpen(val)
 		elseif key == "ScriptRun" then
+			io.write"scriptrun in mainlinda\n"
+			dofile(lua2scpath.."lua"..path_sep.."scriptrun.lua") -- this allow to modify between runs
 			ScriptRun(val)
 		elseif key == "CancelScript" then
 			local res = CancelScript(val.timeout)

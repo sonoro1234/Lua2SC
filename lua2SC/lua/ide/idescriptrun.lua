@@ -14,6 +14,7 @@
 	local ID_CLEAROUTPUT      = NewID()
 	local ID_SETTINGS              = NewID()
 	local ID_SHOWLANES              = NewID()
+	local ID_PREMETRO              = NewID()
 -- Create the Debug menu and attach the callback functions
 function InitRunMenu()
 	local debugMenu = wx.wxMenu{
@@ -21,6 +22,7 @@ function InitRunMenu()
 		{ ID_RUN2,              "&Run plain lua\tF7",               "Execute current file" },
 		{ ID_RUN3,              "&Run custom",               "Execute current file" },
 		{ ID_DEBUG,              "&Debug",               "Debug mode", wx.wxITEM_CHECK},
+		{ ID_PREMETRO,              "&SCHMETRO",               "SCHMETRO mode", wx.wxITEM_CHECK},
 		--{ ID_DEBUGPLAIN,              "&Debug plain lua",               "Debug the current file" },
 		{},
 		{ ID_CONTINUE,              "&Continue \tF9",               "Continue debugging" },
@@ -50,6 +52,7 @@ function InitRunMenu()
 	menuBar:Check(ID_DEBUG, false)
 	EnableDebugCommands(false,false)
 	local ID_TIMERBEATREQUEST = 2
+	--[[
 	timer = wx.wxTimer(frame,ID_TIMERBEATREQUEST)
 	frame:Connect(wx.wxEVT_TIMER,
 			function (event)
@@ -61,6 +64,7 @@ function InitRunMenu()
 					end
 				end
 			end)
+	--]]
 	frame:Connect(ID_RUN, wx.wxEVT_UPDATE_UI,
 			function (event)
 				local editor = GetEditor()
@@ -160,6 +164,7 @@ function ideScriptRun(typerun)
         ClearLog(errorLog)
     end
 	local debugging = menuBar:IsChecked(ID_DEBUG)
+	local typeshedpremetro = menuBar:IsChecked(ID_PREMETRO)
 	local editor = GetEditor()
 	local id = editor:GetId()
 	-- test compile it before we run it, if successful then ask to save
@@ -188,11 +193,12 @@ function ideScriptRun(typerun)
 	
 	ClearScriptGUI()
 		
-	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,script=openDocuments[id].filePath})
+	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,script=openDocuments[id].filePath,typeshed=typeshedpremetro})
 	----------------------------------------
-	if typerun == 1 then
-		timer:Start(300,wx.wxTIMER_ONE_SHOT)
-	end
+	--if typerun == 1 then
+		---timer:Start(300,wx.wxTIMER_ONE_SHOT)
+		--lanes.timer(scriptlinda, "beatRequest",0.3,0)
+	--end
 	script_lane = true 
 end
 

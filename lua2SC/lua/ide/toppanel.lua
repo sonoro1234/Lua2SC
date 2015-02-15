@@ -93,7 +93,7 @@ function CreateTopPanel()
 			toppanel.tempoCtrl:ChangeValue(tostring(val.bpm))
 		end
 		toppanel.playButton:SetValue(val.playing==1)
-		toppanel.timeStText:SetLabel(string.format("%02d:%02d",val.abstime/60,val.abstime%60))
+		toppanel.timeStText:SetLabel(string.format("%02d:%02d",math.floor(val.abstime/60),val.abstime%60))
 		if not self.settingPos then
 			local beat=math.floor(val.ppqPos)
 			toppanel.posSlider:SetValue(beat)

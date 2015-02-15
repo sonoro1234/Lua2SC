@@ -629,17 +629,21 @@ int fromOSCLua(lua_State *state)
             lua_pop(state,1);
             
             //Decode the packet
-            osc::ReceivedPacket p(msg, len);        
-                       
-            lua_newtable(state);            
-            if(p.IsBundle())
-            {               
-                fromOSCBundle(state,p,fulltype);
-            }
-            else
-            {                
-                fromOSCMessage(state,p,fulltype);
-            }
+			try{
+				osc::ReceivedPacket p(msg, len);
+            
+				lua_newtable(state);            
+				if(p.IsBundle())
+				{               
+					fromOSCBundle(state,p,fulltype);
+				}
+				else
+				{                
+					fromOSCMessage(state,p,fulltype);
+				}
+			}catch(osc::MalformedPacketException Ex){
+				luaL_error(state,"osclua error in ReceivedPacket: %s\n",Ex.what());
+			}     
             //return two values, (1) is this message or a bundle (2) the table data
             return 1;                                                 
 }

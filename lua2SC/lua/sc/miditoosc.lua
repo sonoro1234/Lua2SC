@@ -1,6 +1,6 @@
 --- miditoosc
 require"sc.midi"
-require"sc.playerssc"
+--require"sc.playerssc"
 require"sc.synthdefsc"
 
 function Click(beats,transpose)
@@ -404,6 +404,7 @@ table.insert(initCbCallbacks,function()
 		end
 	end
 end)
+onFrameCallbacks = onFrameCallbacks or {}
 table.insert(onFrameCallbacks,function()
 	for ch=0,15 do
 		if MidiToOsc.vars[ch] then

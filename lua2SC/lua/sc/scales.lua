@@ -57,3 +57,12 @@ scales =
  gracemajor = {0, 5, 8, 13, 17, 19, 25, 30},
  eblues = {0, 2, 4, 7, 8, 6, 13, 17} 
  }
+
+-- creates a scale by taking degree as tonic to
+function modal_scale(scale,degree)
+	local delta = 1 - degree + #scale
+	local bb = TA(scale):rotate(delta)
+	bb = bb(1,delta) - 12 .. bb(delta + 1,#bb)
+	bb = bb - bb[1]
+	return bb
+end

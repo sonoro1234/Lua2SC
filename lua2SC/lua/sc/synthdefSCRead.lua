@@ -34,7 +34,7 @@ function pstring(str)
     return ret..str
 end
 function readSCSynthFile(namefile)
-    local inp = assert(io.open(namefile, "rb"),"Cant read synth file"..namefile)
+    local inp = assert(io.open(namefile, "rb"),"Cant read synth file:"..namefile)
     return readSCSynthStream(inp)
 end
 --- Reads sc.scsyndef file and return table with info

@@ -2,6 +2,7 @@
 require( "sc.stream")
 
 ----------
+--[[
 onFrameCallbacks={}
 --table.insert(onFrameCallbacks,function()
 	--ppqVSTFrameLength=theMetro.frame
@@ -18,6 +19,7 @@ table.insert(onFrameCallbacks,function()
 		v:Play()
 	end
 end)
+--]]
 ---replaces original-------work with ppq
 eventQueue = {}
 eventQueueDirty = false
@@ -51,20 +53,24 @@ function doSchedule(window)
         
 end
 ----------replaces original works with ppq
-
+--[[
 function _onFrameCb()
 
     curHostTime = getHostTime()
 	ppqVSTFrameLength=theMetro.frame
-	for i,v in ipairs(onFrameCallbacks) do
-		v()
-	end
+	---for i,v in ipairs(onFrameCallbacks) do
+	--	v()
+	--end
+	local event = theMetro.queue[1]
+	table.remove(theMetro.queue, 1)
+	theMetro.queueEvent(event.player:Play())
     if onFrameCb then
         onFrameCb()
     end
     doSchedule(curHostTime.ppqPos)
 
 end 
+--]]
 -------------------------------------------------------------------
 function beats2Time(n)
 	n=n or 4
@@ -155,12 +161,19 @@ function EP(t)
 	return res
 end
 function EventPlayer:Bind(l)
+	--local l = {...}
+	local a
+	--if not l.dur then l.dur = math.huge end
 	self.binded = l
 	if not l.isStream then 
-		self.lista = PS(l)
+		a=PS(l)
+		--a=PairsStream:new{stlist=l}
 	else
-		self.lista = l
+		a=l
 	end
+	self.lista = a
+	--self.lista=copyObj(a)
+	--self:Init()
 	return self
 end
 function EventPlayer:ReBind(l)
@@ -186,10 +199,13 @@ function EventPlayer:MusPos2SamplePos(a)
 	return a*(60/curHostTime.bpm)*curHostTime.sampleRate
 end
 
-function EventPlayer:UpdatePos(dur)
-	--print("UpdatePos",self.name," ",dur)
-	self.prevppqPos=self.ppqPos
+function EventPlayer:UpdatePos(dur, doqueue)
+	--print("UpdatePos1",self.name,self.prevppqPos,self.ppqPos,dur)
+	self.prevppqPos = self.ppqPos
 	self.ppqPos=self.ppqPos + dur
+	if doqueue then
+		theMetro.queueEvent(self.ppqPos, self)
+	end
 end
 function EventPlayer:Reset()
 	
@@ -201,23 +217,30 @@ function EventPlayer:Reset()
 	self.playing=true
 	--self:UpdatePos(0)
 	self.used=false
+	theMetro.queueEvent(self.ppqPos, self)
 	print("Reset:",self.name,self.ppqPos)
 end
 
 
 function EventPlayer:Pull()
-	--[[now it is done on Metro
+	--[[
 	if self.prevppqPos > curHostTime.oldppqPos and self.used then
-		print("reset ppqPos",self.prevppqPos,self.ppqPos,"hostppqPos",curHostTime.oldppqPos,curHostTime.ppqPos,self.name)
-		self:Reset()	
+		prerror("pull reset ppqPos",self.name,self.prevppqPos,self.ppqPos,"hostppqPos",curHostTime.oldppqPos,curHostTime.ppqPos)
+		self:Reset()
+	
 	end
-	--]]
-	--if curHostTime.playing > 0 then
+--]]
+	
+	if curHostTime.playing > 0 then
+		if self.playing and curHostTime.oldppqPos  > self.ppqPos then
+			prerror("Pull ",self.name,(curHostTime.ppqPos  - self.ppqPos),theMetro.window)
+			self:StopSound()
+		end
 		while self.playing and curHostTime.oldppqPos > self.ppqPos do
-			--print("Pull ",self.name)
+			--prerror(" wPull ",self.name,curHostTime.ppqPos - self.ppqPos)
 			local havenext = self:NextVals()
 			if havenext then
-				self:UpdatePos(self.curlist.delta)
+				self:UpdatePos(self.curlist.delta, false)
 			else
 			--if havenext == nil  then
 				if  self.playing then
@@ -231,7 +254,7 @@ function EventPlayer:Pull()
 				break
 			end
 		end
-	--end
+	end
 end
 function EventPlayer:NextVals()
 	--print("NextVals ",self.name)
@@ -266,18 +289,21 @@ function EventPlayer:NextVals()
 	--self.curlist.delta = nil
 	--return self.curlist.delta
 end
-
+function EventPlayer:StopSound()
+	--works in derived classes
+end
 function EventPlayer:Play()
-	if not self.playing then return end
-	--if curHostTime.playing == 0 then
-	--	return
-	--end
-
+	--prerror("Play",self.name,self.prevppqPos,self.ppqPos,theMetro.ppqPos)
 	self:Pull()
-	while self.ppqPos < curHostTime.ppqPos and curHostTime.oldppqPos <= self.ppqPos  do
+	if curHostTime.playing == 0 then
+		return
+	end
+	if not self.playing then return end
+	--if curHostTime.oldppqPos <= self.ppqPos then 
+	--and self.ppqPos < curHostTime.ppqPos do
 		local havenext = self:NextVals()
 		if havenext == nil  then
-			if  self.playing then
+			--if  self.playing then
 				--prtable(self.curlist)
 				if self.doneAction then
 					self:doneAction()
@@ -285,14 +311,14 @@ function EventPlayer:Play()
 					self:Reset()
 				end
 				print("se acabo: ",self.name,self.ppqPos)
-			end
+			--end
 			self.playing = false
-			break
+			--break
 		else
 			self:playEvent(self.curlist,self.ppqPos,self.curlist.dur,self.curlist.delta)
-			self:UpdatePos(self.curlist.delta)
+			self:UpdatePos(self.curlist.delta, true)
 		end
-	end
+	--end
 end
 MidiEventPlayer = EventPlayer:new({})
 function MidiEventPlayer:playMidiNote(nv,vel,chan,beatTime, beatLen) 
@@ -395,6 +421,7 @@ end
 function EventPlayer:Init()
 	self.name = self.name or self:findMyName()
 	self:Reset()
+	return self.ppqPos,self
 end
 function EventPlayer:findMyName()
 	for k,v in pairs(_G) do
@@ -435,7 +462,7 @@ function StartPlayer(beatTime,...)
 end
 function StopPlayer(...)
 	for k,player in ipairs{...} do
-		print("stop ",player.name)
+		print("stopPlayer ",player.name)
 		player:Reset()
 		player.playing=false
 	end
@@ -554,48 +581,42 @@ function ActionEP(t)
 	return res
 end
 ActionEventPlayer = EventPlayer:new({})
-function ActionEventPlayer:NextVals()
+function ActionEventPlayer:NextVals(doqueue)
 	--print("NextVals ",self.name)
 	self.used=true
 	self.curlist = self.lista:nextval(self)
 	--prtable(self.curlist)
-	print("N self.curlist ",self.curlist)
+	print("ActionEventPlayer self.curlist ",self.curlist)
 	if self.curlist == nil then
 		return nil
 	end
-	self:UpdatePos()
+	self:UpdatePos(doqueue)
 	return true
 end
-function ActionEventPlayer:UpdatePos()
+function ActionEventPlayer:UpdatePos(doqueue)
 --prtable(self.curlist)
 	--if self.curlist.actions then
-	print("Updatepos ",self.curlist.actions.ppq)
+	print("Updatepos ", self.name,self.curlist.actions.ppq)
 	self.prevppqPos=self.ppqPos
 	self.ppqPos=self.curlist.actions.ppq
+	if doqueue then
+		theMetro.queueEvent(self.ppqPos, self)
+	end
 	--else
 	--	self.playing=false
 	--end
 end
 function ActionEventPlayer:Reset()
-	--print("Reset:",self.name)
 	self.lista:reset()
 	self.ppqPos= -math.huge
 	self.prevppqPos= -math.huge --self.MUSPOS
 	self.playing=true
 	self.used=false
+	self.curlist = nil
+	theMetro.queueEvent(self.ppqPos, self)
+	print("Reset:",self.name,self.ppqPos)
 end
-function ActionEventPlayer:playEventBAK(lista,beatTime, beatLen)
-	print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxplay action ",beatTime,curHostTime.ppqPos)
-	local v=lista.actions
-	--for i,v in ipairs(lista.actions) do
-		--if lista.actions.type == "unpack" then
-			v[1](unpack(v[2])) 
-			--prtable(v)
-		--else
-			--v[1](v[2])
-		--end
-	--end
-end
+
 function ActionEventPlayer:playEvent(lista,beatTime, beatLen)
 	print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx play action ",beatTime,self.ppqPos)
 	local v=lista.actions
@@ -603,15 +624,14 @@ function ActionEventPlayer:playEvent(lista,beatTime, beatLen)
 end
 
 function ActionEventPlayer:Pull()
-	--[[ now it is done on metro
-	if self.prevppqPos > curHostTime.oldppqPos and self.used then
-		print("reset ppqPos" .. self.ppqPos .. " hostppqPos " .. curHostTime.ppqPos .. " ",self.name)
-		self:Reset()
+	
+	--if self.prevppqPos > curHostTime.oldppqPos and self.used then
+	--	print("reset ppqPos" .. self.ppqPos .. " hostppqPos " .. curHostTime.ppqPos .. " ",self.name)
+	--	self:Reset()
 		
-	else
-	--]]
+	--else
 	if curHostTime.playing > 0 then
-		while self.playing and curHostTime.oldppqPos >= self.ppqPos do
+		while self.playing and curHostTime.oldppqPos > self.ppqPos do
 			--print("Pull ",self.name)
 			if self.curlist then
 				self:playEvent(self.curlist,self.ppqPos)
@@ -631,13 +651,14 @@ function ActionEventPlayer:Pull()
 	end
 end
 function ActionEventPlayer:Play()
-	self:Pull()
+	--self:Pull()
 	if curHostTime.playing == 0 then
 		return
 	end
-	while curHostTime.oldppqPos < self.ppqPos and self.ppqPos <= curHostTime.ppqPos and self.playing do
-			self:playEvent(self.curlist,self.ppqPos)
-			local havenext =self:NextVals()
+	--if curHostTime.oldppqPos <= self.ppqPos and self.playing then
+--and self.ppqPos < curHostTime.ppqPos and self.playing do
+			if self.curlist then self:playEvent(self.curlist,self.ppqPos) end
+			local havenext =self:NextVals(true)
 			
 			--prtable(self.curlist)
 			--self:UpdatePos(self.dur)
@@ -649,9 +670,11 @@ function ActionEventPlayer:Play()
 					print("se acabo: ",self.name)
 				end
 				self.playing = false
-				break
+				return
 			end
-	end
+
+	--end
+	
 end
 -----------------------------------
 table.insert(initCbCallbacks,function()

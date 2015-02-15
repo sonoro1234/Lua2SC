@@ -10,6 +10,9 @@ end
 function linearmap(s,e,ds,de,v)
 	return ((de-ds)*(v-s)/(e-s)) + ds
 end
+function expinterpolation(s,e,ds,de,v)
+	return ds * (de/ds)^((v - s)/(e - s))
+end
 function amp2db(amp)
 	return 20*math.log10(amp)
 end
@@ -135,7 +138,8 @@ function seriesFill(n,init,step)
 	return TableFill(n,function(i) return init +(i-1)*step end) 
 end
 function len(t)
-	if type(t)=="table" then return #t else return 1 end
+	--if type(t)=="table" then return #t else return 1 end
+	return type(t)=="table" and #t or 1
 end
 function WrapAt(t,i)
 	if type(t)=="table" then
@@ -330,6 +334,17 @@ function ToStr(t,dometatables)
 		-------------
 		if t.name then strT[#strT + 1]=string.rep("\t",rec).."name:"..tostring(t.name) end
 		----------------
+--[[
+		local sorted_names = {}
+		for k,v in pairs(t) do
+			table.insert(sorted_names, k)
+		end
+		table.sort(sorted_names)
+		-----------------
+		for _, namek in ipairs(sorted_names) do
+
+			local k,v = namek,t[namek]
+--]]
 		for k,v in pairs(t) do
 			count=count+1
 			strT[#strT + 1]="\n"

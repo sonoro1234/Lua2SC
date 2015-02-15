@@ -72,6 +72,7 @@ function Stream:reset()
 	self.creps=0
 	self.recur=nil
 	if self.repSt then
+		--TODO: this is not a complete reset of the outer stream
 		self.reps = self.repSt:nextval()
 	end
 end
@@ -138,6 +139,9 @@ end
 Stream.__sub = function (a,b)
 	return a +(-b)
 end
+Stream.__unm = function (a)
+	return MUL(a,-1)
+end
 
 --- Derived from Stream. Custom function as stream provider
 -- @type FuncStream
@@ -149,6 +153,18 @@ function FuncStream:pnext(e)
 		return nil
 	else
 		self.creps = self.creps + 1
+		return self.verb(e,unpack(self.argus))
+		--return self.verb(unpack(self.argus))
+	end
+end
+FuncStreamOld = Stream:new{verb=nil,argus=nil}
+function FuncStreamOld:pnext(e)
+	if self.creps == self.reps then 
+		self.creps=0
+		return nil
+	else
+		self.creps = self.creps + 1
+		--return self.verb(e,unpack(self.argus))
 		return self.verb(unpack(self.argus))
 	end
 end
@@ -165,6 +181,12 @@ function FS(v,r,...)
 	assert(type(r)=="number","r should be a number!!")
 	return FuncStream:new{verb=v,argus={...},reps=r}
 end
+function FSold(v,r,...)
+	r= r or 1
+	assert(type(v)=="function")
+	assert(type(r)=="number","r should be a number!!")
+	return FuncStreamOld:new{verb=v,argus={...},reps=r}
+end
 --- Returns FuncStream performing weigthed choices
 -- @param a list to choose from.
 -- @param b list of weigths
@@ -174,7 +196,7 @@ end
 -- print(st:nextval())
 function WRS(a,b,r)
 	r = r or 1
-	return FS(wchoice,r,a,b)
+	return FS(function(e,...) return wchoice(...) end,r,a,b)
 end
 --- Returns FuncStream performing choices from list.
 -- @param a list to choose from.
@@ -182,7 +204,7 @@ end
 -- @return FuncStream
 function RS(a,r)
 	r = r or 1
-	return FS(choose,r,a)
+	return FS(function(e,...) return choose(...) end,r,a)
 end
 --- Returns FuncStream performing choices from list infinite times.
 -- @param a list to choose from.
@@ -192,7 +214,7 @@ function RSinf(a)
 end
 ------------------------------------------------------
 FuncStreamLS = Stream:new{verb=nil,argus=nil}
-function FuncStreamLS:pnext()
+function FuncStreamLS:pnext(e)
 	if self.creps == self.reps then 
 		self.creps=0
 		return nil
@@ -271,7 +293,7 @@ function ConstSt(val)
 	return ConstantStream:new{value=val}
 end
 ConstantStream=Stream:new{value=nil,isConstantStream=true}
-function ConstantStream:pnext()
+function ConstantStream:pnext(e)
 	return self.value
 end
 ------------------------------------------------------------
@@ -293,10 +315,10 @@ function AGLS(gen,data,r)
 end
 -----------------------------------------------------------------
 AutoGenStream=Stream:new()
-function AutoGenStream:pnext()
+function AutoGenStream:pnext(e)
 	
 	if not self.generated then self.generated=self.generator(self.argus) end
-	local res=self.generated:nextval()
+	local res=self.generated:nextval(e)
 	if not res then 
 		self:reset()
 		return nil
@@ -324,7 +346,7 @@ end
 --------List step streams-----------------------------------------
 --give one and stops
 ListStepsStream = ListStream:new{}
-function ListStepsStream:pnext()
+function ListStepsStream:pnext(e)
 	while(true) do
 		if self.creps == self.reps then -- contrl repeticiones
 			self:reset()
@@ -363,7 +385,7 @@ function LSS(t,r)
 end
 -------------------------------------------------------------
 MarkovStream = Stream:new()
-function MarkovStream:pnext()
+function MarkovStream:pnext(e)
 	if self.old==nil then
 		self.old = choose(self.keys)
 		return self.old
@@ -402,7 +424,7 @@ local function DataKeys(t)
 	return keys
 end
 MarkovStreamO = Stream:new()
-function MarkovStreamO:pnext()
+function MarkovStreamO:pnext(e)
 	
 	local node = self.marktable
 	local pointer = self.pointer % self.order
@@ -573,18 +595,19 @@ end
 PairsStream = Stream:new{stlist=nil}
 PairsStream.isPairsStream=true
 function PairsStream:pnext(e)
-	local list= e or {}
+	local list= {}
+	e.tmplist = list
 	for i,t in ipairs(self.stlist) do
 		local list2 = {}
 		if t.isStream then
-			list2 = t:nextval(list)
+			list2 = t:nextval(e)
 			if not list2 then
 				self:reset()
 				return nil
 			end
 		else -- simple table
 			for k,v in pairs(t) do
-				list2[k]=v:nextval(list)
+				list2[k]=v:nextval(e)
 				if list2[k] == nil then
 					self:reset()
 					return nil
@@ -601,6 +624,7 @@ function PairsStream:pnext(e)
 		list = mergeTable(list,list2)
 	end
 	list.delta = list.delta or list.dur
+	--e.tmplist = nil
 	return list
 end
 function PairsStream:reset()
@@ -663,28 +687,27 @@ function ArrS(t)
 	return StreamTuple:new{stlist=t}
 end
 ---------------
+--e is the player, tmplist created by PS
 KeyStream = Stream:new{}
 function KeyStream:pnext(e)
-	return e[self.key]
+	return e.tmplist[self.key]
 end
 function KEY(key)
 	assert(type(key)=="string")
 	return KeyStream:new{key=key}
 end
 ------------paralel stream
-ParalelStream = Stream:new{ stlist = nil,memlist = {} }
+ParalelStream = Stream:new{ stlist = nil}
 ParalelStream.isParalelStream = true
 function ParalelStream:pnext(e)
-	--e = e or {}
 	if not self.PQ then self:reset() end
 	local t,st,k = self.PQ:pop()
-	local res = st:nextval(memlist)
+	local res = st:nextval(e)
 	if not res then self.PQ= nil; return res end
 	local tdelta = res.delta
 	-- to tell the player when call nextval again
 	res.delta = math.min(self.PQ:topPrio() - t, res.delta)
 	self.PQ:put(tdelta + t, st,k)
-	--memlist = res
 	return res
 end
 function ParalelStream:merge(t)
@@ -706,10 +729,10 @@ end
 ------------Merge stream
 MergeStream = Stream:new{stlist = nil}
 MergeStream.isMergeStream = true
-function MergeStream:pnext()
+function MergeStream:pnext(e)
 	local res = {}
 	for k,v in ipairs(self.stlist) do
-		local res2 = v:nextval(res)
+		local res2 = v:nextval(e)
 		for k,v in pairs(res2) do
 			res[k] = v
 		end
@@ -757,21 +780,23 @@ function RepeaterSt:pnext(e)
 	end
 end
 function REP(n,pat)
+---[[
 	if type(n) ~="table" or not n.isStream then --no es stream
 			n=ConstantStream:new{value=n}
 	end
 	if type(pat) ~="table" or not pat.isStream then --no es stream
 			pat=ConstantStream:new{value=pat}
 	end
+--]]
 	return RepeaterSt:new{N=n,pat=pat}
 end
 -----StreamTuple
 StreamTuple = Stream:new{}
 function StreamTuple:pnext(e)
-	local list= e or {}
+	--local list= e or {}
 	local list2 = {}
 	for k,v in ipairs(self.stlist) do
-		list2[k]=v:nextval(list)
+		list2[k]=v:nextval(e)
 		if list2[k] == nil then
 			self:reset()
 			return nil
@@ -797,17 +822,17 @@ end
 -----------------------------------------------------------
 
 PdefStream = Stream:new({argus=nil,stlist=nil,def=nil})
-function PdefStream:pnext()
+function PdefStream:pnext(e)
 
 	if self.def == nil then
-		self.argus=self.stlist:nextval()
+		self.argus=self.stlist:nextval(e)
 		self:makedef()
 	end
 	local ret = nil
 	while true do
-		ret = self.def:nextval()
+		ret = self.def:nextval(e)
 		if ret == nil then
-			self.argus=self.stlist:nextval()
+			self.argus=self.stlist:nextval(e)
 			self:makedef()
 		else
 			ret = mergeMissingList(ret,self.argus)
@@ -853,9 +878,30 @@ function SF(pat,fun)
 	end
 	return StreamFunc:new({argus=pat,func=fun})
 end
+-----------------used in named_events
+--sends nil to funcs and has first
+StreamFunc2 = Stream:new{first = true}
+function StreamFunc2:pnext(e)
+	local ret = self.argus:nextval(e)
+	--if ret == nil then self.argus:reset() return nil end
+	ret = self.func(ret,e,self.first)
+	self.first = false
+	return ret
+end
+function StreamFunc2:reset()
+	self.first = true
+	self.argus:reset()
+end
+function SF2(pat,fun)
+	if  (type(pat)~="table") or (pat.nextval == nil) then --no es stream
+		pat=ConstantStream:new{value=pat}
+	end
+	return StreamFunc2:new({argus=pat,func=fun})
+end
+-------------------
 StreamArgsFunc = StreamFunc:new()
-function StreamArgsFunc:pnext()
-	local ret=self.argus:nextval()
+function StreamArgsFunc:pnext(e)
+	local ret=self.argus:nextval(e)
 	if ret == nil then self.argus:reset() return nil end
 	ret=self.func(unpack(ret))
 	return ret
@@ -876,9 +922,10 @@ function Quant(q,pat)
 end
 --------------------------------------------------------
 SFindur = Stream:new({findur=1,cfindur=0,str=nil})
-function SFindur:pnext()
+function SFindur:pnext(e)
 	if self.acabado then return nil end
-	local vals=self.str:nextval()
+	local vals=self.str:nextval(e)
+	if not vals then return nil end
 	local cfindur = self.cfindur + vals.dur
 	if cfindur < self.findur then
 		self.cfindur = cfindur

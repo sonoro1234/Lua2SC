@@ -1,5 +1,7 @@
 --GetControlBus=IDGenerator(0)
+
 ctrl_buses = {holes = {},allocated = {}}
+
 function ctrl_buses:new_bus()
 	local busnum
 	local hole = table.remove(self.holes)
@@ -31,8 +33,6 @@ function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 	local mapmsg = {"/n_map",{player.node,paramname,{"int32",bus}}}
 	sendBundle(mapmsg,theMetro:ppq2time(beatTime))
 end
-
-
 
 SynthDef("RAMP",{inip=0,endp=0,time=1,bus=0},function()
 	Out.kr(bus,Line.kr(inip,endp,time,1,0,2))
@@ -72,8 +72,56 @@ function RAMP(inip,endp,time)
 	end
 	return ctmap
 end
-function ERAMP(inip,endp)
-	return function(paramname,player,beatTime,beatLen)
-		SendCtrlSynth("ERAMP",{inip=inip,endp=endp,time=beats2Time(beatLen)},paramname,player,beatTime)
+function ERAMP(inip,endp,time)
+	local ctmap = ctrl_mapper:new{inip=inip,endp=endp,time=time}
+	function ctmap:verb(paramname,player,beatTime,beatLen)
+		local time = self.time or beatLen
+		SendCtrlSynth("ERAMP",{inip=self.inip ,endp=self.endp ,time=beats2Time(time)},paramname,player,beatTime)
+		return 0
 	end
+	return ctmap
+end
+
+----------ENV
+
+local function MakeEnvelSynth(i)
+	SynthDef("ENVEL"..i,{envel=Ref(Env().newClear(i):prAsArray()),bus=0},
+		function()
+		Out.kr(bus,EnvGen.kr{envel,doneAction=2})
+	end):store()
+end
+
+local function E2ppq(levels,timesppq,curves)
+	local times = {}
+	for i,v in ipairs(timesppq) do
+		times[i] = beats2Time(v)
+	end
+	return Env(levels,times,curves):prAsArray()
+end
+
+function ENV(levels,times,curves)
+	MakeEnvelSynth(#times)
+	local ctmap = ctrl_mapper:new{}
+	function ctmap:verb(paramname,player,beatTime,beatLen)
+		local lev,tim,cur
+		if type(levels)=="function" then
+			lev = levels(player)
+		else
+			lev = levels
+		end
+		if type(times)=="function" then
+			tim = times(player)
+		else
+			tim = times
+		end
+		if type(curves)=="function" then
+			cur = curves(player)
+		else
+			cur = curves
+		end
+		local envel = E2ppq(lev,tim,cur)
+		SendCtrlSynth("ENVEL"..#tim,{envel=envel},paramname,player,beatTime)
+		return 0
+	end
+	return ctmap
 end

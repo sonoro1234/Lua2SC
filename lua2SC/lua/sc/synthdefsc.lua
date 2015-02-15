@@ -544,8 +544,15 @@ function UGen:clip(lo, hi)
 		--if(rate == \demand) {
 		--	max(lo, min(hi, this))
 		--} {
-			Clip.kr(self, lo, hi)
+			return Clip.kr(self, lo, hi)
 		--}
+	end
+end
+function UGen:poll(rate)
+	if self.calcrate == 2 then
+		return Poll.ar(Impulse.kr(rate),self)
+	else
+		return Poll.kr(Impulse.kr(rate),self)
 	end
 end
 UGen.signalRange = "bipolar"
@@ -573,16 +580,27 @@ function UGen:prune(min, max, type)
 	return self
 end
 function UGen:linlin(inMin, inMax, outMin, outMax, clip)
+	clip = clip or "minmax"
 	if self.calcrate==1 then
 		return LinLin.kr(self:prune(inMin, inMax, clip),inMin, inMax, outMin, outMax)
 	end
 	return LinLin.ar(self:prune(inMin, inMax, clip),inMin, inMax, outMin, outMax)
 end
 function UGen:linexp(inMin, inMax, outMin, outMax, clip)
+	clip = clip or "minmax"
 	if self.calcrate==1 then
 		return LinExp.kr(self:prune(inMin, inMax, clip),inMin, inMax, outMin, outMax)
 	end
 	return LinExp.ar(self:prune(inMin, inMax, clip),inMin, inMax, outMin, outMax)
+end
+function UGen:exprange(lo,hi)
+	lo = lo or 0.01
+	hi = hi or 1.0
+	if (self.signalRange == "bipolar") then
+		return self:linexp(-1, 1, lo, hi, nil)
+	else
+		return self:linexp(0, 1, lo, hi, nil)
+	end
 end
 function UGen:varlag(time, curvature, warp, start)
 	time = time or 0.1;curvature = curvature or 0; warp = warp or 5
@@ -1237,6 +1255,11 @@ function Poll.kr(trig, inp, label, replyID)
 	local ascii = {label:byte(1,-1)}
 	return Poll:MultiNew(concatTables({1,trig,inp, replyID,#ascii},ascii))
 end
+function Poll.ar(trig, inp, label, replyID)
+	trig = trig or 0.0;label = label or '/poll';replyID = replyID or -1
+	local ascii = {label:byte(1,-1)}
+	return Poll:MultiNew(concatTables({2,trig,inp, replyID,#ascii},ascii))
+end
 -- function SendReply:new1(rate,trig,cmdName,values, replyID)
 	-- local ascii = {cmdName:byte(1,-1)},
 		-- ^super.new1(*[rate, trig, replyID, ascii.size].addAll(ascii).addAll(values));
@@ -1484,6 +1507,7 @@ function SYNTHDef:build()
 	self:findTerminals()
 	--------------------
 	for i,v in ipairs(self.outputugens) do
+		--print(v.name)
 		v:doInputs(self)
 	end
 	--[[
@@ -1657,9 +1681,12 @@ function SYNTHDef:store()
 	self:send()
 	return self
 end
-function SYNTHDef:play()
+function SYNTHDef:play(lista)
+	lista = lista or {}
 	self:send()
-	udp:send(toOSC{"/s_new", {self.name, GetNode(), 0, 0}})
+	local on = {"/s_new", {self.name, GetNode(), 0, 0}}
+	getMsgLista(on,lista)
+	udp:send(toOSC(on))
 	return self
 end
 function SynthDef(name,parametersDef,graphfunc)
@@ -1667,6 +1694,8 @@ function SynthDef(name,parametersDef,graphfunc)
 	--prtable(parametersDef)
 	_BUILDSYNTHDEF=SYNTHDef:new()
 	_BUILDSYNTHDEF.name=name
+	_BUILDSYNTHDEF.parameters = {}
+	_BUILDSYNTHDEF.paramnames = {}
 	local parameters={}
 	local paramnames={}
 	local t_parameters={}
@@ -1958,4 +1987,20 @@ FFTPeak=MultiOutUGen:new{name='FFTPeak'}
 function FFTPeak.kr(...)
 	local   buffer, freqlo, freqhi   = assign({ 'buffer', 'freqlo', 'freqhi' },{ nil, 0, 50000 },...)
 	return FFTPeak:MultiNew{1,2,buffer,freqlo,freqhi}
+end
+------------------------
+DWGClarinet = UGen:new{name="DWGClarinet"}
+function DWGClarinet.ar(freq, pm,pc,m, gate,release,c1,c3)
+	freq=freq or 440;pm=pm or 1;pc= pc or 1;gate = gate or 1;m = m or 0.4;c1 = c1 or 0.25;c3 = c3 or 5;release = release or 0.1
+	return DWGClarinet:MultiNew{2,freq, pm,pc,m, gate,release,c1,c3}
+end
+DWGClarinet2 = UGen:new{name="DWGClarinet2"}
+function DWGClarinet2.ar(freq, pm,pc,m, gate,release,c1,c3)
+	freq=freq or 440;pm=pm or 1;pc= pc or 1;gate = gate or 1;m = m or 0.4;c1 = c1 or 0.25;c3 = c3 or 5;release = release or 0.1
+	return DWGClarinet2:MultiNew{2,freq, pm,pc,m, gate,release,c1,c3}
+end
+DWGClarinet3 = UGen:new{name="DWGClarinet3"}
+function DWGClarinet3.ar(freq, pm,pc,m, gate,release,c1,c3)
+	freq=freq or 440;pm=pm or 1;pc= pc or 1;gate = gate or 1;m = m or 0.4;c1 = c1 or 0.25;c3 = c3 or 5;release = release or 0.1
+	return DWGClarinet3:MultiNew{2,freq, pm,pc,m, gate,release,c1,c3}
 end

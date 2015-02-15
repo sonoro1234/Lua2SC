@@ -2,7 +2,7 @@
 local Config = {}
 
 function Config:init(appname,vendorname)
-	local config = wx.wxFileConfig(appname, vendorname)
+	local config = wx.wxFileConfig(appname, vendorname,lua2scpath.."optionsfile")
 	if config then
 		config:SetRecordDefaults()
 		self.config = config

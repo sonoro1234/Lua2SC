@@ -1,4 +1,74 @@
 --- utilsstream
+-------------------------------------------------------
+_arittablemt={}
+function AT(t)
+	setmetatable(t,_arittablemt)
+	return t
+end
+---[[
+_arittablemt.__add=function (a,b)
+	
+	local t,t2 
+	if type(a) == "table" then
+		t=a;t2=b
+	else
+		t=b;t2=a
+	end
+	
+	local res =AT{}
+	for k,v in ipairs(t) do
+		if type(t[k]) == "number" then
+			res[k] = t[k] + t2
+		elseif type(t[k]) == "table" then
+			res[k]=_arittablemt.__add(t[k],t2)
+		end
+	end
+	return res	
+end
+--]]
+--[[
+_arittablemt.__add=function (a,b)
+	
+	local t,t2 
+	if getmetatable(a) == _arittablemt then
+		t=a;t2=b
+	else
+		t=b;t2=a
+	end
+	println("_arittablemt.__add")
+	prtable(t)
+	prtable(t2)
+	local res =AT{}
+	for k,v in ipairs(t) do
+		if isSimpleTable(t[k]) then
+			res[k]=_arittablemt.__add(t[k],t2)
+		else 
+			res[k] = t[k] + t2
+		end
+	end
+	return res	
+end
+--]]
+
+--prtable(AT{1,{11,12},3}+AT{100,200})
+_arittablemt.__mul=function (a,b)
+	local t,t2 
+	if type(a) == "table" then
+		t=a;t2=b
+	else
+		t=b;t2=a
+	end
+	local res =AT{}
+	for k,v in ipairs(t) do
+		if type(t[k]) == "number" then
+			res[k] = t[k] * t2
+		elseif type(t[k]) == "table" then
+			res[k]=_arittablemt.__mul(t[k],t2)
+		end
+	end
+	return res	
+end
+--------------------------------------------------------
 REST={isREST=true}
 RESTmt = {}
 setmetatable(REST,RESTmt)
@@ -149,13 +219,13 @@ function whitei(lohi)
 	return RANDOM:valuei(lohi[1],lohi[2])
 end
 function noiseiStream(a)
-	return FS(whitei,-1,a)
+	return FS(function(pl,...) return whitei(...) end,-1,a)
 end
 function whitef(lohi)
 	return (lohi[2]-lohi[1])*RANDOM:value()+lohi[1]
 end
 function noisefStream(a)
-	return FS(whitef,-1,a)
+	return FS(function(pl,...) return whitef(...) end,-1,a)
 end
 function brownNoiseGenerator(lo,hi,step,last)
 	local last = last or whitef{lo,hi}
@@ -186,12 +256,12 @@ function exprandrng(lo,hi)
 	return lo * math.exp(math.log(hi / lo) * RANDOM:value());
 end
 function GaussStream(m,sd)
-	return FS(function(m,sd) return RANDOM:valueN() * sd + m end,-1,m,sd)
+	return FS(function(player,m,sd) return RANDOM:valueN() * sd + m end,-1,m,sd)
 end
 function GaussStream2(m,sd,min,max)
 	min=min or 0
 	max=max or 1
-	return FS(function(t) return clip(RANDOM:valueN()*t.sd+t.m,t.min,t.max) end,-1,{m=m,sd=sd,min=min,max=max})
+	return FS(function(player,t) return clip(RANDOM:valueN()*t.sd+t.m,t.min,t.max) end,-1,{m=m,sd=sd,min=min,max=max})
 end
 
 function Normalize(t)

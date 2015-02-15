@@ -202,7 +202,7 @@ function loadinEnv(file,env)
 		rawset(t,key,val)
 	end
 	if not env then
-		env = setmetatable({}, {__index = _G,__newindex=newindex}) 
+		env = setmetatable({}, {__index = _G,__newindex = newindex}) 
 		env.require = newrequire
 		env.package = setmetatable({}, {__index = _G.package})
 		env.package.loaded = {}
@@ -278,6 +278,7 @@ function SetupKeywords(editor, useLuaParser)
 			loadinEnv("sc.miditoosc",env)
 			loadinEnv("sc.scbuffer",env)
 			loadinEnv("sc.routines",env)
+			--loadinEnv("sc.ctrl_bus",env)
 			loadinEnv("oscfunc",env)
 			local keyword_table = {}
             for index, value in pairs(env) do

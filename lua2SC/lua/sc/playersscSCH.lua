@@ -1,4 +1,4 @@
-require( "sc.playersppq")
+require( "sc.playersppqSCH")
 require"sc.sc_comm"
 
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
@@ -29,9 +29,7 @@ function doOscSchedule(window)
 			if printOSC then
 				print(tb2st(OsceventQueue[1]))
 			end
-
-			--udp:send(toOSC(OsceventQueue[1]))
-			--sendBundle(OsceventQueue[1].event, theMetro.timestamp + (OsceventQueue[1].time - theMetro.oldppqPos) / theMetro.bps)
+			
 			sendBundle(OsceventQueue[1].event, theMetro:ppq2time(OsceventQueue[1].time))
             table.remove(OsceventQueue, 1)  
             continue = 1
@@ -66,7 +64,7 @@ function getMsgValue(msg,name,value)
 end
 
 ----------------------------------------------------------------
-scEventPlayer = EventPlayer:new{inst="default",name=nil,dontfree=true,autom_dur=0} --automatecount=-1,automateskip=1
+scEventPlayer=EventPlayer:new{inst="default",name=nil,dontfree=true,autom_dur=0} --automatecount=-1,automateskip=1
 function scEventPlayer:Init(setnode)
 	self.oldparams={}
 	if setnode then
@@ -76,7 +74,7 @@ function scEventPlayer:Init(setnode)
 		sendBundle(msg)
 		--sendBundle(msg,lanes.now_secs())
 	end
-	EventPlayer.Init(self)
+	return EventPlayer.Init(self)
 end
 function scEventPlayer:UsePreset(preset)
 	local pre=LoadPreset(preset)
@@ -93,17 +91,24 @@ function scEventPlayer:Release()
 	self.node = nil
 	self.havenode = false
 end
+function scEventPlayer:StopSound()
+	self:FreeNode()
+end
 function scEventPlayer:FreeNode()
 	--print("Freenode",self.name,self.node)
 	if self.poly and self.NodeQueue then
 		for i,v in ipairs(self.NodeQueue) do
 			local msg = {"/n_set",{v,"gate",{"float",0}}}
 			sendBundle(msg,lanes.now_secs())
+			msg = {"/n_free",{v}}
+			sendBundle(msg,lanes.now_secs())
 		end
 		return
 	end
 	if self.node == nil then return end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
+	sendBundle(msg,lanes.now_secs())
+	msg = {"/n_free",{self.node}}
 	sendBundle(msg,lanes.now_secs())
 	self.node = nil
 end
@@ -284,7 +289,7 @@ function Effect:Init()
 	--prtable(self)
 	--error("break error")
 end
-function Effect:Play()
+function Effect:PlayBAK()
 	self.channel:Play()
 	--for i,insert in ipairs(self._inserts) do
 --		insert:Play()
@@ -321,7 +326,7 @@ function MASTER_INIT1()
 	local msg={NEW_GROUP,{Master.group,1,0}}
 	sendBundle(msg)
 	--sendBundle(msg,lanes.now_secs())
-	Master:Init(true)
+	return Master:Init(true)
 end
 function MASTER_INIT2()
 	Master.inserts=Master.inserts or {}
@@ -396,7 +401,7 @@ function CHN(channel,oscplayer,busout)
 end
 function OscEventPlayer:Init()
 	EventPlayer.Init(self)
-	print("OscEventPlayer:Initing",self.name)
+	print("OscEventPlayer:Init",self.name)
 	--prtable(self)
 	if self.group ~= nil then return end
 	self.group = GetNode()
@@ -426,7 +431,9 @@ function OscEventPlayer:Init()
 	self:MakeSends()
 	---------------
 	--EventPlayer.Init(self)
-	--print("OscEventPlayer:Inited",self.name)
+	--self.ppqPos=self.MUSPOS
+--	self.prevppqPos=self.ppqPos
+--	self:UpdatePos(0)
 end
 
 function OscEventPlayer:Send(fx,lev)
@@ -469,13 +476,7 @@ function OscEventPlayer:FreeGroup()
 	sendBundle({"/g_freeAll",{self.group}},lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.group}},lanes.now_secs())
 end
-function OscEventPlayer:Reset(all)
-	if all then
-		self.channel:Reset()
-		for i,insert in ipairs(self._inserts) do
-			insert:Reset()
-		end
-	end
+function OscEventPlayer:Reset()
 	EventPlayer.Reset(self)
 	self:FreeNode()
 end
@@ -494,15 +495,19 @@ function OscEventPlayer:ccPlayBAK()
 		sendBundle(event)
 	end
 end
+--[[
 function OscEventPlayer:Play()
 	--print("OscEventPlayer:Play",self.name)
+--[=[
 	self.channel:Play()
 	for i,insert in ipairs(self._inserts) do
 		--println("OscEventPlayer:Play insert",insert.name)
 		insert:Play()
 	end
+--]=]
 	EventPlayer.Play(self)
 end
+--]]
 function OscEventPlayer:GetNode(beatTime)
 	if self.poly then
 		local node = GetNode()
@@ -567,7 +572,6 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 		--freq = functabla(freq,midi2freq)
 	end
 	lista.note=nil;lista.degree=nil;lista.freq=freq
-	
 	--legato
 	local legato
 	if lista.legato then 
@@ -638,7 +642,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	end
 	lista.type = nil
 ---[[
-	-- get is_ctrl_mapper
+	-- get functions
 	local listafunc = {}
 	for k,v in pairs(lista) do
 		--if type(v)=="function" then
@@ -749,18 +753,18 @@ function resetOSCplayers()
 end
 table.insert(initCbCallbacks,initOSCplayers)
 table.insert(resetCbCallbacks,resetOSCplayers)
+--[[
 table.insert(onFrameCallbacks,function()
 	Master:Play()
 	for i,v in ipairs(Effects) do
-		--prtable(v)
 		v:Play()
-		
 	end
 	for i,v in ipairs(OSCPlayers) do
 		v:Play()
 	end
 	doOscSchedule(curHostTime.ppqPos)
 end)
+--]]
 ------------
 function copyplayer(player)
 	local player2=deepcopy(player)

@@ -1,4 +1,4 @@
-require("sc.playerssc")
+--require("sc.playerssc")
 require("sc.synthdefSCgui")
 
 

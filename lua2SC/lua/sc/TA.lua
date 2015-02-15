@@ -12,6 +12,12 @@ local function WrapAt(t,i)
 		return t
 	end
 end
+--counts from 1 to tlen insted of %
+--which counts from 0 to tlen-1
+local function mod1(i,tlen)
+	i = i % tlen
+	return (i~=0) and i or tlen
+end
 local function mulTables(a,b)
 	local res={}
 	local maxlen=math.max(len(a),len(b))
@@ -100,6 +106,7 @@ _TAmt.__index = _TAmt
 -- @tparam ?function|any func receives index and returns value or if it is other type is asigned to every slot
 -- @treturn TA
 function _TAmt:Fill(n,func)
+	func = func or 1
 	for i=1,n do
 		if type(func)=="function" then
 			self[i]=func(i)
@@ -219,6 +226,13 @@ function _TAmt:asSimpleTable()
 	end
 	return res
 end
+function _TAmt:rotate(delta)
+	local res = {}
+	for i,v in ipairs(self) do
+		res[mod1(i + delta,#self)] = v
+	end
+	return self:new(res)
+end
 --[[
 ss=TA():series(12)
 print(ss)
@@ -253,4 +267,10 @@ print(suma)
 mat2 = mat * 10
 print(mat2)
 print(mat2 * mat)
+--]]
+--[[
+aa = TA():series(7,1,1)
+bb = aa:rotate(2)
+cc=(bb(1,2) - 7 .. bb(3,#bb))
+print("zzz",cc,"zzz")
 --]]

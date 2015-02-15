@@ -36,19 +36,21 @@ function routine:Reset()
 		end
 	end
 	--self.co = coroutine.wrap(self.body)
-	self.ppqPos= self.MUSPOS
-	self.prevppqPos= -math.huge 
-	self.playing=true
+	self.ppqPos = self.MUSPOS
+	self.prevppqPos = -math.huge 
+	self.playing = true
 	--self.used=false
+	theMetro.queueEvent(self.ppqPos, self)
 end
 function routine:Pull()
 	
-	if self.prevppqPos > theMetro.oldppqPos then --and self.used then
+	if self.prevppqPos > (theMetro.oldppqPos + theMetro.frame )then --and self.used then
 		print("reset ppqPos" .. self.ppqPos .. " hostppqPos " .. theMetro.ppqPos .. " ",self.name)
+		print(self.prevppqPos ,theMetro.oldppqPos)
 		self:Reset()
-	
-	elseif theMetro.playing > 0 then
-		while self.playing and theMetro.oldppqPos >= self.ppqPos do
+	end
+	if theMetro.playing > 0 then
+		while self.playing and theMetro.oldppqPos > self.ppqPos do
 			--local good,dur=coroutine.resume(self.co)
 			-- if not good then print("error en co ",dur) end
 			local dur=self.co()
@@ -63,8 +65,8 @@ function routine:Pull()
 				self.playing = false
 				break
 			else
-				self.prevppqPos=self.ppqPos
-				self.ppqPos=self.ppqPos + dur
+				self.prevppqPos = self.ppqPos
+				self.ppqPos = self.ppqPos + dur
 			end
 		end
 
@@ -75,10 +77,10 @@ function routine:Play()
 	if theMetro.playing == 0 then
 		return
 	end
-	while theMetro.oldppqPos < self.ppqPos and self.ppqPos <= theMetro.ppqPos and self.playing do
+	--while theMetro.oldppqPos <= self.ppqPos and self.ppqPos < theMetro.ppqPos and self.playing do
 		--local good,dur=coroutine.resume(self.co)
 		--if not good then print("error en co ",dur) end
-		local dur=self.co()		
+		local dur = self.co()		
 		if not dur then --coroutine.status(self.co) == "dead"  then
 			if  self.playing then
 				if self.doneAction then
@@ -87,12 +89,13 @@ function routine:Play()
 				print("se acabo: ",self.name)
 			end
 			self.playing = false
-			break
+			--break
 		else
-			self.prevppqPos=self.ppqPos
-			self.ppqPos=self.ppqPos + dur
+			self.prevppqPos = self.ppqPos
+			self.ppqPos = self.ppqPos + dur
+			theMetro.queueEvent(self.ppqPos, self)
 		end
-	end
+	--end
 end
 function routine:findMyName()
 	for k,v in pairs(_G) do
@@ -106,6 +109,7 @@ table.insert(initCbCallbacks,function()
 			v:Reset()
 		end
 end)
+--[[
 table.insert(onFrameCallbacks,function() 
 		for i,v in ipairs(Routines) do
 			--print("onframe player:",v.name)
@@ -113,3 +117,4 @@ table.insert(onFrameCallbacks,function()
 			v:Play()
 		end
 	end)
+--]]

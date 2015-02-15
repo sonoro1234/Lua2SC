@@ -578,6 +578,7 @@ function wxFreqScope(parent,name,label,id,co)
 	return FreqScopeClass 
 end
 function wxGLCanvas(parent,name,label,id,co)
+
 	id = id or wx.wxID_ANY
 	local height=co.height or 150
 	local width= co.width or 200
@@ -586,7 +587,7 @@ function wxGLCanvas(parent,name,label,id,co)
 	local canvas = wxwindow
 	local context = wx.wxGLContext(canvas)
 	local mouseLD = co.mouseLD or function() end
-	require"luagl"
+	local gl = require"luagl"
 	local Draw = co.DrawCb
 	local CanvasClass={value=0,window=canvas,height=height,width=width,customclass="CanvasClass"}
 	wxwindow:Connect(wx.wxEVT_LEFT_DOWN,function (event)
@@ -610,6 +611,7 @@ function wxGLCanvas(parent,name,label,id,co)
 			canvas:SwapBuffers()
 			dc:delete() 
 	end)
+		
 	return CanvasClass
 end
 ---------------------------wxScope

@@ -483,8 +483,8 @@ end
 function DisplayLog(message, LogW)
     LogW:SetReadOnly(false)
     LogW:AppendText(message)
-    LogW:SetReadOnly(true)
     LogW:GotoPos(LogW:GetLength())
+	LogW:SetReadOnly(true)
 end
 
 function ConfigSaveOpenDocuments(config)
@@ -1070,16 +1070,21 @@ function AppIDLE(event)
 				script_lane = nil 
 				collectgarbage()
 			end
-			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive" ) -- "beatResponse",
+			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive" ) 
 			if val then
 				--print("idlelinda receive ",key,val)
 				if key=="prout" then
 					DisplayOutput(val[1],val[2])
 				elseif key=="proutSC" then
 					DisplayLog(val, ScLog)
-				-- elseif key=="openEditor" then
-					-- print("openEditor arrived")
-					-- abriredit(val.source,val.line-1)
+					for looppr = 1,10 do
+						local key2,val2 = idlelinda:receive(0,"proutSC")
+						if val2 then
+							DisplayLog(val2, ScLog)
+						else
+							break
+						end
+					end
 				elseif key=="debugger" then
 					for k,v in ipairs(val[3]) do
 						if v.what~="C" then
@@ -1094,7 +1099,8 @@ function AppIDLE(event)
 					end
 				elseif key=="Metro" then
 					toppanel:set_transport(val)
-					timer:Start(300,wx.wxTIMER_ONE_SHOT)
+					--timer:Start(300,wx.wxTIMER_ONE_SHOT)
+					lanes.timer(scriptlinda,"beatRequest",0.3,0)
 				elseif key=="TextToClipBoard" then
 					putTextToClipBoard(val)
 				elseif key=="statusSC" then 

@@ -46,8 +46,11 @@ function sendMidi(event)
     end
     return _sendMidi(event)
 end
-function _midiEventCb(midiEvent) 
-	print(tb2st(midiEvent))
+function _midiEventCb(midiEvent)
+	if midi.doprint then
+		--print(tb2st(midiEvent))
+		print(midiEventToString(completeMidiFields(midiEvent)))
+	end
 	--prtable(midiEvent)
    -- midiEvent.inPort = {'host', 0}   
     newMidiEvent(midiEvent)
@@ -179,11 +182,11 @@ end
 function noteToNumber(noteSpec) 
 	if noteSpec == "REST" then return REST end
     local name,alt,octave = noteSpec:match("([ABCDEFGabcdefg])([-b#]?)(%d*)")
-	print(noteSpec,name,alt,octave)
+	--print(noteSpec,name,alt,octave)
 	alt = (alt == "") and "-" or alt
 	octave = tonumber(octave) or 0
 	name = name:upper()..alt
-    local note = notenames[name] + octave*12
+    local note = notenames[name] + (octave + 1)*12
     return note
 end
 function notesToNumbers(noteSt)
@@ -194,10 +197,15 @@ function notesToNumbers(noteSt)
 	return res
 end
 -- Only ever returns natural or sharps -- never flats
-function numberToNote(number)
-    local octave = math.floor(number / 12)
-    local note = number % 12
-    return notenumbers[note]..octave
+function numberToNote(number,numbernote)
+	numbernote = numbernote or notenumbers
+	local numberround = math.floor(number + 0.5)
+	local diffround = number - numberround
+    local octave = math.floor(numberround / 12) - 1
+    local note = numberround % 12
+	local diffstr = ""
+	if diffround ~=0 then diffstr = " "..tonumber(diffround) end
+    return numbernote[note]..octave..diffstr
 end
 
 --port format: 

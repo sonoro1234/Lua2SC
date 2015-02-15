@@ -1,10 +1,12 @@
 -- ---------------------------------------------------------------------------
+local USE_PROFILE = false
 function ScriptRun(pars)
 
 	local typerun = pars.typerun
 	local Debuggerbp = pars.Debuggerbp
 	local script = pars.script
 	local debugging = pars.debugging
+	local typeshed = pars.typeshed
 	
 	local function prstak(stk)
 		local str=""
@@ -128,7 +130,7 @@ function ScriptRun(pars)
 		require("sc.init")
 
 		theMetro.playNotifyCb[#theMetro.playNotifyCb+1] = function(met) 
-				idlelinda:send("Metro",met) 
+				idlelinda:send("Metro",met:send()) 
 			end
 		scriptname2 = script
 		local fs,err = loadfile(script)
@@ -139,11 +141,15 @@ function ScriptRun(pars)
 		end
 		
 		_initCb()
+		if USE_PROFILE then
+		ProFi = require 'ProFi'
+		ProFi:start()
+		end
 
 		while true do
 			--local dgram,status = udp2:receive()
 			--from the gui (editor and scriptgui)
-			local key,val= scriptlinda:receive("script_exit","_midiEventCb","tempo","play","/metronom","metronomLanes","beat","beatRequest","_valueChangedCb","OSCReceive")
+			local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive")
 			if val then
 				--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
 				if key=="metronomLanes" then
@@ -158,9 +164,8 @@ function ScriptRun(pars)
 					print("SCRIPT: script_exit arrived")
 					break
 				elseif key=="beatRequest" then
-					--linda:send("beatResponse",theMetro.actualbeat)
-					idlelinda:send("Metro",theMetro)
-					--print("beatRequest")
+					idlelinda:send("Metro",theMetro:send())
+					----print("beatRequest")
 				elseif key=="_valueChangedCb" then
 					--print("_valueChangedCbzzz")
 					_valueChangedCb(val[1],val[2],val[3])
@@ -179,6 +184,11 @@ function ScriptRun(pars)
 			end
 		end
 		
+		if USE_PROFILE then
+		ProFi:stop()
+		ProFi:writeReport( 'c:/MyProfilingReport.txt' )
+		end
+
 		if _resetCb then
 			print("SCRIPT: to reset\n")
 			_resetCb()
@@ -210,6 +220,31 @@ function ScriptRun(pars)
 		
 		postload1()
 		postload2()
+		return true
+	end
+	local function main_lanes_customAV(script)
+--[[
+		--clear linda-------------
+		local usedkeys = scriptlinda:count()
+		if usedkeys then
+			for k,v in pairs(usedkeys) do scriptlinda:set(k) end
+		end
+
+		if debugging then
+			Debugger:init(Debuggerbp)
+		end
+		--]]
+		
+		arg = {}
+		arg[0] = [[C:\LUA\luaAV4repo\LuaAV4\modules\av.lua]]
+		arg[1] = script
+		local fs,err = loadfile([[C:\LUA\luaAV4repo\LuaAV4\modules\av.lua]])
+		if fs then 
+			fs() 
+		else 
+			error("loadfile error:"..tostring(err),2) 
+		end
+		
 		return true
 	end
 	local function main_lanes_plain(script)
@@ -258,7 +293,8 @@ function ScriptRun(pars)
 			--prerror(err) 
 			prerror("xpcallerror:"..tostring(err)) 
 			--io.stderr:write("xpcallerror:"..tostring(err).."\n")
-			-- function to get errors in required files
+			
+			-- function to get compiler errors in required files
 			local function compile_error(err)
 				local info = {}
 				--catch error from require
@@ -279,12 +315,12 @@ function ScriptRun(pars)
 			
 			local debuginfo = debug.getinfo(2,"Slf")
 			local stack,vars = Debugger.get_call_stack(3)
-			
+			print("is require?",debuginfo.func == require)
 			-- if there is a compile error add it to stack and vars
-			local info=compile_error(err)
+			local info = compile_error(err)
 			if (info) then
-				--io.stderr:write("comp err source: ",info.source.."\n")
-				--io.stderr:write("comp err line: ",info.currentline,"\n")
+				io.stderr:write("comp err source: ",info.source.."\n")
+				io.stderr:write("comp err line: ",info.currentline,"\n")
 				local stack_tbl2,vars2 = {},{}
 				stack_tbl2[1] = info
 				vars2[1] = {}
@@ -306,6 +342,8 @@ function ScriptRun(pars)
 		set_error_reporting("extended")
 		set_debug_threadname("script_thread")
 
+		
+
 		Debugger = require"sc.debugger"
 		--clear linda-------------
 		local usedkeys = scriptlinda:count()
@@ -315,7 +353,7 @@ function ScriptRun(pars)
 		if debugging then
 			Debugger:init(Debuggerbp)
 		end
-		
+				
 		return xpcall(function() 
 			return runmain(scr) 
 		end,xpcallerror)
@@ -363,9 +401,10 @@ function ScriptRun(pars)
 				debugging = debugging,
 				scriptname = script,
 				typerun = typerun,
+				typeshed = typeshed,
 				sc_comm_type = SCSERVER.type
 				},
-		priority=2},
+		priority=0},
 		pmain)
 		
 	script_lane = script_lane_gen(script)

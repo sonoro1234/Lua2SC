@@ -225,14 +225,16 @@ GetBus=IDGenerator(8) --first after audio busses
 function InitSCCOMM()
 	print("InitSCCOMM")
 	if sc_comm_type == "udp" then
-		SERVER_CLOCK_LATENCY = 0.2
+		SERVER_CLOCK_LATENCY = 0.3
 		initudp()
 	elseif sc_comm_type == "internal" then
 		SERVER_CLOCK_LATENCY = 0.07
 		udp ,udpB = initinternal()
 		print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY)
 	else
-		error("not supported sc_comm_type:"..tostring(sc_comm_type))
+		udp ,udpB = {}, {}
+		prerror("not supported sc_comm_type:"..tostring(sc_comm_type))
+		return
 	end
 	udp:send(toOSC{"/clearSched",{}})
 	--udp:send(toOSC({"/dumpOSC",{dumpOSC}})) -- escribir scsynt lo que le llega
