@@ -149,7 +149,7 @@ function BootSC()
 		end
 	end
 	--local cmd="\"\""..this_file_settings.options.SCpath.."\"".." -u "..this_file_settings.options.SC_UDP_PORT.." -H ASIO ".."-U \""..path.."\\plugins\"\""
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..[[ -v 2 ]]..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 ]]..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..[[ -v 0 ]]..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 ]]..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
 	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)

@@ -30,9 +30,11 @@ function CallStack:Create(managedpanel)
 			if  lev and lev.what~="C" then
 				abriredit(lev.source:sub(2),lev.currentline)
 			end
-			ClearLog(DebugLog)
+			--ClearLog(DebugLog)
 			if self.vars then
-				DisplayLog(ToStr(self.vars[levi]),DebugLog)
+				--DisplayLog(ToStr(self.vars[levi]),DebugLog)
+				DebugLog:ShowTable(self.vars[levi])
+				--print("DebugLog",ToStr(self.vars[levi]))
 			end
 		end
 	end)
@@ -73,9 +75,11 @@ function CallStack:MakeStack(stack,err,vars)
 	for i=0,4 do
 		watchListCtrl:SetColumnWidth(i,wx.wxLIST_AUTOSIZE)
 	end
-	ClearLog(DebugLog)
+	--ClearLog(DebugLog)
 	if self.vars then
-		DisplayLog(ToStr(self.vars[1],true),DebugLog)
+		--DisplayLog(ToStr(self.vars[1],true),DebugLog)
+		DebugLog:ShowTable(self.vars[1])
+		--print("DebugLog ",ToStr(self.vars))
 	end
 end
 

@@ -282,7 +282,96 @@ function CreateLog()
 	--errorLog:SetWrapMode(1)
 	return errorLog
 end
+--ok with cycles
+local function tableTotree(t,dometatables,tree)
+	local strTG = {}
+	local basicToStr=tostring
+	if type(t) ~="table" then  return basicToStr(t) end
+	local recG = 0
+	local nameG="SELF"..recG
+	local ancest ={}
+	local root = tree:AddRoot("Root",-1)
+	local function _ToStr(t,strT,rec,name,tparent)
+		if ancest[t] then
+			strT[#strT + 1]=ancest[t]
+			tree:AppendItem(tparent,ancest[t])
+			return
+		end
+		rec = rec + 1
+		ancest[t]=name
+		strT[#strT + 1]='{'
+		--local tlevel = tree:AppendItem(tparent,name)
+		local count=0
+		-------------
+		--if t.name then strT[#strT + 1]=string.rep("\t",rec).."name:"..tostring(t.name) end
+		----------------
+---[[
+		local sorted_names = {}
+		for k,v in pairs(t) do
+			table.insert(sorted_names, k)
+		end
+		table.sort(sorted_names,function(a,b) return tostring(a) < tostring(b) end)
+		-----------------
+		for _, namek in ipairs(sorted_names) do
 
+			local k,v = namek,t[namek]
+--]]
+			
+		--for k,v in pairs(t) do
+			local str = ""
+			count=count+1
+			strT[#strT + 1]="\n"
+			local kstr
+			if type(k) == "table" then
+				local name2=string.format("%s.KEY%d",name,count)
+				strT[#strT + 1]=string.rep("\t",rec).."["
+				local strTK = {}
+				_ToStr(k,strTK,rec,name2)
+				kstr=table.concat(strTK)
+				strT[#strT + 1]=kstr.."]="
+			else
+				kstr = basicToStr(k)
+				strT[#strT + 1]=string.rep("\t",rec).."["..kstr.."]="
+				str = str .. kstr
+			end
+			
+			if type(v) == "table" then
+					local name2=string.format("%s[%s]",name,kstr)
+					local tlev2 = tree:AppendItem(tparent,kstr .. " : " .. tostring(v))
+					_ToStr(v,strT,rec,name2,tlev2)
+			else
+				strT[#strT + 1]=basicToStr(v)
+				str = str .. " : ".. basicToStr(v)
+				tree:AppendItem(tparent,str)
+			end
+		end
+		if dometatables then
+			local mt = getmetatable(t)
+			if mt then
+				local namemt = string.format("%s.METATABLE",name)
+				local strMT = {}
+				local tlev2 = tree:AppendItem(tparent,namemt)
+				_ToStr(mt,strMT,rec,namemt,tlev2)
+				local metastr=table.concat(strMT)
+				strT[#strT + 1] = "\n"..string.rep("\t",rec).."[METATABLE]="..metastr
+			end
+		end
+		strT[#strT + 1]='}'
+		rec = rec - 1
+		return
+	end
+	_ToStr(t,strTG,recG,nameG,root)
+	return table.concat(strTG)
+end
+function CreateTreeLog()
+	local tree = wx.wxTreeCtrl(managedpanel,wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize,wx.wxBORDER_NONE + wx.wxTR_HIDE_ROOT + wx.wxTR_HAS_BUTTONS  )
+	function tree:ShowTable(t)
+		tree:DeleteAllItems()
+		tableTotree(t,true,tree)
+		tree:ExpandAll()
+	end
+	return tree
+end
 function AppInit()
 
 
@@ -358,7 +447,7 @@ function AppInit()
 
 	errorLog = CreateLog()
 	ScLog = CreateLog()
-	DebugLog = CreateLog()
+	DebugLog = CreateTreeLog()
 	
 	notebookLogs:AddPage(errorLog, "Log", true)
 	notebookLogs:AddPage(ScLog, "SC Log", false)

@@ -334,18 +334,18 @@ function ToStr(t,dometatables)
 		-------------
 		if t.name then strT[#strT + 1]=string.rep("\t",rec).."name:"..tostring(t.name) end
 		----------------
---[[
+---[[
 		local sorted_names = {}
 		for k,v in pairs(t) do
 			table.insert(sorted_names, k)
 		end
-		table.sort(sorted_names)
+		table.sort(sorted_names,function(a,b) return tostring(a) < tostring(b) end)
 		-----------------
 		for _, namek in ipairs(sorted_names) do
 
 			local k,v = namek,t[namek]
 --]]
-		for k,v in pairs(t) do
+		--for k,v in pairs(t) do
 			count=count+1
 			strT[#strT + 1]="\n"
 			local kstr

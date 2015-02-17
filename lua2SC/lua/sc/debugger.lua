@@ -2,6 +2,7 @@
 -- @warning need to copy not to make lanes transfer functions
 local Debugger = {}
 local function debugger_copy(object)
+
     local lookup_table = {}
 	local basicCopy = function(ob)
 		--if ob then 
@@ -11,6 +12,7 @@ local function debugger_copy(object)
 		--end
 	end
     local function _copy(object)
+			--print("debugger",ToStr(object))
         if type(object) ~= "table" then
             return basicCopy(object)
         elseif lookup_table[object] then
@@ -23,7 +25,8 @@ local function debugger_copy(object)
         end
 		local mt = getmetatable(object)
 		if mt then
-			setmetatable(new_table, _copy(mt))
+			new_table.METATABLE = _copy(mt)
+			--setmetatable(new_table, _copy(mt))
 		end
         return new_table
     end
@@ -116,7 +119,7 @@ function Debugger.debug_hook (event, line)
 			Debugger.step_over = false
 			
 			local stack,vars = Debugger.get_call_stack(3)
-			--prtable(vars)
+			--print("get_call_stack",ToStr(vars))
 			send_debuginfo(s,line,stack,vars,true)
 			
 			while true do
