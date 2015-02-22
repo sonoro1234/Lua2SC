@@ -9,6 +9,7 @@
 	local ID_BREAK             = NewID()
 	local ID_RUN2              = NewID()
 	local ID_RUN3              = NewID()
+	local ID_RUN_SELECTED             = NewID()
 	local ID_CANCELRUN       = NewID()
 	local ID_KILLRUN       = NewID()
 	local ID_CLEAROUTPUT      = NewID()
@@ -21,6 +22,7 @@ function InitRunMenu()
         { ID_RUN,	"&Run Lua2SC\tF6",	"Execute the current file" },
 		{ ID_RUN2,              "&Run plain lua\tF7",               "Execute current file" },
 		{ ID_RUN3,              "&Run custom",               "Execute current file" },
+		{ ID_RUN_SELECTED,              "&Run selected text\tF8",               "Run selected text" },
 		{ ID_DEBUG,              "&Debug",               "Debug mode", wx.wxITEM_CHECK},
 		{ ID_PREMETRO,              "&SCHMETRO",               "SCHMETRO mode", wx.wxITEM_CHECK},
 		--{ ID_DEBUGPLAIN,              "&Debug plain lua",               "Debug the current file" },
@@ -92,6 +94,11 @@ function InitRunMenu()
 				local editor = GetEditor()
 				event:Enable((editor ~= nil) and (not script_lane))
 			end)
+	frame:Connect(ID_RUN_SELECTED, wx.wxEVT_UPDATE_UI,
+			function (event)
+				local editor = GetEditor()
+				event:Enable((editor ~= nil) and (script_lane))
+			end)
 	frame:Connect(ID_CANCELRUN, wx.wxEVT_UPDATE_UI,
 			function (event)
 				local editor = GetEditor()
@@ -153,6 +160,13 @@ function InitRunMenu()
 	frame:Connect(ID_BREAK, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) debuggerlinda:send("break",1) end)
 	frame:Connect(ID_RUN2, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) EnableDebugCommands(false,menuBar:IsChecked(ID_DEBUG)); ideScriptRun(2) end)
 	frame:Connect(ID_RUN3, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) EnableDebugCommands(false,menuBar:IsChecked(ID_DEBUG)); ideScriptRun(3) end)
+	frame:Connect(ID_RUN_SELECTED, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) 
+				local editor = GetEditor()
+				local strcode = editor:GetSelectedText()
+				if strcode then
+					scriptlinda:send("execstr",strcode)
+				end
+			end)
 	frame:Connect(ID_SETTINGS, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) Settings:Create(frame).window:Show() end)
 	frame:Connect(wx.wxEVT_IDLE,AppIDLE)
 end

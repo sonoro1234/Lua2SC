@@ -339,7 +339,14 @@ function ToStr(t,dometatables)
 		for k,v in pairs(t) do
 			table.insert(sorted_names, k)
 		end
-		table.sort(sorted_names,function(a,b) return tostring(a) < tostring(b) end)
+		table.sort(sorted_names,function(a,b) 
+			if type(a)=="number" and a== math.floor(a) then
+				a = string.format("%010d",a)
+			end
+			if type(b)=="number" and b== math.floor(b) then
+				b = string.format("%010d",b)
+			end
+			return tostring(a) < tostring(b) end)
 		-----------------
 		for _, namek in ipairs(sorted_names) do
 

@@ -149,7 +149,7 @@ function ScriptRun(pars)
 		while true do
 			--local dgram,status = udp2:receive()
 			--from the gui (editor and scriptgui)
-			local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive")
+			local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive","execstr")
 			if val then
 				--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
 				if key=="metronomLanes" then
@@ -180,6 +180,16 @@ function ScriptRun(pars)
 				elseif key=="OSCReceive" then 
 					--print("OSCReceive in scriptlinda",tb2st(val))
 					OSCFunc.handleOSCReceive(val)
+				elseif key=="execstr" then 
+					local chunk,err = loadstring(val)
+					if chunk then
+						--setfenv(chunk, getfenv(fs))
+						chunk()
+						--prtable(debug.getinfo(fs))
+						--debuglocals(true)
+					else
+						print("error in exestr:",err)
+					end
 				end
 			end
 		end
