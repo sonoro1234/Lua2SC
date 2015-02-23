@@ -21,7 +21,9 @@ local function debugger_copy(object)
         local new_table = {}
         lookup_table[object] = new_table
         for index, value in pairs(object) do
-            new_table[_copy(index)] = _copy(value)
+            --new_table[_copy(index)] = _copy(value)
+			--tables are not linda transfered in keys
+			new_table[ToStr(index)] = _copy(value)
         end
 		local mt = getmetatable(object)
 		if mt then
