@@ -232,7 +232,9 @@ function InitSCCOMM()
 		print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY)
 	else
 		udp ,udpB = {}, {}
-		prerror("not supported sc_comm_type:"..tostring(sc_comm_type))
+		local msg = "not supported sc_comm_type:"..tostring(sc_comm_type).." Did you boot sc?"
+		prerror(msg)
+		error(msg)
 		return
 	end
 	udp:send(toOSC{"/clearSched",{}})

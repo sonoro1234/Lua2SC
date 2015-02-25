@@ -184,7 +184,8 @@ function ScriptRun(pars)
 					local chunk,err = loadstring(val)
 					if chunk then
 						--setfenv(chunk, getfenv(fs))
-						chunk()
+						local status,msg = pcall(chunk)
+						if not status then prerror(msg) end
 						--prtable(debug.getinfo(fs))
 						--debuglocals(true)
 					else
@@ -305,7 +306,7 @@ function ScriptRun(pars)
 			--io.stderr:write("xpcallerror:"..tostring(err).."\n")
 			
 			-- function to get compiler errors in required files
-			local function compile_error(err)
+			local function compile_error(err,iscompileerr)
 				local info = {}
 				--catch error from require
 				local err2 = err:match("from file%s+'.-':.-([%w%p]*:%d+:)")
@@ -316,18 +317,20 @@ function ScriptRun(pars)
 				if not err2 then
 					err2 = err:match("loadfile error:([%w%p]*:%d+:)")
 				end
+				if not err2 and iscompileerr then err2 = err end
 				if err2 then
 					info.source = "@"..err2:match(":-(.-):%d*:")
 					info.currentline = err2:match(":(%d*):") or -1
 					return info
 				end
 			end
-			
 			local debuginfo = debug.getinfo(2,"Slf")
 			local stack,vars = Debugger.get_call_stack(3)
 			print("is require?",debuginfo.func == require)
+			print("is dofile?",debuginfo.func == dofile)
+			local is_comp_err = debuginfo.func == require or debuginfo.func == dofile or debuginfo.func == loadfile
 			-- if there is a compile error add it to stack and vars
-			local info = compile_error(err)
+			local info = compile_error(err,is_comp_err)
 			if (info) then
 				io.stderr:write("comp err source: ",info.source.."\n")
 				io.stderr:write("comp err line: ",info.currentline,"\n")
