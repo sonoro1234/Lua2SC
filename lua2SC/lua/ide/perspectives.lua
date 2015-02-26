@@ -4,6 +4,11 @@ local ID_CreatePerspective=NewID()
 local ID_DeletePerspective=NewID()
 local ID_FirstPerspective = NewID()
 for i=1,9 do NewID() end
+local ID_ZOOMIN = NewID()
+local ID_ZOOMOUT = NewID()
+local ID_ZOOMNORMAL = NewID()
+local ID_ZOOMMENU = NewID()
+
 function Manager()
 	local m = wxaui.wxAuiManager()
 	function m:GetPerspective()
@@ -322,6 +327,21 @@ function InitPerspectivesMenu()
 			+wx.wxFULLSCREEN_NOCAPTION )	
 		end)
 	
+	frame:Connect(ID_ZOOMIN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+		function(event)
+			local editor = GetEditor()
+			if editor then editor:ZoomIn() end
+		end)
+	frame:Connect(ID_ZOOMOUT,  wx.wxEVT_COMMAND_MENU_SELECTED,
+		function(event)
+			local editor = GetEditor()
+			if editor then editor:ZoomOut() end
+		end)
+	frame:Connect(ID_ZOOMNORMAL,  wx.wxEVT_COMMAND_MENU_SELECTED,
+		function(event)
+			local editor = GetEditor()
+			if editor then editor:SetZoom(0) end
+		end)
 	m_perspectives = {}
 	m_perspectives_names = {}
 	m_perspectives_menu = wx.wxMenu();
@@ -329,6 +349,12 @@ function InitPerspectivesMenu()
 	m_perspectives_menu:AppendSeparator()
 	m_perspectives_menu:Append(ID_CreatePerspective,"Create Perspective");
 	m_perspectives_menu:Append(ID_DeletePerspective, "Delete Perspective");
+	m_perspectives_menu:AppendSeparator();
+	local zoomsubmenu = wx.wxMenu()
+	zoomsubmenu:Append(ID_ZOOMIN, "zoom in\tCtrl+Num++");
+	zoomsubmenu:Append(ID_ZOOMOUT, "zoom out\tCtrl+Num+-");
+	zoomsubmenu:Append(ID_ZOOMNORMAL, "zoom default\tCtrl+Num+/");
+	m_perspectives_menu:Append(ID_ZOOMMENU,"zoom",zoomsubmenu,"Zoom")
 	m_perspectives_menu:AppendSeparator();
 	
 	menuBar:Append(m_perspectives_menu, "&View")
