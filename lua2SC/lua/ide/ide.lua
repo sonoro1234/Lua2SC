@@ -891,7 +891,7 @@ end
 function NewFile(event)
     local editor = CreateEditor("untitled.lua")
 	frame:SetTitle("untitled.lua")
-    SetupKeywords(editor, true)
+    --SetupKeywords(editor, true)
 	return editor
 end
 
@@ -931,7 +931,7 @@ function LoadFile(filePath, editor, file_must_exist)
 
     editor:Clear()
     editor:ClearAll()
-    SetupKeywords(editor, IsLuaFile(filePath))
+    --SetupKeywords(editor, IsLuaFile(filePath))
     editor:MarkerDeleteAll(BREAKPOINT_MARKER)
     editor:MarkerDeleteAll(CURRENT_LINE_MARKER)
     editor:AppendText(file_text)
@@ -1050,7 +1050,7 @@ function SaveFileAs(editor)
         local filePath = fileDialog:GetPath()
 
         if SaveFile(editor, filePath) then
-            SetupKeywords(editor, IsLuaFile(filePath))
+            --SetupKeywords(editor, IsLuaFile(filePath))
             saved = true
         end
     end

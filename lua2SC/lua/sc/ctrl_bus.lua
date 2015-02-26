@@ -34,12 +34,16 @@ function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 	sendBundle(mapmsg,theMetro:ppq2time(beatTime))
 end
 
-SynthDef("RAMP",{inip=0,endp=0,time=1,bus=0},function()
-	Out.kr(bus,Line.kr(inip,endp,time,1,0,2))
-end):store()
-SynthDef("ERAMP",{inip=0,endp=0,time=1,bus=0},function()
-	Out.kr(bus,XLine.kr(inip,endp,time,1,0,2))
-end):store()
+table.insert(initCbCallbacks,function()
+	print("init ctrl_bus")
+
+	SynthDef("RAMP",{inip=0,endp=0,time=1,bus=0},function()
+		Out.kr(bus,Line.kr(inip,endp,time,1,0,2))
+	end):store()
+	SynthDef("ERAMP",{inip=0,endp=0,time=1,bus=0},function()
+		Out.kr(bus,XLine.kr(inip,endp,time,1,0,2))
+	end):store()
+end)
 
 -----------------------------
 ctrl_mapper = {is_ctrl_mapper=true}
