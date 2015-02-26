@@ -64,12 +64,19 @@ function Scope(...)
 end
 function MIDIButton(value)
 	local value = value or 40
-	local notetext=addControl{value=value, typex="text",name="midinote",label=0}
-	addControl{value=0, typex="toggle",label=0,
+	local panel =addPanel{type="vbox",parent=nil}
+	local notetext = addControl{value=value, typex="text",name="midinote",label=0,panel=panel}
+	local newcontrol = {value=0.3,min=0,max=2, typex="vslider",label=0,name="velocity",
+			panel = panel,
+			callback=function(value,str,c) 
+					c:setLabel(string.format("%.2f",value),0)
+			end}
+	local notevel = addControl(newcontrol)
+	addControl{value=0, typex="toggle",label=0,panel=panel,
 			callback=function(value,str,c) 
 					if value==1 then
 						print(tonumber(notetext:val()))
-						_midiEventCb(noteOn(tonumber(notetext:val()), 127, 0, 0))
+						_midiEventCb(noteOn(tonumber(notetext:val()), 127*notevel.value, 0, 0))
 					else
 						_midiEventCb(noteOff(tonumber(notetext:val()),0, 0))
 					end
