@@ -641,6 +641,22 @@ function InitEditMenu()
 			{ },
 			{ ID_FOLD,    "&Fold/Unfold all\tF12", "Fold or unfold all code folds"} }
 	menuBar:Append(editMenu, "&Edit")
+	local function PasteToANSI(editor)
+		print"PasteToANSI"
+		local clipboard=wx.wxClipboard.Get()
+		if (clipboard:Open()) then
+			--clipboard:SetData( wx.wxTextDataObject(text) );
+			if clipboard:IsSupported(wx.wxDataFormat(wx.wxDF_TEXT)) then
+				local data = wx.wxTextDataObject() 
+				clipboard:GetData( data );
+				local str = data:GetText()--:ToAscii() 
+				--wx.wxMessageBox( str);
+				--editor:ReplaceSelection(fixUTF8(str,"X"))
+				editor:ReplaceSelection(str:gsub("[\128-\255]"," "))
+			end
+			clipboard:Close();
+		end
+	end
 	local function OnEditMenu(event)
 		local menu_id = event:GetId()
 		local editor = GetEditor()
@@ -648,7 +664,7 @@ function InitEditMenu()
 		
 		if     menu_id == ID_CUT       then editor:Cut()
 		elseif menu_id == ID_COPY      then editor:Copy()
-		elseif menu_id == ID_PASTE     then editor:Paste()
+		elseif menu_id == ID_PASTE     then PasteToANSI(editor) --editor:Paste()
 		elseif menu_id == ID_SELECTALL then editor:SelectAll()
 		elseif menu_id == ID_UNDO      then editor:Undo()
 		elseif menu_id == ID_REDO      then editor:Redo()
