@@ -364,6 +364,7 @@ function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,mono)
 	addMidiFilter{callback=MidiToOsc.midi2osc,channel=ch}
 	MidiToOsc.vars[ch].sends = sends or {}
 	MidiToOsc.vars[ch].mono = mono
+	MidiToOsc.vars[ch].keylist = {}
 	return igui
 end
 function MidiToOsc.Init(ch)
@@ -432,7 +433,7 @@ function MidiToOsc.midi2osc(midiEvent)
 			snew = not thisMidiOsc.node
 			nodo = thisMidiOsc.node or GetNode()
 			thisMidiOsc.node = nodo
-			thisMidiOsc.keylist = thisMidiOsc.keylist or {}
+			--thisMidiOsc.keylist = thisMidiOsc.keylist or {}
 			table.insert(thisMidiOsc.keylist,midiEvent.byte2)
 		else
 			nodo = GetNode()
