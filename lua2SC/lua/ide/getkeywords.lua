@@ -123,7 +123,7 @@ function GetSCKeyWords()
 					end
 				end
             end
-			--LogFile(ToStr(sckeywordsSource))
+			--LogFile(ToStr(sckeywordsSource),"keyword.txt")
             table.sort(keyword_table)
 			return table.concat(keyword_table)
 end

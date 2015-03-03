@@ -345,7 +345,7 @@ function iguinotify(self,control)
 	var[control.variable[#control.variable]]=control:val()
 	self:SendParam(control.variable[1])
 end 
-function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts)
+function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,mono)
 	local ch = ch or 0
 	local igui = igui or {inst="default",params={},oscfree=true}
 	MidiToOsc.vars[ch]=igui 
@@ -363,6 +363,7 @@ function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts)
 	MidiToOsc.vars[ch].recorded = {}
 	addMidiFilter{callback=MidiToOsc.midi2osc,channel=ch}
 	MidiToOsc.vars[ch].sends = sends or {}
+	MidiToOsc.vars[ch].mono = mono
 	return igui
 end
 function MidiToOsc.Init(ch)
@@ -419,55 +420,77 @@ function MidiToOsc.midi2osc(midiEvent)
 	--prtable(midiEvent)
 	local ch = midiEvent.channel
 	local thisMidiOsc = MidiToOsc.vars[ch]
+	local mono = thisMidiOsc.mono
 	if thisMidiOsc.record then
 		local ppqpos = curHostTime.oldppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
 		--print("recordmidi xxxxx",#thisMidiOsc.recorded,ppqpos)
 		thisMidiOsc.recorded[#thisMidiOsc.recorded +1] = {ppq=ppqpos,event=midiEvent}
 	end
 	if midiEvent.type==midi.noteOn then
-		local nodo=GetNode()
+		local nodo,snew 
+		if mono then
+			snew = not thisMidiOsc.node
+			nodo = thisMidiOsc.node or GetNode()
+			thisMidiOsc.node = nodo
+			thisMidiOsc.keylist = thisMidiOsc.keylist or {}
+			table.insert(thisMidiOsc.keylist,midiEvent.byte2)
+		else
+			nodo = GetNode()
+			snew = true
+		end
 		local freq = midi2freq(midiEvent.byte2)
 		local amp = midiEvent.byte3/127.0
 		--thisMidiOsc.node = nodo
 		--print(amp)
 		local on
-		if thisMidiOsc.on_maker then
-			on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
-			on = thisMidiOsc.on_maker(thisMidiOsc,freq,amp,on)
-		else
-			on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
-		end
-		--[[
-		for k,v in pairs(thisMidiOsc.params) do
-			table.insert(on[2],k)
-			if type(v)~="table" then
-				table.insert(on[2],{"float" ,v})
+		if snew then
+			if thisMidiOsc.on_maker then
+				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
+				on = thisMidiOsc.on_maker(thisMidiOsc,freq,amp,on)
 			else
-				table.insert(on[2],{"["})
-				for i,val in ipairs(v) do
-					table.insert(on[2],{"float",val})
-				end
-				table.insert(on[2],{"]"})
+				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
+			end
+		else
+			if thisMidiOsc.on_maker then
+				on ={"/n_set", {nodo}}
+				on = thisMidiOsc.on_maker(thisMidiOsc,freq,amp,on)
+			else
+				on ={"/n_set", { nodo, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
 		end
-		--]]
 		ValsToOsc(on[2],thisMidiOsc.params)
 		table.insert(on[2],"out")
 		table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
-		udp:send(toOSC(on))
-		--sendBundle(on,lanes.now_secs())
+		sendBundle(on) --,lanes.now_secs())
 		MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+
     elseif midiEvent.type==midi.noteOff then
-		--prtable(MidiToOsc)
-		--prtable(midiEvent)
+
 		local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
 		MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
-		if thisMidiOsc.oscfree then
+		if mono then
+			for i,v in ipairs(thisMidiOsc.keylist) do
+				if v == midiEvent.byte2 then
+					table.remove(thisMidiOsc.keylist, i)
+					break
+				end
+			end
+			--set freq from last key
+			local lastnote = thisMidiOsc.keylist[#thisMidiOsc.keylist]
+			if lastnote then
+				local freq = midi2freq(lastnote)
+				on ={"/n_set", { nodo, "freq", {"float" ,freq}}}
+				sendBundle(on)
+			else
+				local off = {"/n_set",{nodo,"gate",{"float",0}}}
+				sendBundle(off) --,lanes.now_secs())
+				thisMidiOsc.node = nil
+			end
+		
+		elseif thisMidiOsc.oscfree then
 			if nodo then
 				local off = {"/n_set",{nodo,"gate",{"float",0}}}
-				udp:send(toOSC(off))
-				--sendBundle(off,lanes.now_secs())
-				
+				sendBundle(off) --,lanes.now_secs())
 				--local off = {"/n_free",{nodo}}
 				--udp:send(toOSC(off))
 			end
