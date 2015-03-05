@@ -5,6 +5,8 @@
 require "sc.chords"
 require "sc.scales"
 require "sc.sysex"
+require "sc.utils"
+
 --these are updated inside the callback wrappers
 
 inputNotesDown = {}
@@ -151,10 +153,8 @@ plainnotenames = {
 
 plainnotenumbers = swapkeyvalue(plainnotenames)
 
-
-
-
-notenumbers = {[0]='C-', 
+notenumbers = {
+[0]='C-', 
  [1]='C#',
  [2]='D-',
  [3]='D#',
@@ -165,6 +165,20 @@ notenumbers = {[0]='C-',
  [8]='G#',
  [9]='A-',
  [10]='A#',
+ [11]='B-'}
+ 
+ notenumbers_flat = {
+ [0]='C-', 
+ [1]='Db',
+ [2]='D-',
+ [3]='Eb',
+ [4]='E-',
+ [5]='F-',
+ [6]='Gb',
+ [7]='G-',
+ [8]='Ab',
+ [9]='A-',
+ [10]='Bb',
  [11]='B-'}
  
 

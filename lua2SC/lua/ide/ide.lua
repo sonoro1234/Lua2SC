@@ -28,6 +28,7 @@ CallStack = require"ide.callstack"
 require"ide.help"
 require"ide.toppanel"
 require"ide.idescriptrun"
+require"sc.midi"
 
 
 ---------------------------------
@@ -1159,7 +1160,7 @@ function AppIDLE(event)
 				script_lane = nil 
 				collectgarbage()
 			end
-			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive" ) 
+			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive","_midiEventCb" ) 
 			if val then
 				--print("idlelinda receive ",key,val)
 				if key=="prout" then
@@ -1201,8 +1202,22 @@ function AppIDLE(event)
 					lanes.timer(idlelinda,"statusSC",1,0)
 				elseif key=="OSCReceive" then 
 					OSCFunc.handleOSCReceive(val)
-				elseif key=="QueueAction" then 
+				elseif key=="QueueAction" then
 					doQueueAction(val)
+				elseif key == "_midiEventCb" then
+					--if write note send to editor
+					if G_do_write_midi then
+						if val.type==midi.noteOn then
+							local editor = GetEditor()
+							if editor then
+								if not G_do_write_midi_number then
+									editor:AddText([["]] .. numberToNote(val.byte2) .. [[",]])
+								else
+									editor:AddText(tostring(val.byte2) .. [[,]])
+								end
+							end
+						end
+					end
 				elseif key=="DoDir" then
 					--print("receive DoDir")
 					local res={}

@@ -1,4 +1,6 @@
 local autoCompleteEnable = true -- value of ID_AUTOCOMPLETE_ENABLE menu item
+G_do_write_midi = false
+G_do_write_midi_number = false
 local function FoldSome()
     local editor = GetEditor()
     editor:Colourise(0, -1)       -- update doc's folding info
@@ -623,6 +625,8 @@ function InitEditMenu()
 	local ID_REDO             = wx.wxID_REDO
 	local ID_AUTOCOMPLETE     = NewID()
 	local ID_AUTOCOMPLETE_ENABLE = NewID()
+	local ID_WRITE_MIDI = NewID()
+	local ID_WRITE_MIDI_NUMBER = NewID()
 	local ID_COMMENT          = NewID()
 	local ID_FOLD             = NewID()
 	local editMenu = wx.wxMenu{
@@ -636,6 +640,9 @@ function InitEditMenu()
 			{ },
 			{ ID_AUTOCOMPLETE,        "Complete &Identifier\tCtrl+K", "Complete the current identifier" },
 			{ ID_AUTOCOMPLETE_ENABLE, "Auto complete Identifiers",    "Auto complete while typing", wx.wxITEM_CHECK },
+			{ },
+			{ ID_WRITE_MIDI, "Write MIDI\tCtrl+M", "Write MIDI", wx.wxITEM_CHECK },
+			{ ID_WRITE_MIDI_NUMBER, "Write MIDI number", "Write MIDI number", wx.wxITEM_CHECK },
 			{ },
 			{ ID_COMMENT, "C&omment/Uncomment\tCtrl-Q", "Comment or uncomment current or selected lines"},
 			{ },
@@ -714,7 +721,14 @@ function InitEditMenu()
 			function (event)
 				autoCompleteEnable = event:IsChecked()
 			end)
-	
+	frame:Connect(ID_WRITE_MIDI, wx.wxEVT_COMMAND_MENU_SELECTED,
+			function (event)
+				G_do_write_midi = event:IsChecked()
+			end)
+	frame:Connect(ID_WRITE_MIDI_NUMBER, wx.wxEVT_COMMAND_MENU_SELECTED,
+			function (event)
+				G_do_write_midi_number = event:IsChecked()
+			end)
 	frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
 			function (event)
 				local editor = GetEditor()

@@ -447,14 +447,14 @@ function MidiToOsc.midi2osc(midiEvent)
 		if snew then
 			if thisMidiOsc.on_maker then
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
-				on = thisMidiOsc.on_maker(thisMidiOsc,freq,amp,on)
+				thisMidiOsc:on_maker(freq,amp)
 			else
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
 		else
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
-				on = thisMidiOsc.on_maker(thisMidiOsc,freq,amp,on)
+				thisMidiOsc:on_maker(freq,amp)
 			else
 				on ={"/n_set", { nodo, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
@@ -462,8 +462,11 @@ function MidiToOsc.midi2osc(midiEvent)
 		ValsToOsc(on[2],thisMidiOsc.params)
 		table.insert(on[2],"out")
 		table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
-		sendBundle(on) --,lanes.now_secs())
-		MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+		--to avoid repeating note
+		if not MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] then
+			sendBundle(on) --,lanes.now_secs())
+			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+		end
 
     elseif midiEvent.type==midi.noteOff then
 

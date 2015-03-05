@@ -81,7 +81,7 @@ end
 
 SetLuaPath(arg) 
 require("pmidi")
-print("pmidi",pmidi,pmidi.core)
+--print("pmidi",pmidi,pmidi.core)
 require("sc.utils")
 require("random") 	--not nedded here but to avoid lanes wx crash
 
@@ -118,7 +118,7 @@ function thread_error_print(...)
 	idlelinda:send("prout",{strconcat(...),true})
 end
 function MidiOpen(options)
-	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,scriptlinda,midilinda,{print=thread_print,
+	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,mainlinda,midilinda,{print=thread_print,
 	prerror=thread_error_print,
 	prtable=prtable,idlelinda = idlelinda})
 end
@@ -156,7 +156,7 @@ if not NO_IDE then idelane = ide_lane(lanes) end
 
 print"going into mainloop"
 while true do
-	local key,val = mainlinda:receive("sendsc","initsc","closesc","MidiClose","MidiOpen","ide_exit","ScriptRun","CancelScript","GetScriptLaneStatus")
+	local key,val = mainlinda:receive("sendsc","initsc","closesc","_midiEventCb","MidiClose","MidiOpen","ide_exit","ScriptRun","CancelScript","GetScriptLaneStatus")
 	if val then
 		if key == "initsc" then
 			SCSERVER:init(val[1],val[2],udpsclinda)
@@ -164,6 +164,9 @@ while true do
 			SCSERVER:close()
 		elseif key == "sendsc" then
 			SCSERVER:send(val)
+		elseif key == "_midiEventCb" then -- route to script and ide
+			scriptlinda:send("_midiEventCb",val)
+			idlelinda:send("_midiEventCb",val)
 		elseif key == "MidiClose" then
 			MidiClose() 
 		elseif key == "MidiOpen" then

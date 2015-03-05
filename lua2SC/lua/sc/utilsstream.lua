@@ -143,7 +143,18 @@ end
 function ratio2midi(rat)
 	return freq2midi(rat * midi2freq(0))
 end
-
+--only works for 12 semitones escale
+function getDegree(nt,scale)
+	local octave = math.floor(nt/12)
+	local scnote = nt%12
+	for i,v in ipairs(scale) do
+		if v == scnote then return i + octave * #scale end
+		if v > scnote then
+			return linearmap(scale[i - 1],v,i - 1, i,scnote) + octave * #scale
+		end
+	end
+	return linearmap(scale[#scale],12,#scale, #scale + 1,scnote) + octave * #scale
+end
 function dbamp(db)
 	return 10^(db/20)
 end
@@ -280,7 +291,7 @@ function wchoice(a,b)
 	if not b then return choose(a) end
 	if not b.normalized then Normalize(b) end
 	local ra = RANDOM:value() --math.random()
-	local sum =0
+	local sum = 0
 	local ind
 	for i,v in ipairs(b) do
 		if ra >= sum and ra < sum + v then 
