@@ -1,6 +1,7 @@
 
 
 local function loadfilefrompath(cad)
+	--print("loadfilefrompath",cad)
 	-- TODO win32,linux,mac?
 	cad = string.gsub(cad, "%.",path_sep) --"/")
 	------------------------------------
@@ -12,21 +13,29 @@ local function loadfilefrompath(cad)
 		if exist then
 			exist:close()
 			local chunk,errorst = loadfile(file)
-			print("loadfilefrompath",file,errorst)
+			--print("loadfilefrompath",file,errorst)
 			if chunk then
 				return chunk
 			end
 		end
 	end
-	error("could not loadfilefrompath "..cad) 
+	print("could not loadfilefrompath "..cad) 
 end
 local function newrequire(cad)
+	--print("newrequire",cad)
 	local env = getfenv(2)
-	if package.loaded[cad] then return package.loaded[cad] end
+	if env.package.loaded[cad] then 
+		--print("xxxxxxxxxxxxxxxxxxxxxloaded",cad)
+		return env.package.loaded[cad] 
+	end
 	local chunk = loadfilefrompath(cad)
-	setfenv(chunk, env)
-	package.loaded[cad] = chunk()
-	return package.loaded[cad]
+	if chunk then
+		setfenv(chunk, env)
+		env.package.loaded[cad] = chunk() or true
+		return env.package.loaded[cad]
+	else
+		env.package.loaded[cad] = "cant load"
+	end
 end
 local CachedFiles = {files = {}}
 function CachedFiles:open(name)
@@ -50,18 +59,8 @@ function getSourceLine(source,line)
 end
  
 function loadinEnv(file,env)
+	--print("loadinEnv",file,env,env and env.package,package)
 	local function newindex(t,key,val)
-		--[[ the functions are done in other place
-		local info=debug.getinfo(2)
-		--print ("setting "..key.." from line "..info.currentline.." in file "..info.short_src)
-		local src
-		if type(val)=="function" then
-			src = getSourceLine(info.source:sub(2),info.currentline)
-		end
-		local args 
-		if src then args = src:match(".-function.-(%(.+%))") end
-		sckeywordsSource[key] = {currentline = info.currentline,source = info.source,def=src,args=args}
-		--]]
 		if type(val) == "table" then
 			local info=debug.getinfo(2)
 			sckeywordsSource[key] = {currentline = info.currentline,source = info.source}
@@ -71,12 +70,13 @@ function loadinEnv(file,env)
 	if not env then
 		env = setmetatable({}, {__index = _G,__newindex = newindex}) 
 		env.require = newrequire
-		env.package = setmetatable({}, {__index = _G.package})
+		env.package = {} --setmetatable({}, {__index = _G.package})
 		env.package.loaded = {}
 	end
+	--for k,v in pairs(env.package.loaded) do print("env.package.loaded",k,v) end
 	local f = loadfilefrompath(file)
 	setfenv(f, env)
-	f()
+	env.package.loaded[file] = f() or true
 	return env
 end
 
@@ -100,6 +100,7 @@ function GetSCKeyWords()
 			loadinEnv("sc.routines",env)
 			loadinEnv("sc.ctrl_bus",env)
 			loadinEnv("oscfunc",env)
+			loadinEnv("sc.MetronomLanes",env)
 			local keyword_table = {}
             for index, value in pairs(env) do
 				if type(value)=="function" then
@@ -119,6 +120,8 @@ function GetSCKeyWords()
 							local args 
 							if src then args = src:match(".-function.-(%(.+%))") end
 							sckeywordsSource[index.."."..i2] = {currentline = info.linedefined,source = info.source,def=src,args=args}
+						else
+							table.insert(keyword_table,index.."."..i2.." ")
 						end
 					end
 				end
