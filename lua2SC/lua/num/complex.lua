@@ -551,12 +551,12 @@ function math.log(x)
 --------------------------------------------------------------------------------
   local z=tonumber(x)
   if z then
-    if 0<=z then
+    --if 0<=z then
       return math_.log(z)
-    else
-      x={r=z,i=0}
-      setmetatable(x,complex)
-    end
+    --else
+    --  x={r=z,i=0}
+    --  setmetatable(x,complex)
+    --end
   end
   if is.complex(x) then
     return complex.log(x)
