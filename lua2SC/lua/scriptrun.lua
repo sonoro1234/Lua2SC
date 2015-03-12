@@ -1,5 +1,56 @@
 -- ---------------------------------------------------------------------------
 local USE_PROFILE = false
+
+local function MsgLoop()
+	while true do
+		local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive","execstr")
+		if val then
+			--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
+			if key=="metronomLanes" then
+				setMetronomLanes(val)
+			elseif key=="beat" then
+				theMetro:play(nil,val)
+			elseif key=="tempo" then
+				theMetro:play(val)
+			elseif key=="/metronom" then
+				setMetronom(val[2],val[3])
+			elseif key=="script_exit" then
+				print("SCRIPT: script_exit arrived")
+				break
+			elseif key=="beatRequest" then
+				idlelinda:send("Metro",theMetro:send())
+				----print("beatRequest")
+			elseif key=="_valueChangedCb" then
+				--print("_valueChangedCbzzz")
+				_valueChangedCb(val[1],val[2],val[3])
+			elseif key=="_midiEventCb" then
+					_midiEventCb(val)
+			elseif key=="play" then
+				if val==1 then
+					theMetro:start()
+				else
+					theMetro:stop()
+				end
+			elseif key=="OSCReceive" then 
+				--print("OSCReceive in scriptlinda",tb2st(val))
+				OSCFunc.handleOSCReceive(val)
+			elseif key=="execstr" then 
+				local chunk,err = loadstring(val)
+				if chunk then
+					local t = {pcall(chunk)}
+					if t[1] then 
+						print(unpack(t)) 
+					else
+						prerror(unpack(t))
+					end
+				else
+					print("error in exestr:",err)
+				end
+			end
+		end
+	end
+end
+
 function ScriptRun(pars)
 
 	local typerun = pars.typerun
@@ -24,11 +75,7 @@ function ScriptRun(pars)
 			prerror( "SCRIPT: finalizer after error: ")
 			local onlyerrorst=err:match(":%d+:(.+)")
 			prerror(tostring(err).."\n"..tostring(onlyerrorst) )
-			--prerror("SCRIPT: finalizer stack table")
-			--prstak(stk)
 			prtable(stk)
-			--debuglocals()
-			--print("end debug print")
 		elseif type(err)=="userdata" then
 			print( "SCRIPT: finalizer after cancel " )
 		else
@@ -47,7 +94,7 @@ function ScriptRun(pars)
 		local res = {}
 		for k,v in pairs(con) do
 			local typev = type(v)
-			if (typev=="number") or (typev=="string") then
+			if (typev=="number") or (typev=="string") or (typev=="boolean") then
 				res[k]=v
 			elseif typev=="table" and (k=="pos" or k=="menu") then
 				res[k]=v
@@ -116,23 +163,9 @@ function ScriptRun(pars)
 
 	--------------------------------------------------------
 	local function main_lanes(script)
---[[
-		--clear linda-------------
-		local usedkeys = scriptlinda:count()
-		if usedkeys then
-			for k,v in pairs(usedkeys) do scriptlinda:set(k) end
-		end
 
-		if debugging then
-			Debugger:init(Debuggerbp)
-		end
-		--]]
 		require("sc.init")
 
-		theMetro.playNotifyCb[#theMetro.playNotifyCb+1] = function(met) 
-				idlelinda:send("Metro",met:send()) 
-			end
-		scriptname2 = script
 		local fs,err = loadfile(script)
 		if fs then 
 			fs() 
@@ -146,54 +179,7 @@ function ScriptRun(pars)
 		ProFi:start()
 		end
 
-		while true do
-			--local dgram,status = udp2:receive()
-			--from the gui (editor and scriptgui)
-			local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive","execstr")
-			if val then
-				--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
-				if key=="metronomLanes" then
-					setMetronomLanes(val)
-				elseif key=="beat" then
-					theMetro:play(nil,val)
-				elseif key=="tempo" then
-					theMetro:play(val)
-				elseif key=="/metronom" then
-					setMetronom(val[2],val[3])
-				elseif key=="script_exit" then
-					print("SCRIPT: script_exit arrived")
-					break
-				elseif key=="beatRequest" then
-					idlelinda:send("Metro",theMetro:send())
-					----print("beatRequest")
-				elseif key=="_valueChangedCb" then
-					--print("_valueChangedCbzzz")
-					_valueChangedCb(val[1],val[2],val[3])
-				elseif key=="_midiEventCb" then
-					_midiEventCb(val)
-				elseif key=="play" then
-					if val==1 then
-						theMetro:start()
-					else
-						theMetro:stop()
-					end
-				elseif key=="OSCReceive" then 
-					--print("OSCReceive in scriptlinda",tb2st(val))
-					OSCFunc.handleOSCReceive(val)
-				elseif key=="execstr" then 
-					local chunk,err = loadstring(val)
-					if chunk then
-						--setfenv(chunk, getfenv(fs))
-						local status,msg = pcall(chunk)
-						if not status then prerror(msg) end
-						--prtable(debug.getinfo(fs))
-						--debuglocals(true)
-					else
-						print("error in exestr:",err)
-					end
-				end
-			end
-		end
+		MsgLoop()
 		
 		if USE_PROFILE then
 		ProFi:stop()
@@ -208,17 +194,7 @@ function ScriptRun(pars)
 	end
 	
 	local function main_lanes_custom(script)
---[[
-		--clear linda-------------
-		local usedkeys = scriptlinda:count()
-		if usedkeys then
-			for k,v in pairs(usedkeys) do scriptlinda:set(k) end
-		end
 
-		if debugging then
-			Debugger:init(Debuggerbp)
-		end
-		--]]
 		require("custom.init")
 		preload()
 
@@ -233,54 +209,18 @@ function ScriptRun(pars)
 		postload2()
 		return true
 	end
-	local function main_lanes_customAV(script)
---[[
-		--clear linda-------------
-		local usedkeys = scriptlinda:count()
-		if usedkeys then
-			for k,v in pairs(usedkeys) do scriptlinda:set(k) end
-		end
-
-		if debugging then
-			Debugger:init(Debuggerbp)
-		end
-		--]]
-		
-		arg = {}
-		arg[0] = [[C:\LUA\luaAV4repo\LuaAV4\modules\av.lua]]
-		arg[1] = script
-		local fs,err = loadfile([[C:\LUA\luaAV4repo\LuaAV4\modules\av.lua]])
-		if fs then 
-			fs() 
-		else 
-			error("loadfile error:"..tostring(err),2) 
-		end
-		
-		return true
-	end
+	
 	local function main_lanes_plain(script)
-		io.write"this is main_lanes_plain"
-		--if debugging then
-		--	Debugger:init(Debuggerbp)
-		--end
 		dofile(script)
 		return true
 	end
 	
-	--CloseScriptGUI()
-
-	--CreateScriptGUI()
-	
 	local runmain = nil
 	if typerun ==1 then
-		--timer:Start(300,wx.wxTIMER_ONE_SHOT)
-		--manager:GetPane(panel):Show()
 		runmain = main_lanes --pmain --main_lanes
 	elseif typerun == 2 then
-		--manager:GetPane(panel):Hide()
 		runmain = main_lanes_plain
 	elseif typerun == 3 then
-		--manager:GetPane(panel):Hide()
 		runmain = main_lanes_custom
 	end
 	
@@ -355,8 +295,6 @@ function ScriptRun(pars)
 		set_error_reporting("extended")
 		set_debug_threadname("script_thread")
 
-		
-
 		Debugger = require"sc.debugger"
 		--clear linda-------------
 		local usedkeys = scriptlinda:count()
@@ -406,8 +344,6 @@ function ScriptRun(pars)
 				_presetsDir=_presetsDir,
 				prtable=prtable,
 				ToStr=ToStr,
-				--addOSCFilter = addOSCFilter,
-				--clearOSCFilter = clearOSCFilter
 				OSCFunc = OSCFunc,
 				OSCFuncLinda = scriptlinda,
 				Debuggerbp = Debuggerbp,
@@ -415,7 +351,8 @@ function ScriptRun(pars)
 				scriptname = script,
 				typerun = typerun,
 				typeshed = typeshed,
-				sc_comm_type = SCSERVER.type
+				sc_comm_type = SCSERVER.type,
+				MsgLoop = MsgLoop
 				},
 		priority=0},
 		pmain)
