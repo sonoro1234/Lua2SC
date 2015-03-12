@@ -11,7 +11,13 @@ function linearmap(s,e,ds,de,v)
 	return ((de-ds)*(v-s)/(e-s)) + ds
 end
 function expinterpolation(s,e,ds,de,v)
+	return linearmap(math.exp(s),math.exp(e),ds,de,math.exp(v))
+end
+function expinterpolation2(s,e,ds,de,v)
 	return ds * (de/ds)^((v - s)/(e - s))
+end
+function loginterpolation(s,e,ds,de,v)
+	return ((de-ds)*math.log(v/s)/math.log(e/s)) + ds
 end
 function amp2db(amp)
 	return 20*math.log10(amp)

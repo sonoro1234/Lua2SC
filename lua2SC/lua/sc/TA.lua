@@ -4,7 +4,7 @@ local function len(t)
 	return type(t)=="table" and #t or 1 
 end
 local function WrapAt(t,i)
-	if type(t)=="table" then
+	if isSimpleTable(t) then -- type(t)=="table" then
 		i=i%#t
 		i= (i~=0) and i or #t
 		return t[i]
