@@ -2,7 +2,9 @@
 --require"init"
 require"sc.playersppqSCH"
 
-theMetro={bpm=120,bps=2,beat=0,rate=100,ppqPos=0,playing=0,frame=1,playNotifyCb={},abstime=0}
+theMetro={bpm=120,bps=2,beat=0,rate=100,ppqPos=0,playing=0,frame=1,playNotifyCb={function(met) 
+				idlelinda:send("Metro",met:send()) 
+			end},abstime=0}
 --EP for computing abstime
 ---[[
 function updateAbsTime(p)
