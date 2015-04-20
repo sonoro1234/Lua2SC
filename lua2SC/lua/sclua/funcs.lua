@@ -9,10 +9,22 @@ local busIndex = 15
 function parseArgsX(args)
 	local a = {}
 	if args ~= nil then
-		for arg, val in pairs(args) do 
-			table.insert(a, arg)
-			table.insert(a, val)
+		for name,value in pairs(args) do
+			table.insert(a,name)
+			if type(value) ~= "table" then
+				table.insert(a,{"float",value})
+			else
+				table.insert(a,{"["})
+				for i,val in ipairs(value) do
+					table.insert(a,{"float",val})
+				end
+				table.insert(a,{"]"})
+			end
 		end
+--		for arg, val in pairs(args) do 
+--			table.insert(a, arg)
+--			table.insert(a, val)
+--		end
 	end
 	return a
 end

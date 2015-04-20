@@ -28,6 +28,10 @@ function Group_metatable:deepFree()
 	self.server:sendMsg('/g_deepFree', self.nodeID )
 end
 
+function Group_metatable:free()
+	self.server:sendMsg('/n_free', self.nodeID )
+end
+
 function Group_metatable:dumpTree(flag)
 	flag = flag or 0
 	self.server:sendMsg('/g_dumpTree', self.nodeID, flag )

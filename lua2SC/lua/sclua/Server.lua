@@ -18,7 +18,10 @@ function Server(IP, port)
 	s.oscout = osc.Send(s.IP, s.port)
 	-- s.oscin  = osc.Recv(57180) -- I need a two directional OSC port
 
-	s.Synth = function(name, args)
+	s.Synth = {}
+
+	local smet = {}
+	smet.__call = function(t ,name, args, target,addAction)
 		local synthTab = setmetatable({
 			type = "synth",
 			server = s,
@@ -26,9 +29,27 @@ function Server(IP, port)
 			name = name,
 			args = parseArgsX(args),
 		}, Synth_metatable)
-		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, 0, BASE_NODE, unpack(synthTab.args))
+		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, addAction or 0, target and target.nodeID or BASE_NODE, unpack(synthTab.args))
 		return synthTab
+	end 
+	smet.tail = function(aGroup, defName, args)
+		return smet.__call(nil, defName, args, aGroup, 1)
 	end
+	smet.head = function(aGroup, defName, args)
+		return smet.__call(nil, defName, args, aGroup, 0)
+	end
+	smet.after = function(aNode, defName, args)
+		return smet.__call(nil, defName, args, aNode, 2)
+	end
+	smet.before = function(aNode, defName, args)
+		return smet.__call(nil, defName, args, aNode, 3)
+	end
+	smet.replace = function(aNode, defName, args)
+		return smet.__call(nil, defName, args, aNode, 4)
+	end
+	smet.__index = smet
+	setmetatable(s.Synth,smet)
+	
 
 	s.Buffer = function(path)
    		local bufferTab = setmetatable({
@@ -55,7 +76,7 @@ function Server(IP, port)
 	s.Group = function(aGroup)
 		local target 
 		if aGroup == nil then
-			target = 1 -- default SC server group 
+			target = BASE_NODE --1 -- default SC server group 
 		else
 			target = aGroup.nodeID
 		end
