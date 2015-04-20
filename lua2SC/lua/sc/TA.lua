@@ -135,7 +135,7 @@ function _TAmt:sort(f)
 	return self:new(res)
 end
 function _TAmt.__call(t,ini,ends,step)
-	step = step or 1;ends = ends or ini
+	step = step or 1;ends = ((ends and ends < 0) and (#t+ends+1)) or ends or ini
 	local res = {}
 	for i=ini,ends,step do
 		res[#res + 1]= t[i]
