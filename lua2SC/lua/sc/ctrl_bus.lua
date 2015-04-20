@@ -65,6 +65,18 @@ ctrl_mapper.__add = function (a,b)
 	C.endp = A.endp + B
 	return C
 end
+ctrl_mapper.__mul = function (a,b)
+	local A,B
+	if type(a)=="table" and a.is_ctrl_mapper then
+		A,B = a,b
+	else
+		A,B = b,a
+	end
+	local C = A:new()
+	C.inip = A.inip * B
+	C.endp = A.endp * B
+	return C
+end
 --------------------------
 
 function RAMP(inip,endp,time)
