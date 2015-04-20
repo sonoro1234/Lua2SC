@@ -77,6 +77,11 @@ function Settings:Create(parent)
 	grid_sizer:Add(udpTC,wx.wxGBPosition(row,1))
 	row = row + 1
 	
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Buffer size:"),wx.wxGBPosition(row,0))
+	local bsizeTC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_BUFFER_SIZE))
+	grid_sizer:Add(bsizeTC,wx.wxGBPosition(row,1))
+	row = row + 1
+	
 	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Audio Device:"),wx.wxGBPosition(row,0))
 	local Au_Dev_TC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_AUDIO_DEVICE),wx.wxDefaultPosition)
 	grid_sizer:Add(Au_Dev_TC,wx.wxGBPosition(row,1), wx.wxGBSpan(1,1), wx.wxEXPAND)
@@ -235,6 +240,7 @@ function Settings:Create(parent)
 					self.options.SC_PLUGIN_PATH[i+1]=pluginTC:GetString(i)
 			end
 			self.options.SC_UDP_PORT=udpTC:GetValue()
+			self.options.SC_BUFFER_SIZE=bsizeTC:GetValue()
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
 			--prtable(self.MIDIdev)
 			self:ConfigSave(file_settings)

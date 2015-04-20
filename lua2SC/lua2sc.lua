@@ -97,7 +97,8 @@ settings_defaults = {
 		SC_SYNTHDEF_PATH="default",
 		SC_PLUGIN_PATH={"default"},
 		SC_UDP_PORT=57110,
-		SC_AUDIO_DEVICE=""
+		SC_AUDIO_DEVICE="",
+		SC_BUFFER_SIZE = -1
 	},
 }
 file_config = require"file_settings"
@@ -173,7 +174,7 @@ while true do
 			MidiOpen(val)
 		elseif key == "ScriptRun" then
 			io.write"scriptrun in mainlinda\n"
-			dofile(lua2scpath.."lua"..path_sep.."scriptrun.lua") -- this allow to modify between runs
+			dofile(lua2scpath.."lua"..path_sep.."scriptrun.lua") -- this allow to modify scriptrun.lua between runs
 			ScriptRun(val)
 		elseif key == "CancelScript" then
 			local res = CancelScript(val.timeout)
