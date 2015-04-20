@@ -70,7 +70,7 @@ _arittablemt.__mul=function (a,b)
 end
 --------------------------------------------------------
 REST={isREST=true}
-RESTmt = {}
+local RESTmt = {}
 setmetatable(REST,RESTmt)
 function RESTmt.__add(a,b)
 	return REST
@@ -97,6 +97,35 @@ RESTmt.__metatable = RESTmt
 function IsREST(val)
 	return ((type(val)=="table") and val.isREST)
 end
+--------------------------------------------------------
+NOP={isNOP=true}
+local NOPmt = {}
+setmetatable(NOP,NOPmt)
+function NOPmt.__add(a,b)
+	return NOP
+end
+function NOPmt.__sub(a,b)
+	return NOP
+end
+function NOPmt.__mul(a,b)
+	return NOP
+end
+function NOPmt.__div(a,b)
+	return NOP
+end
+--to allow wrapAt return NOP
+function NOPmt.__index(t,k)
+	if type(k)=="number" then return NOP end
+end
+function NOPmt.__tostring(a)
+	return "NOP" 
+end
+NOPmt.__metatable = NOPmt
+-- finds deepcopys or NOP
+function IsNOP(val)
+	return ((type(val)=="table") and val.isNOP)
+end
+-----------------------------------------------------------
 function LoadPreset(file)
 	local fich=io.open(_presetsDir..file..".prSC","r")
 	assert(fich,"Could not open:".._presetsDir..file..".prSC")
@@ -130,11 +159,11 @@ function UsePreset(preset,player)
 end
 
 function midi2freq(midi)
-	if IsREST(midi) then return midi end
+	if IsREST(midi) or IsNOP(midi) then return midi end
 	return 440*(2^((midi - 69.0)/12.0))
 end
 function freq2midi(freq)
-	if IsREST(freq) then return freq end
+	if IsREST(freq) or IsNOP(freq) then return freq end
 	return 12 * math.log(freq / 440) / math.log(2) + 69
 end
 function midi2ratio(int)
