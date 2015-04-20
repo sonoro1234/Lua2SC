@@ -88,7 +88,7 @@ function BeatFreq(n)
 end
 function getNote(nv, mode)
 	local mode_notes
-	if IsREST(nv) then return nv end
+	if IsREST(nv) or IsNOP(nv) then return nv end
 	if type(mode) == "table" then
 		mode_notes = mode
 	elseif modes[mode] then
@@ -409,7 +409,7 @@ function MidiEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	velo = lista.velo or 64
 	chan = lista.chan or 0
 	--if self.volumen then velo = velo * self.volumen end
-	if IsREST(nota) then return end
+	if IsREST(nota) or IsNOP(nota) then return end
 	if type(nota) == "table" then
 		for i,v in ipairs(nota) do
 			self:playMidiNote(v,velo,chan,beatTime,beatLen)

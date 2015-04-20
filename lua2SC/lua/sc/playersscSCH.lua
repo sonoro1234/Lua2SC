@@ -590,6 +590,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 		self:Release() 
 		return  
 	end
+	if IsNOP(freq) then return end
 	if lista.detune then
 		lista.freq=freq*lista.detune
 		lista.detune=nil

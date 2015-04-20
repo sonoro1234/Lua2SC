@@ -66,7 +66,7 @@ function MIDIButton(value)
 	local value = value or 40
 	local panel =addPanel{type="vbox",parent=nil}
 	local notetext = addControl{value=value, typex="text",name="midinote",label=0,panel=panel}
-	local newcontrol = {value=0.3,min=0,max=2, typex="vslider",label=0,name="velocity",
+	local newcontrol = {value=0.9,min=0,max=2, typex="vslider",label=0,name="velocity",
 			panel = panel,
 			callback=function(value,str,c) 
 					c:setLabel(string.format("%.2f",value),0)

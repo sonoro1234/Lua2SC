@@ -655,6 +655,7 @@ function PairsStream:getStream(key)
 	end
 	return res
 end
+--accepts several streampairs
 function PS(...)
 	local ps=PairsStream:new{stlist={...}}
 	for i,t in ipairs{...} do
