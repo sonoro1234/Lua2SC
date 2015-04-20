@@ -35,7 +35,7 @@ end
 function SETEv(name)
 	return FS(function(pl)
 					named_events:set(name,pl.ppqPos)
-					return {delta=0,dur=0,freq=REST}
+					return {delta=0,dur=0,freq=NOP}
 				end)
 end
 function WAITEv(name)
@@ -50,7 +50,7 @@ function WAITEv(name)
 					if named_events:is_set(name) then 
 						return nil 
 					end
-					return {dur=1,delta=math.huge,freq=REST}
+					return {dur=1,delta=math.huge,freq=NOP}
 				end)
 end
 
@@ -74,7 +74,7 @@ function UNTILEv(name,pat)
 					return nil 
 				end
 				if val == nil then finished = true end
-				if finished then return {dur=1,delta=math.huge,freq=REST} end
+				if finished then return {dur=1,delta=math.huge,freq=NOP} end
 				return val
 				end)
 end
