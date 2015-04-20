@@ -1496,7 +1496,7 @@ function SYNTHDef:findTerminals()
 	self.outputugens={}
 	for k,v in pairs(terminals) do
 		self.outputugens[#self.outputugens+1]=k
-		--print(k.name)
+		--print("terminal",k.name)
 	end
 end
 function SYNTHDef:build()
@@ -1915,10 +1915,22 @@ end
 NTube=UGen:new{name='NTube'}
 function NTube.ar(input,lossarray,karray,delaylengtharray,mul,add)
 	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
-	local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
-	local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
+	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
+	local lossarrayfix = lossarray
+	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
+	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
 	--prtable("karray",delaylengtharray)
 	return NTube:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
+end
+KLJunction=UGen:new{name='KLJunction'}
+function KLJunction.ar(input,lossarray,karray,delaylengtharray,mul,add)
+	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
+	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
+	local lossarrayfix = lossarray
+	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
+	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
+	--prtable("karray",delaylengtharray)
+	return KLJunction:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
 end
 ----------------------
 --[[
@@ -1957,6 +1969,10 @@ end
 function Tartini.kr(inp,threshold,n,k,overlap,smallCutoff)
 	inp=inp or 0;threshold=threshold or 0.93;n=n or 2048;k=k or 0;overlap=overlap or 1024;smallCutoff=smallCutoff or 0.5;
 	return Tartini:MultiNew{1,2,inp,threshold,n,k,overlap,smallCutoff}
+end
+function Pitch.kr(...)
+	local   inp, initFreq, minFreq, maxFreq, execFreq, maxBinsPerOctave, median, ampThreshold, peakThreshold, downSample, clar   = assign({ 'inp', 'initFreq', 'minFreq', 'maxFreq', 'execFreq', 'maxBinsPerOctave', 'median', 'ampThreshold', 'peakThreshold', 'downSample', 'clar' },{ 0.0, 440.0, 60.0, 4000.0, 100.0, 16, 1, 0.01, 0.5, 1, 0 },...)
+	return Pitch:MultiNew{1,2,inp,initFreq,minFreq,maxFreq,execFreq,maxBinsPerOctave,median,ampThreshold,peakThreshold,downSample,clar}
 end
 Demand=MultiOutUGen:new{name='Demand'}
 function Demand.kr(trig,reset,demandUGens)
