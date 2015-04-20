@@ -348,17 +348,66 @@ function Flip(Hz)
 	local zminusN = RatPoly({1},zN)
 	return zminusN*EvalZm1(Hz)
 end
-function Durbin_recursion(Hz)
+local function sign(x)
+	return x > 0 and 1 or -1
+end
+function Durbin_recursion(Hz,fix)
 	local Kaes = {}
 	local N = Hz.Den.deg
 	local HzN = Hz
-	print("HzN durbin ",tostring(HzN))
+	--print("HzN durbin ",tostring(HzN))
 	for i=N,1,-1 do
 		Kaes[i] = HzN.Num[0]
-		assert(math.abs(Kaes[i]) < 1,"inestable filter coeffs in Durbin K:"..tostring(Kaes[i]))
+		if fix then 
+			if math.abs(Kaes[i]) > 1 then 
+				print("fixing",Kaes[i])
+				Kaes[i] = sign(Kaes[i])*0.99999 
+			end
+		end
+		--assert(math.abs(Kaes[i]) < 1,"inestable filter coeffs in Durbin K:"..i..tostring(Kaes[i]))
+		if math.abs(Kaes[i]) >=1 then
+			prtable(Kaes)
+			error()
+		end
 		HzN = (HzN - Kaes[i]*Flip(HzN))/(1 - Kaes[i]*Kaes[i])
 		HzN = HzN:Simplify():Normalize()
 		--print("HzN d ",tostring(HzN))
+	end
+	return Kaes
+end
+
+function Durbin_recursion2(HzN,fix)
+	local Kaes = {}
+	local N = HzN.Num.deg
+	--print("HzN durbin ",tostring(HzN))
+	local pol = TA(HzN.Num:GetCoefs()):reverse()
+	--print("HzN durbin ",pol)
+	for i=N,1,-1 do
+		Kaes[i] = pol[#pol]
+		
+		assert(math.abs(Kaes[i]) < 1,"inestable filter coeffs in Durbin K:"..i..tostring(Kaes[i]))
+		pol = (pol - Kaes[i]*pol:reverse())/(1 - Kaes[i]*Kaes[i])
+		pol = pol(1,#pol - 1)
+		--print("HzN durbin ",pol)
+	end
+	return Kaes
+end
+
+function Durbin_recursion3(HzN,fix)
+	local Kaes = {}
+	local N = HzN.Num.deg
+	--print("HzN durbin ",tostring(HzN))
+	local pol = TA(HzN.Num:GetCoefs()):reverse()
+	pol = -1*pol
+	pol[1] = 1
+	--print("HzN durbin ",pol)
+	for i=N,1,-1 do
+		Kaes[i] = pol[#pol]
+		
+		assert(math.abs(Kaes[i]) < 1,"inestable filter coeffs in Durbin K:"..i..tostring(Kaes[i]))
+		pol = (pol + Kaes[i]*pol:reverse())/(1 - Kaes[i]*Kaes[i])
+		pol = pol(1,#pol - 1)
+		--print("HzN durbin ",pol)
 	end
 	return Kaes
 end

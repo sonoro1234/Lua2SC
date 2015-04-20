@@ -81,7 +81,7 @@ complex={}
 complex.__index=complex
 complex.version="2011-01-05"
 
-math.i=setmetatable({r=0,i=1},complex)
+complex.i=setmetatable({r=0,i=1},complex)
 
 function complex.new(r,i)
 	return setmetatable({r=r or 0,i= i or 0},complex)

@@ -237,7 +237,7 @@ function Polynomial_mt.realCoefs(P)
 	return Polynomial(real)
 end
 function Polynomial_mt.MCD(a,b,tol)
-	local tol = 1e-9
+	local tol = tol or 1e-12
 	local r
 	if a.deg < b.deg  then b,a = a,b end
 	if b.deg == -1 then return 1 end
@@ -364,9 +364,9 @@ function RationalPoly_mt:Normalize()
 	local fac = 1/self.Den[self.Den.deg]
 	return self:new(self.Num*fac,self.Den*fac)
 end
-function RationalPoly_mt:Simplify()
+function RationalPoly_mt:Simplify(tol)
 	--self = self:Truncate()
-	local mcd = self.Num:MCD(self.Den)
+	local mcd = self.Num:MCD(self.Den,tol)
 	return self:new((self.Num/mcd).Q,(self.Den/mcd).Q)
 end
 function RationalPoly_mt:derive()
@@ -454,7 +454,8 @@ function ZRatPoly(B,A)
 	local A = A or {1}
 	local Num = IsPolynomial(B) and B or Polynomial(B)
 	local Den = IsPolynomial(A) and A or Polynomial(A)
-	return (RatPoly(Num,Den)*Zpow(-Num.deg)*Zpow(Den.deg)):Simplify()
+	--return (RatPoly(Num,Den)*Zpow(-Num.deg)*Zpow(Den.deg)) --:Simplify()
+	return (RatPoly(Num,Den)*Zpow(Den.deg - Num.deg)):Simplify()
 end
 function Zpow(i)
 	assert(math.floor(i)==i)
