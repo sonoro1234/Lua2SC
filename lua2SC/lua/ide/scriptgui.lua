@@ -328,6 +328,163 @@ function wxFuncGraph3(parent,name,label,id,co)
 	local maxy = co.maxy or 1
 	local minx = co.minx or 0
 	local maxx = co.maxx or 1
+	local biasx = co.biasx
+	local biasy = co.biasy
+	local height=co.height or 150
+	local width= co.width or 200
+	local facX=width/(maxx-minx)
+	local facY=height/(maxy-miny)
+	local label_height=20
+	local name_height=20
+	local extra_w=25
+	
+	local penwidth=1
+	
+	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
+	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
+	wxwindow:SetLabel(label)
+	
+	local GraphClass={value={{0.1,0},{1,0}},window=wx.wxNULL,customclass="GraphClass"}
+	local function bias(x,b,y)
+		return x^(math.log(b)/math.log(y or 0.5))
+	end
+	local function bias2(x,b)
+		return b==0 and x or (((b + 1)^(x) -1)/b)
+	end
+	local function expfunctionBAK(ini,endp,minx,maxx,i)
+		local dif = maxx - minx
+		local difp = endp - ini
+		return (dif + 1)^((i-ini)/difp) - 1 + minx
+	end
+	local function expfunction(ini,endp,minx,maxx,i,biasv)
+		local x1 = linearmap(ini,endp,0,1,i)
+		--x1 = bias(x1,biasv or 0.2)
+		x1 = bias2(x1,biasv or 0.2)
+		return linearmap(0,1,minx,maxx,x1)
+	end
+	function GraphClass.SetValue(_,valf)
+		--prtable("valf",valf)
+		--print(#valf.data)
+		valf = valf or {}
+		local ini = 0
+		local endp = width
+		local step = 1
+		biasx = valf.biasx or biasx
+		biasy = valf.biasy or biasy
+		local funcs = valf.funcs or {function(x) return x,x end}
+		local vals = {}
+		for i=ini,endp,step do
+			local x
+			if biasx then
+				--x = expinterpolation(ini,endp,minx,maxx,i)
+				x = expfunction(ini,endp,minx,maxx,i,biasx)
+			else
+				x = linearmap(ini,endp,minx,maxx,i)
+			end
+			for j=1,#funcs do
+				vals[j] = vals[j] or {}
+				table.insert(vals[j],{i,funcs[j](x)})
+			end
+		end
+		--prtable("val",val)
+		GraphClass.valf=valf
+		GraphClass.values=vals
+		miny=math.huge
+		maxy=-math.huge
+		for j,val in ipairs(vals) do
+		for _,v in ipairs(val) do
+			if v[2] > maxy then maxy = v[2] end
+			if v[2] < miny then miny = v[2] end
+		end
+		end
+		facX=width/(maxx-minx)
+		facY=height/(maxy-miny)
+		wxwindow:Refresh()
+	end
+	function GraphClass.SetLabel(_,val)
+		wxwindow:SetLabel(val)
+		wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
+		--wxwindow:RefreshRect()
+	end
+	
+	local function Draw(dc)
+		dc:SetPen(wx.wxBLACK_PEN)
+		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:DrawRectangle(extra_w, name_height, width ,height);
+		local parts = 10
+		local widthf=width/parts
+		local widthx = maxx - minx
+		for i=0,parts do
+			local x1=widthf*i + extra_w
+			dc:DrawLine(x1, name_height, x1,name_height + height);
+			local lab
+			if biasx then
+				--lab = expinterpolation(0,width,minx,maxx,i*widthf)
+				lab = expfunction(0,width,minx,maxx,i*widthf,biasx)
+			else
+				lab = linearmap(0,width,minx,maxx,i*widthf)
+			end
+			local str = string.format("%.2f",lab)
+			dc:DrawText(str,x1,0)
+		end
+		local heightf=height/parts
+		local heightyf = (maxy - miny)/parts
+		for i=0,parts do
+			local y1=height + name_height - heightf*i
+			dc:DrawLine(extra_w, y1, width+extra_w,y1);
+			local lab = miny + heightyf*i
+			local str=string.format("%.2f",lab)
+			dc:DrawText(str,0,y1)
+		end
+		dc:SetPen(wx.wxGREEN_PEN)
+		dc:SetBrush(wx.wxGREEN_BRUSH)
+		local maxbin=#GraphClass.values[1]
+		for _,vals in ipairs(GraphClass.values) do
+		if maxbin > 1 then
+			--local vals = GraphClass.value
+			local x
+			local y
+			local points = {}
+			for i=1,maxbin do
+
+				x = vals[i][1] + extra_w
+				--y= name_height-(vals[i][2]-miny)*facY -- 
+				y = linearmap(miny,maxy,name_height,name_height - height,vals[i][2])
+				points[#points +1]={x,y}
+			end
+			--prtable("points",points)
+			dc:DrawLines(points,0,height)
+		end
+		end
+		dc:SetPen(wx.wxNullPen)
+		dc:SetBrush(wx.wxNullBrush)
+
+	end
+	
+	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
+			local dc = wx.wxPaintDC(wxwindow)
+			Draw(dc)
+			dc:delete() 
+		end)
+    wxwindow:Connect(wx.wxEVT_ERASE_BACKGROUND, function(event) 
+			event:Skip() 
+		end) 
+    
+	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+			wxwindow:Refresh();
+		end)
+	GraphClass.window=wxwindow
+	return GraphClass 
+end
+---------------------------wxFuncGraph3
+function wxFuncGraph3BAK(parent,name,label,id,co)
+	id = id or wx.wxID_ANY
+	local miny = co.miny or 0
+	local maxy = co.maxy or 1
+	local minx = co.minx or 0
+	local maxx = co.maxx or 1
 	local log = co.log or false
 	local logx = co.logx or log
 	local logy = co.logy or log
@@ -351,11 +508,12 @@ function wxFuncGraph3(parent,name,label,id,co)
 	
 	function GraphClass.SetValue(_,valf)
 		--prtable("valf",valf)
+		--print(#valf.data)
 		valf = valf or {}
-		valf.x = valf.x or {0.001,1,50}
+		valf.x = valf.x or {0.001,1,width}
 		local ini = valf.x[1] or 0.1
 		local endp = valf.x[2] or 1
-		local step = (endp - ini)/(valf.x[3] or 50)
+		local step = (endp - ini + 1)/(valf.x[3] or width)
 		local func = valf.func or function(x) return x,x end
 		local val = {}
 		for x=ini,endp,step do
@@ -462,6 +620,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 	GraphClass.window=wxwindow
 	return GraphClass 
 end
+---------------------------wxFuncGraph
 ---------------------------wxFuncGraph
 function wxFuncGraph(parent,name,label,id,co)
 	id = id or wx.wxID_ANY
@@ -620,7 +779,7 @@ function wxFreqScope(parent,name,label,id,co)
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:DrawRectangle(extra_w, name_height, width,height);
 		local widthf=width/10
-		for i=1,10 do
+		for i=0,10 do
 			local x1=widthf*i + extra_w
 			dc:DrawLine(x1, name_height, x1,name_height + height);
 			--local str=string.format("%.0f",(i*22050/10)^(i/10))
