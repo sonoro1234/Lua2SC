@@ -125,7 +125,7 @@ Phonemes ={
 		      {2800, 0.860, -10},
 		      {7425, 0.740,   0},
 		      {8140, 0.860,   0}	},
-		   {  {0,    0.000,   0},       -- sss
+		   {  {2000,    0.700,   -200},       -- sss
 		      {2000, 0.700, -15},
 		      {5257, 0.750,  -3}, 
 		      {7171, 0.840,   0}	},
@@ -232,6 +232,21 @@ function Phonemes:params(name)
 	---------------
 	return par
 end
+function Phonemes:paramsD(name)
+	local ind=self:namesindex(name)
+	local par= flop(self.parameters[ind])
+
+	par[3]= functabla(par[3],dbamp)
+	par[4]=self.gains[ind][1]
+	par[5]=self.gains[ind][2]
+	----------
+	--par[1] = {par[1]}
+	local temp = par[2]
+	par[2] = par[3]
+	par[3] = temp
+	---------------
+	return par
+end
 function Phonemes:paramsPalabra(t)
 	local res={}
 	for i,v in ipairs(t) do
@@ -272,6 +287,9 @@ tenorE={ { 400, 1700, 2600, 3200, 3580 }, { 1, 0.19952623149689, 0.2511886431509
 --sopranoO={ { 450, 800, 2830, 3800, 4950 }, { 1, 0.28183829312645, 0.079432823472428, 0.079432823472428, 0.0031622776601684 }, { 0.15555555555556, 0.1, 0.035335689045936, 0.034210526315789, 0.027272727272727 } }
 sopranoO={ { 450, 800, 2830, 3800, 4950 }, { 1, 0.7183829312645, 0.39432823472428, 0.079432823472428, 0.0031622776601684 }, { 0.15555555555556, 0.1, 0.035335689045936, 0.034210526315789, 0.027272727272727 } }
 }
+
+FormantsD = deepcopy(Formants)
+
 --to avoid multiexpand
 for k,v in pairs(Formants) do
 	for i,v2 in ipairs(v) do
