@@ -68,11 +68,11 @@ function Stream:new(o)
 end
 --- Puts Stream in the initial position
 function Stream:reset()
-	self.pos=1
-	self.creps=0
-	self.recur=nil
+	self.pos = 1
+	self.creps = 0
+	self.recur = nil
 	if self.repSt then
-		--TODO: this is not a complete reset of the outer stream
+		print"TODO: this is not a complete reset of the outer stream"
 		self.reps = self.repSt:nextval()
 	end
 end
@@ -250,12 +250,13 @@ function ListStream:pnext(e)
 end
 --- For lists of items responding to merge (PS for example)
 -- @param t key-val table to be merged with items in ListStream
---function ListStream:merge(t)
---	for i,v in ipairs(self.list) do
---		v:merge(t)
---	end
---end
+function ListStream:merge(t)
+	for i,v in ipairs(self.list) do
+		v:merge(t)
+	end
+end
 function ListStream:reset()
+	--print"LS resetmmmmmmmmmmmmmmmmmm"
 	assert(#self.list > 0,"ListStream without list")
 	for i,v in ipairs(self.list) do
 		if type(v)=="table" and (v.isStream == true) then
@@ -701,7 +702,7 @@ end
 ParalelStream = Stream:new{ stlist = nil}
 ParalelStream.isParalelStream = true
 function ParalelStream:pnext(e)
-	if not self.PQ then self:reset() end
+	if not self.PQ then self:init() end
 	local t,st,k = self.PQ:pop()
 	local res = st:nextval(e)
 	if not res then self.PQ= nil; return res end
@@ -716,11 +717,20 @@ function ParalelStream:merge(t)
 		v:merge(t)
 	end
 end
-function ParalelStream:reset()
+function ParalelStream:init()
+	--print"PS initzzzzzzzzzzzzzzzzzzzzzzz"
 	self.PQ = PriorityQ:new()
 	for k,v in ipairs(self.stlist) do
 		v:reset()
 		self.PQ:put(0,v,k)
+	end
+	Stream.reset(self)
+end
+function ParalelStream:reset()
+	--print"PS resetzzzzzzzzzzzzzzzzzzzzzzz"
+	self.PQ = nil
+	for k,v in ipairs(self.stlist) do
+		v:reset()
 	end
 	Stream.reset(self)
 end
@@ -872,6 +882,7 @@ function StreamFunc:pnext(e)
 end
 function StreamFunc:reset()
 	self.argus:reset()
+	Stream.reset(self)
 end
 function SF(pat,fun)
 	if  (type(pat)~="table") or (pat.nextval == nil) then --no es stream
@@ -892,6 +903,7 @@ end
 function StreamFunc2:reset()
 	self.first = true
 	self.argus:reset()
+	Stream.reset(self)
 end
 function SF2(pat,fun)
 	if  (type(pat)~="table") or (pat.nextval == nil) then --no es stream
@@ -922,12 +934,15 @@ function Quant(q,pat)
 	return SF(pat,function(val) return math.floor(val/q + 0.5)*q end)
 end
 --------------------------------------------------------
-SFindur = Stream:new({findur=1,cfindur=0,str=nil})
+SFindur = Stream:new({findur=1,cfindur=0,str=nil,shorter=false})
 function SFindur:pnext(e)
-	if self.acabado then return nil end
+	if self.acabado then self:reset() return nil end
 	local vals=self.str:nextval(e)
-	if not vals then return nil end
-	local cfindur = self.cfindur + vals.dur
+	if not vals then
+		self:reset()
+		return nil 
+	end
+	local cfindur = self.cfindur + vals.delta --vals.dur
 	if cfindur < self.findur then
 		self.cfindur = cfindur
 		return vals
@@ -938,6 +953,7 @@ function SFindur:pnext(e)
 		if vals.dur > 0 then
 			return vals
 		else
+			self:reset()
 			return nil
 		end
 	end
@@ -948,9 +964,32 @@ function SFindur:reset()
 	self.acabado=false
 	self.recur=nil
 end
+function SFindur:merge(t)
+	return self.str:merge(t)
+end
 function FinDur(findur,pat)
 	return SFindur:new({findur=findur,cfindur=0,str=pat,acabado=false})
 end
-
-
-
+------------------------
+SSkip = Stream:new{pat=nil,skipdur=0,c_dur=0}
+function SSkip:pnext(e)
+	while self.skipdur > self.c_dur do
+		local vals = self.pat:nextval(e)
+		if not vals then return nil end
+		self.c_dur = self.c_dur + vals.delta
+	end
+	return self.pat:nextval(e)
+end 
+function SSkip:reset()
+	self.pat:reset()
+	self.c_dur=0
+	Stream.reset(self)
+end
+function SKIP(dur,pat)
+	return SSkip:new{pat=pat,skipdur=dur}
+end
+---------------------------
+function DONOP(dur)
+	return PS{dur = LS{dur}, note = NOP}
+end
+-------------------
