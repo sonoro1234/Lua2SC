@@ -978,7 +978,10 @@ function SSkip:pnext(e)
 		if not vals then return nil end
 		self.c_dur = self.c_dur + vals.delta
 	end
-	return self.pat:nextval(e)
+	--return self.pat:nextval(e)
+	local vals = self.pat:nextval(e)
+	if not vals then self:reset(); return nil end
+	return vals
 end 
 function SSkip:reset()
 	self.pat:reset()
@@ -991,5 +994,8 @@ end
 ---------------------------
 function DONOP(dur)
 	return PS{dur = LS{dur}, note = NOP}
+end
+function DOREST(dur)
+	return PS{dur = LS{dur}, note = REST}
 end
 -------------------
