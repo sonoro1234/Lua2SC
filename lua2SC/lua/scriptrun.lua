@@ -363,6 +363,7 @@ end
 
 function CancelScript(timeout)
 	local cancelled,reason=script_lane:cancel(timeout)
+	io.write("CancelScript "..tostring(cancelled).." "..tostring(reason))
 	return {cancelled,reason}
 end
 function send_debuginfo(source,line,stack,vars,activate)

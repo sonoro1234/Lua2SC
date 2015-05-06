@@ -8,6 +8,8 @@ function M:new(o)
 	return o
 end
 function M:init(types,options,linda)
+	assert(not self.inited)
+	print("ide_server init")
 	self.linda = linda
 	self.type = types
 	self.linda:send("initsc",{types,options,linda})
@@ -43,9 +45,9 @@ function M:dumpTree(withvalues)
 end
 
 function M:quit()
-	if self.type == "udp" then
+	--if self.type == "udp" then
 		self:send(toOSC({"/quit",{}}))
-	end
+	--end
 end
 
 return M

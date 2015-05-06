@@ -205,9 +205,10 @@ function initinternal()
 	end
 	function t:close() end
 	tb = {}
-	function tb:send(msg)--,path,templ)
+	function tb:send(msg,done)--,path,templ)
+		done = done or "/done"
 		self.tmplinda = lanes.linda()
-		OSCFunc.newfilter("/done","ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
+		OSCFunc.newfilter(done,"ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
 		mainlinda:send("sendsc",msg)
 	end
 	function tb:close() end

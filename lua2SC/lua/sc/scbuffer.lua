@@ -72,13 +72,13 @@ function SCBuffer:alloc(block)
 end
 function SCBuffer:read()
 
-	udp:send(toOSC({"/b_read",{{"int32",self.buffnum},self.filename,
+	udpB:send(toOSC({"/b_read",{{"int32",self.buffnum},self.filename,
 	{"int32",0}, --start file
 	{"int32",self.samples}--,
 	--{"int32",0}, --start buffer
 	--{"int32",0} --leave open 0 1 for DiskIn
 	}})) 
-	dgram = assert(udp:receive())
+	dgram = assert(udpB:receive())
 	if dgram then
 		msg=fromOSC(dgram)
 		printDone(msg)
@@ -90,12 +90,12 @@ end
 --"int8", "int16", "int24", "int32", "float", "double", "mulaw", "alaw"
 function SCBuffer:write()
 
-	udp:send(toOSC({"/b_write",{{"int32",self.buffnum},self.filename,self.header_format,self.samples_format,
+	udpB:send(toOSC({"/b_write",{{"int32",self.buffnum},self.filename,self.header_format,self.samples_format,
 	{"int32",-1}, --frames to write
 	{"int32",0}, --start buffer
 	{"int32",self.leaveopen} --leave open 0 1 for DiskIn
 	}})) 
-	dgram = assert(udp:receive())
+	dgram = assert(udpB:receive())
 	if dgram then
 		msg=fromOSC(dgram)
 		printDone(msg)
@@ -128,7 +128,7 @@ function SCBuffer:queryinfo(block)
 	local dgram=toOSC({"/b_query",{{"int32",self.buffnum}}})
 	if block==nil then block=false end
 	if block then
-		udpB:send(dgram)
+		udpB:send(dgram,"/b_info")
 		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
 		printB_info(fromOSC(dgram2))
 	else

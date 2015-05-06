@@ -47,6 +47,16 @@ function InitSCMenu()
 				SCSERVER:quit()
 				SCSERVER:close()
 				if SCProcess then
+				local res,err = SCProcess:join(0.3)
+				if res == nil then
+					print("Error on SCProcess join:",err)
+				else
+					print("SCProcess.status",SCProcess.status)
+					SCProcess = nil
+				end
+				end
+				--[[
+				if SCProcess then
 					local c,er = SCProcess:cancel(0.3)
 					print("SCProcess",c,er)
 					print("SCProcess",SCProcess.status)
@@ -54,6 +64,7 @@ function InitSCMenu()
 						SCProcess=nil
 					end
 				end
+				--]]
 				prtable(lanes.threads())
 			end)
 	frame:Connect(ID_DUMPTREE, wx.wxEVT_UPDATE_UI,
@@ -104,7 +115,7 @@ function SCProcess_Loop(cmd)
 		if exe then exe:close() end
 		print( "finalizer ok" )
 	end
-	print("soy sc loop ....")
+	print("begin sc loop ....")
 	set_finalizer( finalizer_func ) 
 	set_error_reporting("extended")
 	set_debug_threadname("SCProcess_Loop")
@@ -123,9 +134,12 @@ function SCProcess_Loop(cmd)
 		--io.write("reading line bootsc\n")
 		local line=exe:read("*l")
 		if line then
+			--io.write(line .."\n")
 			print(line)
 		else
-			return false
+			--io.write("server finished\n")
+			print("server finished")
+			return true
 		end
 		--exe:flush()
 	until false
@@ -158,6 +172,7 @@ function BootSC()
 		--	str = str .. tostring(select(i, ...))
 		--end
 		--str = str .. "\n"
+		--io.write(table.concat({...}).."\n")
 		idlelinda:send("proutSC",table.concat({...}).."\n")
 	end
 	local process_gen=lanes.gen("*",--"base,math,os,package,string,table",
@@ -187,6 +202,7 @@ function BootSC()
 	
 end
 		
+--[[
 function QuitSC()
 	if SCProcess then
 		DisplayLog(string.format("Trying to kill process scproces \n"),ScLog)
@@ -196,3 +212,4 @@ function QuitSC()
 		SCProcess:cancel(1)
 	end
 end
+--]]

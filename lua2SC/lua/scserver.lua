@@ -103,7 +103,7 @@ function lanebody(linda)
 	--local kernel32 = ffi.load("kernel32");
 	local Filters = {}
 	local function ReplyFunS(addr,inbuf,size) 
-
+		if size == 0 then return end --sometimes sc sends 0 size
 		local oscm = ffi.string(inbuf,size)
 		local msg = osclua.fromOSC(oscm)
 
@@ -207,10 +207,12 @@ function SCFFI:init(options,linda)
 	
 	--local path = wx.wxFileName.SplitPath(options.SCpath)
 	local path = splitpath(options.SCpath)
-	print("load from",path..[[/libscsynth]])
-	require"lfs"
-	lfs.chdir(path)
-	self.libsc = ffi.load(path..[[/libscsynth]])
+	if not self.libsc then
+		print("load from",path..[[/liblibscsynth]])
+		require"lfs"
+		lfs.chdir(path)
+		self.libsc = ffi.load(path..[[/liblibscsynth]])
+	end
 	print("self.libsc",self.libsc)
 		local globals={print=thread_print,
 				prerror=thread_error_print,
@@ -242,7 +244,7 @@ function SCFFI:init(options,linda)
 	print("self.theworld",self.theworld)
 
 	self.resp_lane = lanegen(lanebody,globals,"oscresponder")(true,linda)
-	SCProcess = self.resp_lane
+	--SCProcess = self.resp_lane
 	local key,respfunc = linda:receive("func")
 	self.respfunc = ffi.cast("ReplyFunc",respfunc)
 	self:send(toOSC({"/notify",{1}}))
@@ -251,13 +253,16 @@ function SCFFI:init(options,linda)
 end
 function SCFFI:close()
 	--self.quit_lane = lanegen(lanebodyquit,{},"lanebodyquit")(true)
-	--self.libsc.World_WaitForQuit(self.theworld)
-	self.libsc.World_Cleanup(self.theworld)
+	print("World_WaitForQuit going",self.theworld)
+	self.libsc.World_WaitForQuit(self.theworld)
+	--self.libsc.World_Cleanup(self.theworld)
+	print"World_WaitForQuit done"
+	---[[
 	if self.resp_lane then
 		local cancelled,reason = self.resp_lane:cancel(1)
 		if cancelled then
 			self.resp_lane = nil
-			SCProcess = nil
+			--SCProcess = nil
 		else
 			print("Unable to cancel SCFFI.resp_lane",cancelled,reason)
 		end
@@ -270,10 +275,11 @@ function SCFFI:close()
 			print("Unable to cancel SCFFI.print_lane",cancelled,reason)
 		end
 	end
+	--]]
 end
-function SCFFI:quit()
+--function SCFFI:quit()
 	--do nothing in internal
-end
+--end
 function SCFFI:send(msg)
 	local function string2char(txt)
 		local cmddata = ffi.new("char[?]",#txt + 1)
@@ -289,6 +295,7 @@ local SCUDP = require"scudp"
 local SCSERVER = {}
 
 function SCSERVER:init(types,options,linda)
+	assert(not self.inited)
 	if types == "udp" then
 		self.type = types
 		self.sc = SCUDP
@@ -337,9 +344,9 @@ function SCSERVER:quit()
 	--lanes.timer(idlelinda,"statusSC",0)
 	--idlelinda:receive(0,"statusSC")
 	idlelinda:set("statusSC") --delete
-	if self.type == "udp" then
+	--if self.type == "udp" then
 		self:send(toOSC({"/quit",{}}))
-	end
+	--end
 end
 
 return SCSERVER
