@@ -63,6 +63,7 @@ function theMetro:tempo(bpm)
 	--self.ppqPosSave = self.player.ppqPos
 	self.bpm=bpm;
 	self.bps=bpm/60
+	self.bpsi = 60/bpm
 	self.frame=self.bps/self.rate
 	self.period=1/self.rate
 end
@@ -76,6 +77,7 @@ function theMetro:start()
 	theMetro.oldtimestamp = lanes.now_secs()
 	--lanes.timer(scriptlinda,"metronomLanes",self.period,0)--self.period)
 	lanes.timer(scriptlinda,"metronomLanes",self.period,self.period)
+	self.initial_time = lanes.now_secs()
 end
 function theMetro:stop()
 	--print("paro reloj")
@@ -84,7 +86,7 @@ function theMetro:stop()
 end
 
 function theMetro:ppq2time(ppq)
-	return self.timestamp + (ppq - self.oldppqPos) / self.bps
+	return self.timestamp + (ppq - self.oldppqPos) * self.bpsi
 end
 
 function theMetro.backwards(ppq)
@@ -110,9 +112,10 @@ function theMetro.backwards(ppq)
 		named_events:delete_events()
 	end
 end
-
-local initial_time
+--TIMS = {}
+--local initial_time
 function setMetronomLanes(timestamp)
+	--table.insert(TIMS,theMetro.oldtimestamp)
 	--print("setMetronomLanes")
 	--[[
 	if theMetro.oldtimestamp then
@@ -127,7 +130,7 @@ function setMetronomLanes(timestamp)
 		--]]
 
 	local tms1 = lanes.now_secs()
-	initial_time = initialtime or tms1
+	--initial_time = initial_time or tms1
 	local errorl = tms1 - timestamp
 	if  math.abs(errorl) >= 1/100 then
 		prerror("error metronomLanes ",errorl, theMetro.period)
@@ -139,8 +142,9 @@ function setMetronomLanes(timestamp)
 	end 
 
 ---------------------------------------
-	theMetro.timestamp = timestamp
-	theMetro.realperiod = timestamp - theMetro.oldtimestamp
+	theMetro.timestamp = theMetro.oldtimestamp + theMetro.period
+	--theMetro.timestamp = timestamp
+	--theMetro.realperiod = timestamp - theMetro.oldtimestamp
 	--theMetro.abstime = theMetro.abstimeAcum + (theMetro.player.ppqPos - theMetro.ppqPosSave) / theMetro.bps
 	 
 	theMetro.oldppqPos = theMetro.ppqPos
@@ -150,7 +154,8 @@ function setMetronomLanes(timestamp)
 	
 	_onFrameCb()
 
-	theMetro.oldtimestamp = timestamp
+	theMetro.oldtimestamp = theMetro.timestamp
+	--theMetro.oldtimestamp = timestamp
 	--lanes.timer(scriptlinda,"metronomLanes",theMetro.period,0)
 	--collectgarbage("collect")
 end

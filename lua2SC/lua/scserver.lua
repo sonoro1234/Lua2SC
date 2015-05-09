@@ -340,13 +340,8 @@ function SCSERVER:dumpTree(withvalues)
 end
 
 function SCSERVER:quit()
-	--while idlelinda:receive(0,"statusSC") do end
-	--lanes.timer(idlelinda,"statusSC",0)
-	--idlelinda:receive(0,"statusSC")
 	idlelinda:set("statusSC") --delete
-	--if self.type == "udp" then
-		self:send(toOSC({"/quit",{}}))
-	--end
+	self:send(toOSC({"/quit",{}}))
 end
 
 return SCSERVER
