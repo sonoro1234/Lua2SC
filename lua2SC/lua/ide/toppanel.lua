@@ -20,7 +20,7 @@ function CreateTopPanel()
 	toppanel.SCStatusText = SCStatusText
 	SCStatusText:Wrap(-1)
 	local w,h=SCStatusText:GetTextExtent("0.00-AvgCPU\t0.00-PeakCPU\n")
-	SCStatusText:SetSize(w+20,h*3)
+	SCStatusText:SetSize(w+20,h*4)
 	toppanel.posSlider:SetFont(wx.wxSMALL_FONT)
 	
 	
@@ -78,12 +78,12 @@ function CreateTopPanel()
 		local str = msg[2].." UGens.".."\t"..msg[3].." Synths."
 		str = str.."\n"..string.format("%0.2f",msg[6]).." AvgCPU".."\t"..string.format("%0.2f",msg[7]).." PeakCPU"
 		str = str.."\n"..msg[4].." Groups.".."\t"..msg[5].." SynthDefs."
-		--str=str.."\n"..msg[8].." S.Rate"
-		--str=str.."\t"..msg[9].." Nom S.Rate"
+		str=str.."\n"..msg[8].." S.Rate"
+		str=str.."\t"..msg[9].." Nom S.Rate"
 		SCStatusText:SetLabel(str)
 		local w,h =SCStatusText:GetTextExtent(str)
 		--print(w," ",h)
-		SCStatusText:SetSize(w+100,h*3)
+		SCStatusText:SetSize(w+100,h*4)
 		panelSizer:Layout()
 		--panelSizer:SetSizeHints(panel)
 		--manager:Update()
