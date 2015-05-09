@@ -77,11 +77,13 @@ function InitSCMenu()
 			end)
 	frame:Connect(ID_BOOTSC, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCProcess==nil)
+				event:Enable(SCSERVER.inited==nil)
+				--event:Enable(SCProcess==nil)
 			end)
 	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(jit and SCProcess==nil)
+				event:Enable(jit and SCSERVER.inited==nil)
+				--event:Enable(jit and SCProcess==nil)
 			end)
 	-- frame:Connect(ID_QUITSC, wx.wxEVT_UPDATE_UI,
 			-- function (event)

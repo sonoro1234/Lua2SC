@@ -1377,9 +1377,10 @@ function CloseWindow(event)
 	Config:delete() -- always delete the config
 	config=nil
     event:Skip()
-	SCSERVER:quit()
-	--QuitSC()
-	SCSERVER:close()
+	if SCSERVER.inited then
+		SCSERVER:quit()
+		SCSERVER:close()
+	end
 	--midilane:cancel(0.1)
 	--MidiClose()
 	--pmidi.exit_midi_thread()
