@@ -203,6 +203,7 @@ static int read(lua_State *L) {
 	setfieldi(L, "byte2", Pm_MessageData1(data));
 	setfieldi(L, "byte3", Pm_MessageData2(data));
 	setfieldi(L, "byte4", (data >> 24) & 0xFF);
+    setfieldi(L, "delta", event.timestamp);
 	return 1;
 
 }
