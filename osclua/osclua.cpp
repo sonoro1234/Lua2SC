@@ -201,6 +201,10 @@ int pushValuesLua(lua_State *state, osc::OutboundPacketStream &p)
 { 
     int index = 1;
     int going = 1;
+    if (lua_type(state,-1)!= LUA_TTABLE){
+        luaL_error(state,"Invalid entry in an OSC packet. Second item must be a table.\n");
+        return 0;
+    }
     while(going)
     {
     
