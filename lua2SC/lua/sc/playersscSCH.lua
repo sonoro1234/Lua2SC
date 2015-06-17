@@ -749,7 +749,8 @@ function resetOSCplayers()
 	--TODO liberar uno a uno
 	--udp:send(toOSC({"/g_freeAll",{0}}))
 	--udp:send(toOSC({"/g_deepFree",{0}}))
-	udp:send(toOSC({"/g_dumpTree",{0,1}}))
+	--udp:send(toOSC({"/g_dumpTree",{0,1}}))
+    sendBundle({"/g_dumpTree",{0,1}},lanes.now_secs())
 	print("end_resetOSCplayers")
 end
 table.insert(initCbCallbacks,initOSCplayers)

@@ -25,7 +25,7 @@ function vumet(parent)
 						panel=panelVUMETER,
 						value={0,0},
 						typex="vumeter",
-						vumeter="vumeter1",
+						vumeter="vumeter1b",
 						busin=i-1,
 						label=0.00,
 						halfdb=18,

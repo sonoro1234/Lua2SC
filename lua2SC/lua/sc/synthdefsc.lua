@@ -1651,28 +1651,14 @@ end
 function SYNTHDef:send(block)
 	if not self.compiledStr then self:makeDefStr() end
 	if block==nil then block=true end
+    local msg = {"/d_recv",{{"blob",self.compiledStr}}}
 	if block then
----[[
-		udpB:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
-		local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		msg=fromOSC(dgram)
-		print(prOSC(msg))
-		assert(msg[2][1]=="/d_recv")
-		assert(msg[1]=="/done")
---]]
---[[
-		udpB:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
-		while true do
-			local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-			if dgram then
-				msg=fromOSC(dgram)
-				print(prOSC(msg))
-				break
-			end
-		end
---]]
+		local res = sendBlocked(msg)
+		print(prOSC(res))
+		--assert(res[2][1]=="/d_recv")
+		assert(res[1]=="/done")
 	else
-		udp:send(toOSC{"/d_recv",{{"blob",self.compiledStr}}})
+		sendBundle(msg)
     end
 	return self
 end
@@ -1686,7 +1672,7 @@ function SYNTHDef:play(lista)
 	self:send()
 	local on = {"/s_new", {self.name, GetNode(), 0, 0}}
 	getMsgLista(on,lista)
-	udp:send(toOSC(on))
+	sendBundle(on)
 	return self
 end
 function SynthDef(name,parametersDef,graphfunc)
@@ -1830,9 +1816,9 @@ function UGen:dumpInputs(tab,ugens)
 end
 function UGen:doInputs(syndef,sucesor)
 	--print("doInputs from ",self.name)
-	syndef.indugens=syndef.indugens or {}
-	syndef.ugens= syndef.ugens or {}
-	syndef.constants= syndef.constants or {}
+	syndef.indugens = syndef.indugens or {}
+	syndef.ugens = syndef.ugens or {}
+	syndef.constants = syndef.constants or {}
 	local ug=self
 	local inputs=0
 	local actualugen=ug

@@ -208,10 +208,20 @@ function SCFFI:init(options,linda)
 	--local path = wx.wxFileName.SplitPath(options.SCpath)
 	local path = splitpath(options.SCpath)
 	if not self.libsc then
-		print("load from",path..[[/liblibscsynth]])
+		print("load from",path..[[liblibscsynth]])
 		require"lfs"
-		lfs.chdir(path)
-		self.libsc = ffi.load(path..[[/liblibscsynth]])
+		local succes,msg = lfs.chdir(path)
+        if not succes then
+            print("cant chdir "..path,msg)
+        end
+		--self.libsc = ffi.load(path..[[liblibscsynth]])
+        local succes,res = pcall(ffi.load,path..[[liblibscsynth]])
+        if succes then 
+            self.libsc = res
+        else
+            print(res)
+            return false
+        end
 	end
 	print("self.libsc",self.libsc)
 		local globals={print=thread_print,
@@ -248,7 +258,7 @@ function SCFFI:init(options,linda)
 	local key,respfunc = linda:receive("func")
 	self.respfunc = ffi.cast("ReplyFunc",respfunc)
 	self:send(toOSC({"/notify",{1}}))
-
+    return true
 	--self.router_lane = lanegen(router_lane,"router_lane")(linda)
 end
 function SCFFI:close()
@@ -305,8 +315,9 @@ function SCSERVER:init(types,options,linda)
 		if not jit then prerror("must run luajit for internal server"); return end
 		self.type = types
 		self.sc = SCFFI
-		self.sc:init(options,linda)
-		self.inited = true
+		local res = self.sc:init(options,linda)
+		self.inited = res
+        if not res then self.sc = nil end
 	else
 		error("server type "..types.." not implemented")
 	end

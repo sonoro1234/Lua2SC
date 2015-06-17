@@ -19,33 +19,38 @@ function InitSCMenu()
 	frame:Connect(ID_DUMPTREE,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			--linda:send("dumpTree",1)
-			SCSERVER:dumpTree(true)	
+			IDESCSERVER:dumpTree(true)	
 		end)
 	frame:Connect(ID_DUMPOSC,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			--linda:send("dumpTree",1)
-			SCSERVER:dumpOSC(event:IsChecked())	
+			IDESCSERVER:dumpOSC(event:IsChecked())	
 		end)
 	frame:Connect(ID_AUTODETECTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,
 		function(event) 
 			if event:IsChecked() then
-				SCSERVER:sync()
+                if not IDESCSERVER.inited then
+                    IDESCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
+                end
+                udpsclinda:send("Detect",1)
+				--IDESCSERVER:sync()
 				lanes.timer(idlelinda,"statusSC",1,0)
 			else
-				while idlelinda:receive(0,"statusSC") do end
-				lanes.timer(idlelinda,"statusSC",0)
-				idlelinda:receive(0,"statusSC")
+				--while idlelinda:receive(0,"statusSC") do end
+                idlelinda:set("statusSC")
+				lanes.timer(idlelinda,"statusSC")
+				--idlelinda:receive(0,"statusSC")
 			end
 		end)
 	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,BootSC)
 	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
-		SCSERVER:init("internal",file_settings:load_table("settings"),mainlinda)
+		IDESCSERVER:init("internal",file_settings:load_table("settings"),mainlinda)
 		ClearLog(ScLog)
 		lanes.timer(idlelinda,"statusSC",1,0)
 	end)
 	frame:Connect(ID_QUITSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function(event)
-				SCSERVER:quit()
-				SCSERVER:close()
+				IDESCSERVER:quit()
+				IDESCSERVER:close()
 				if SCProcess then
 				local res,err = SCProcess:join(0.3)
 				if res == nil then
@@ -69,20 +74,20 @@ function InitSCMenu()
 			end)
 	frame:Connect(ID_DUMPTREE, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCSERVER.inited~=nil)
+				event:Enable(IDESCSERVER.inited~=nil)
 			end)
 	frame:Connect(ID_DUMPOSC, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCSERVER.inited~=nil)
+				event:Enable(IDESCSERVER.inited~=nil)
 			end)
 	frame:Connect(ID_BOOTSC, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(SCSERVER.inited==nil)
+				event:Enable(IDESCSERVER.inited==nil)
 				--event:Enable(SCProcess==nil)
 			end)
 	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
 			function (event)
-				event:Enable(jit and SCSERVER.inited==nil)
+				event:Enable(jit and IDESCSERVER.inited==nil)
 				--event:Enable(jit and SCProcess==nil)
 			end)
 	-- frame:Connect(ID_QUITSC, wx.wxEVT_UPDATE_UI,
@@ -91,6 +96,7 @@ function InitSCMenu()
 			-- end)
 end
 function SCProcess_Loop(cmd)
+    local exe,err
 	local lanes = require "lanes" --.configure()
 	local function prstak(stk)
 		local str=""
@@ -148,7 +154,7 @@ function SCProcess_Loop(cmd)
 end		
 
 function BootSC() 
-	SCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
+	IDESCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
 	
 	local this_file_settings = file_settings:load_table("settings")
 	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
@@ -164,8 +170,11 @@ function BootSC()
 			plugpath=plugpath..[[;"]]..v..[["]]
 		end
 	end
-	--local cmd="\"\""..this_file_settings.options.SCpath.."\"".." -u "..this_file_settings.options.SC_UDP_PORT.." -H ASIO ".."-U \""..path.."\\plugins\"\""
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..[[ -v 0 ]]..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	local systemclock_option = ""
+    -- if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
+    systemclock_option = " -C "..this_file_settings.SC_SYSTEM_CLOCK.." "
+    -- end
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
 	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)

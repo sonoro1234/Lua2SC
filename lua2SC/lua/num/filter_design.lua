@@ -3,6 +3,13 @@
 require"num.polynomial"
 filterpoly_mt = deepcopy(RationalPoly_mt)
 --setmetatable(filterpoly_mt,filterpoly_mt)
+local function ArrayReverse(t)
+	local res = {}
+	for i=#t,1,-1 do
+		res[#t-i+1]=t[i]
+	end
+	return res
+end
 function filterpoly_mt.filter(self,inp,len)
 	local len = len or 100
 	local a = ArrayReverse(self.Den:GetCoefs())
@@ -25,6 +32,9 @@ function filterpoly_mt.magnitude(self,x)
 end
 function filterpoly_mt.phase(self,x)
 	return Phase(self(complex.exp(complex.new(0,1)*x)))
+end
+function filterpoly_mt.phaseDelay(self,x)
+	return PhaseDelay(self,x)
 end
 function filterpoly_mt.UnitCircleEval(self,x)
 	return self(complex.exp(complex.new(0,1)*x))
@@ -145,13 +155,7 @@ function Phase(c)
 	return math.atan2(complex.imag(c),complex.real(c))
 end
 
-function ArrayReverse(t)
-	local res = {}
-	for i=#t,1,-1 do
-		res[#t-i+1]=t[i]
-	end
-	return res
-end
+
 --with den max degree coef to 1
 --fits rational Hz = Bz / Az by minimizing || Hz * Az - Bz || 
 function cfit_rational(h,xi,N,M,weights)

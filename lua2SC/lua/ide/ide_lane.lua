@@ -36,7 +36,7 @@ function ide_main()
 	require"sc.utils"
 	--dofile(lua2scpath .."lua"..path_sep .. "ide" ..path_sep .. "ide.lua")
 	
-	SCSERVER = require"ide.ide_server"
+	IDESCSERVER = require"ide.ide_server"
 	require"oscfunc"
 	
 	require"pmidi"

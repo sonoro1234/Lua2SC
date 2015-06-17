@@ -198,7 +198,7 @@ function EventPlayer:Reset()
 	self.ppqPos = self.MUSPOS + self.ppqOffset
 	self.prevppqPos= -math.huge --self.MUSPOS
 	--self:NextVals()
-	self.playing=true
+	self.playing= (self.doplay==nil) and true or self.doplay 
 	--self:UpdatePos(0)
 	self.used=false
 	print("Reset:",self.name,self.ppqPos)
@@ -579,7 +579,7 @@ function ActionEventPlayer:Reset()
 	self.lista:reset()
 	self.ppqPos= -math.huge
 	self.prevppqPos= -math.huge --self.MUSPOS
-	self.playing=true
+	self.playing= (self.doplay==nil) and true or self.doplay 
 	self.used=false
 end
 function ActionEventPlayer:playEventBAK(lista,beatTime, beatLen)

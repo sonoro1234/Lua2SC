@@ -158,14 +158,14 @@ end);
 sintes[#sintes+1]=freqScopeLstLocal
 
 freqScopeLmnLocal=SynthDef("freqScopeLmnLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02, },function ()
-	local signal=Mix(In.ar(busin,1))*0.5
+	local signal=Mix(In.ar(busin,1)) --*0.5
 	--dumpObj(LocalBuf)
 	local buf=LocalBuf(fftsize,1)
 	PV_MagSmear(FFT(buf,signal),1)
 	local pos=fftsize*0.5
 	pos=pos:pow(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=(pos*2):round(2)
-	local read=BufRd.ar(1,buf,pos,1,1)*0.00285
+	local read=BufRd.ar(1,buf,pos,1,1) *0.00285
 	read=read:ampdb()
 	--prtable(read)
 	read=read*dbFactor+1
@@ -183,7 +183,7 @@ freqScopeLocal=SynthDef("freqScopeLocal", {busin = 0, fftsize = 2048,scopebufnum
 	--pos=pos:pow(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=pos*(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=(pos*2):round(2)
-	local read=BufRd.ar(1,buf,pos,1,1)*0.00285
+	local read=BufRd.ar(1,buf,pos,1,1) *0.00285
 	read=read:ampdb()
 	--prtable(read)
 	read=read*dbFactor+1
@@ -857,3 +857,5 @@ for k,sinte in ipairs(sintes) do
 	print("storing synth: ",sinte.name)
 	sinte:store()
 end
+
+

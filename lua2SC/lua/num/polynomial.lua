@@ -198,7 +198,7 @@ function Polynomial_mt.BAK__tostring(t)
 	--str[#str+1]="]"
 	return table.concat(str,"+")
 end
-
+--expects coefs from a0 to an
 function Polynomial(t)
 	local t = t or {}
 	local a = {}
@@ -448,14 +448,18 @@ function RatPoly(Num,Den)
 	return rat
 end
 -------------------------- for Ratpolys in Z^-1
---expects coefs from an*Z^n to a0
+--expects coefs from an*Z^(-n) to a0
 --and can be called with PolyFromRoots
-function ZRatPoly(B,A)
+function ZRatPoly(B,A,dosimp)
 	local A = A or {1}
 	local Num = IsPolynomial(B) and B or Polynomial(B)
 	local Den = IsPolynomial(A) and A or Polynomial(A)
 	--return (RatPoly(Num,Den)*Zpow(-Num.deg)*Zpow(Den.deg)) --:Simplify()
-	return (RatPoly(Num,Den)*Zpow(Den.deg - Num.deg)):Simplify()
+	if dosimp then
+		return (RatPoly(Num,Den)*Zpow(Den.deg - Num.deg)):Simplify()
+	else
+		return RatPoly(Num,Den)*Zpow(Den.deg - Num.deg)
+	end
 end
 function Zpow(i)
 	assert(math.floor(i)==i)

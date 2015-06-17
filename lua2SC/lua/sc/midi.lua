@@ -318,12 +318,12 @@ function midiEventToString(event)
 
     --sysex handler
     if event.type==midi.sysex then
-        retval="Sysex: "+sysexToHex(event.sysex)
+        retval="Sysex: "..(event.channel+1).." "..event.byte2.." "..event.byte3.." "..event.byte4 --event.sysex --sysexToHex(event.sysex)
         return retval
     end
    
 	
-	retval = "Ch: "..(event.channel+1).." "..midiTypeNames[event.type].." "
+	retval = "Ch: "..(event.channel+1).." "..(midiTypeNames[event.type] or "type "..event.type).." "
 	if event.type==midi.noteOn or event.type==midi.noteOff then
 		retval = retval..(numberToNote(event.byte2).." "..event.byte3.." ")
 	end

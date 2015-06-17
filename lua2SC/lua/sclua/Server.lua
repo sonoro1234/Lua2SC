@@ -29,6 +29,14 @@ function Server(IP, port)
 			name = name,
 			args = parseArgsX(args),
 		}, Synth_metatable)
+		--[[
+		local targ = 0
+		if type(target)=="table" then 
+			targ = target.nodeID
+		elseif type(target)=="number" then 
+			targ = target
+		else targ = BASE_NODE end
+		--]]
 		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, addAction or 0, target and target.nodeID or BASE_NODE, unpack(synthTab.args))
 		return synthTab
 	end 
@@ -73,7 +81,7 @@ function Server(IP, port)
 		return busTab
 	end
 	
-	s.Group = function(aGroup)
+	s.Group = function(aGroup,paralel)
 		local target 
 		if aGroup == nil then
 			target = BASE_NODE --1 -- default SC server group 
@@ -85,7 +93,11 @@ function Server(IP, port)
 			nodeID = nextGroupID(),
 			server = s
 		}, Group_metatable)
-		s:sendMsg('/g_new', groupTab.nodeID, 0, target) -- add to head by default
+        if paralel then
+            s:sendMsg('/p_new', groupTab.nodeID, 0, target) -- add to head by default
+        else
+            s:sendMsg('/g_new', groupTab.nodeID, 0, target) -- add to head by default
+        end
 		return groupTab
 	end
 	

@@ -30,8 +30,6 @@ function doOscSchedule(window)
 				print(tb2st(OsceventQueue[1]))
 			end
 
-			--udp:send(toOSC(OsceventQueue[1]))
-			--sendBundle(OsceventQueue[1].event, theMetro.timestamp + (OsceventQueue[1].time - theMetro.oldppqPos) / theMetro.bps)
 			sendBundle(OsceventQueue[1].event, theMetro:ppq2time(OsceventQueue[1].time))
             table.remove(OsceventQueue, 1)  
             continue = 1
@@ -74,7 +72,7 @@ function scEventPlayer:Init(setnode)
 		msg ={"/s_new", {self.inst, self.node, self.headtail, self.group,"busin",{"int32",self.busin},"busout",{"int32",self.busout}}}
 		--prtable(msg)
 		sendBundle(msg)
-		--sendBundle(msg,lanes.now_secs())
+
 	end
 	EventPlayer.Init(self)
 end
@@ -89,7 +87,7 @@ function scEventPlayer:Release()
 	if self.node == nil then return end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
 	--udp:send(toOSC(msg))
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 	self.node = nil
 	self.havenode = false
 end
@@ -98,13 +96,13 @@ function scEventPlayer:FreeNode()
 	if self.poly and self.NodeQueue then
 		for i,v in ipairs(self.NodeQueue) do
 			local msg = {"/n_set",{v,"gate",{"float",0}}}
-			sendBundle(msg,lanes.now_secs())
+			sendBundle(msg)--,lanes.now_secs())
 		end
 		return
 	end
 	if self.node == nil then return end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg)--,lanes.now_secs())
 	self.node = nil
 end
 function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
@@ -115,6 +113,7 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	--local inst=lista.inst
 	lista.inst=nil
 	--play osc-----------------
+	local msg
 	if self.node == nil then
 		self.node = GetNode()
 		msg ={"/s_new", {self.inst, self.node, self.headtail, self.group,"busin",{"int32",self.busin},"busout",{"int32",self.busout}}}
@@ -167,16 +166,14 @@ function scEventPlayer:SendParam(parnam)
 	--local msg ={"/n_set", { self.node,parnam,{"float",self.params[parnam]}}}
 	local msg ={"/n_set", { self.node}}
 	msg = getMsgValue(msg,parnam,self.params[parnam])
-	--udp:send(toOSC(msg))
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 end
 function scEventPlayer:SendParams()
 	--if not self.node then print("scEventPlayer:SendParams ",self.name, " sin nodo"); return end
 	assert(self.node," sin nodo")
 	local msg ={"/n_set", { self.node}}
 	msg = getMsgLista(msg,self.params)
-	--udp:send(toOSC(msg))
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 	self:sendToRegisteredControls()
 end
 function scEventPlayer:RegisterControl(control)
@@ -407,7 +404,6 @@ function OscEventPlayer:Init()
 	self.instr_group = GetNode()
 	msg={"/p_new",{self.instr_group,0,self.group}}
 	sendBundle(msg)
-	--sendBundle(msg,lanes.now_secs())
 	--prtable(self.channel)
 	self.channel=CHN(self.channel or {},self)
 	-----inserts
@@ -416,7 +412,6 @@ function OscEventPlayer:Init()
 		--local msg={NEW_GROUP,{self.insertsgroup,1,self.group}}
 		local msg={"/g_new",{self.insertsgroup,3,self.instr_group}}
 		sendBundle(msg)
-		--sendBundle(msg,lanes.now_secs())
 	end
 	self.inserts=self.inserts or {}
 	self._inserts={}
@@ -435,14 +430,13 @@ function OscEventPlayer:Send(fx,lev)
 	node=GetNode() --lo coloca en la tail
 	table.insert(self.envios,{node=node,level=lev})
 	msg ={"/s_new", {"envio", node, 1, self.group,"busin",{"int32",self.channel.busin},"busout",{"int32",fx.channel.busin},"level",{"float",lev}}}
-	--udp:send(toOSC(msg)) 
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg)--,lanes.now_secs())
 	return node
 end
 function OscEventPlayer:SendLevel(i,lev)
 	self.envios[i].level = lev
 	local msg = {"/n_set",{self.envios[i].node,"level",{"float",lev}}}
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 	if self.envios[i].control then
 		self.envios[i].control:guiSetScaledValue(lev,false)
 	end
@@ -459,15 +453,15 @@ function OscEventPlayer:SetSends()
 	if(self.envios) then
 		for i,v in ipairs(self.envios) do
 			msg ={"/n_set", {self.envios[i].node,"level",{"float",self.envios[i].level}}}
-			sendBundle(msg,lanes.now_secs())
+			sendBundle(msg) --,lanes.now_secs())
 		end 
 	end
 end
 function OscEventPlayer:FreeGroup()
 	--udp:send(toOSC({"/g_freeAll",{self.group}}))
 	--udp:send(toOSC({"/g_deepFree",{self.group}}))
-	sendBundle({"/g_freeAll",{self.group}},lanes.now_secs())
-	sendBundle({"/g_deepFree",{self.group}},lanes.now_secs())
+	sendBundle({"/g_freeAll",{self.group}}) --,lanes.now_secs())
+	sendBundle({"/g_deepFree",{self.group}}) --,lanes.now_secs())
 end
 function OscEventPlayer:Reset(all)
 	if all then
@@ -747,7 +741,8 @@ function resetOSCplayers()
 	--TODO liberar uno a uno
 	--udp:send(toOSC({"/g_freeAll",{0}}))
 	--udp:send(toOSC({"/g_deepFree",{0}}))
-	udp:send(toOSC({"/g_dumpTree",{0,1}}))
+	--udp:send(toOSC({"/g_dumpTree",{0,1}}))
+    sendBundle({"/g_dumpTree",{0,1}}) --,lanes.now_secs())
 	print("end_resetOSCplayers")
 end
 table.insert(initCbCallbacks,initOSCplayers)

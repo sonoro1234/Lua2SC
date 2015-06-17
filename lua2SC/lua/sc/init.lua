@@ -9,10 +9,12 @@ elseif typeshed then
 else
 	error("typeshed is nil")
 end
+--table.insert(initCbCallbacks,MASTER_INIT1)
 require"sc.miditoosc"
 require"sc.playersscgui"
 require"sc.scbuffer"
 require"sc.ctrl_bus"
+
 if typeshed == false then
 	require"sc.MetronomLanes"
 elseif typeshed then
@@ -20,4 +22,5 @@ elseif typeshed then
 else
 	error("typeshed is nil")
 end
-MASTER_INIT1()
+--MASTER_INIT1()
+table.insert(initCbCallbacks,1,MASTER_INIT1)

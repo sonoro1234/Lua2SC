@@ -71,11 +71,11 @@ fontItalic       = nil
 
 -- Pick some reasonable fixed width fonts to use for the editor
 if wx.__WXMSW__ then
-    font       = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,"")--, "Andale Mono")
-    fontItalic = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_ITALIC, wx.wxFONTWEIGHT_NORMAL, false,"")--, "Andale Mono")
+    font       = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,"",wx.wxFONTENCODING_CP1253 )--,wx.wxFONTENCODING_ISO8859_1)--, "Andale Mono")
+    fontItalic = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_ITALIC, wx.wxFONTWEIGHT_NORMAL, false,"",wx.wxFONTENCODING_CP1253)--,wx.wxFONTENCODING_ISO8859_1)--, "Andale Mono")
 else
-    font       = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, "")
-    fontItalic = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_ITALIC, wx.wxFONTWEIGHT_NORMAL, false, "")
+    font       = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, "")--,wx.wxFONTENCODING_ISO8859_1)
+    fontItalic = wx.wxFont(10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_ITALIC, wx.wxFONTWEIGHT_NORMAL, false, "")--,wx.wxFONTENCODING_ISO8859_1)
 end
 
 -- ----------------------------------------------------------------------------
@@ -892,6 +892,16 @@ end
 function NewFile(event)
     local editor = CreateEditor("untitled.lua")
 	frame:SetTitle("untitled.lua")
+	---[[
+	print("codepage",editor:GetCodePage())
+	local _text = ""
+	for i=0,255 do
+		_text = _text .. string.char(i) .. string.format(" represents %4d\r\n",i)
+	end
+	local text2,rep = fixUTF8(_text,"\22")
+	--editor:AddText(wx.wxString(text2))
+	editor:AddTextRaw(_text)
+	--]]
     --SetupKeywords(editor, true)
 	return editor
 end
@@ -1195,7 +1205,7 @@ function AppIDLE(event)
 					putTextToClipBoard(val)
 				elseif key=="statusSC" then 
 					--thread_print("timerstatus")
-					SCSERVER:status()
+					IDESCSERVER:status()
 				
 				elseif key=="/status.reply" then 
 					toppanel:printStatus(val)
@@ -1377,9 +1387,9 @@ function CloseWindow(event)
 	Config:delete() -- always delete the config
 	config=nil
     event:Skip()
-	if SCSERVER.inited then
-		SCSERVER:quit()
-		SCSERVER:close()
+	if IDESCSERVER.inited then
+		IDESCSERVER:quit()
+		IDESCSERVER:close()
 	end
 	--midilane:cancel(0.1)
 	--MidiClose()

@@ -81,6 +81,12 @@ function Settings:Create(parent)
 	local bsizeTC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_BUFFER_SIZE))
 	grid_sizer:Add(bsizeTC,wx.wxGBPosition(row,1))
 	row = row + 1
+    
+    --grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"system clock:"),wx.wxGBPosition(row,0))
+	local useclockC = wx.wxCheckBox(this, wx.wxID_ANY,"system clock:")
+    useclockC:SetValue(self.options.SC_SYSTEM_CLOCK == 1)
+	grid_sizer:Add(useclockC,wx.wxGBPosition(row,1))
+	row = row + 1
 	
 	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Audio Device:"),wx.wxGBPosition(row,0))
 	local Au_Dev_TC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_AUDIO_DEVICE),wx.wxDefaultPosition)
@@ -241,6 +247,7 @@ function Settings:Create(parent)
 			end
 			self.options.SC_UDP_PORT=udpTC:GetValue()
 			self.options.SC_BUFFER_SIZE=bsizeTC:GetValue()
+            self.options.SC_SYSTEM_CLOCK = useclockC:IsChecked() and 1 or 0
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
 			--prtable(self.MIDIdev)
 			self:ConfigSave(file_settings)

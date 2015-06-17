@@ -311,7 +311,7 @@ end
 function iguiSendLevel(self,i,lev)
 	self.envios[i].level = lev
 	local msg = {"/n_set",{self.envios[i].node,"level",{"float",lev}}}
-	sendBundle(msg,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 	if self.envios[i].control then
 		self.envios[i].control:guiSetScaledValue(lev,false)
 	end
@@ -383,8 +383,8 @@ function MidiToOsc.Init(ch)
 		self.insertsgroup = GetNode()
 		--local msg={NEW_GROUP,{self.insertsgroup,1,self.group}}
 		local msg={"/g_new",{self.insertsgroup,3,self.instr_group}}
-		udp:send(toOSC(msg))
-		--sendBundle(msg,lanes.now_secs())
+		--udp:send(toOSC(msg))
+		sendBundle(msg) --,lanes.now_secs())
 	end
 	
 	self._inserts={}

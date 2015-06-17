@@ -212,12 +212,12 @@ function CreateEditor(name)
 
     editor:SetFont(font)
     editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, font)
-	editor:SetCodePage(1252)
+	editor:SetCodePage(wx.wxFONTENCODING_CP1253)
     for i = 0, 32 do
         editor:StyleSetFont(i, font)
     end
 	for i = 0, 32 do
-        editor:StyleSetCharacterSet(i, wxstc.wxSTC_CHARSET_ANSI)
+        editor:StyleSetCharacterSet(i, wxstc.wxSTC_CHARSET_GREEK) --wxSTC_CHARSET_ANSI)
     end
 	--[[
 	%define wxstc.wxSTC_LUA_DEFAULT

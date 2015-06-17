@@ -16,12 +16,20 @@ end
 function sendBundle(msg,time)
 	assert(msg)
 	if time then
-		local timestamp=OSCTime(time + SERVER_CLOCK_LATENCY)
+		local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 		udp:send(toOSC({timestamp,msg}))
 	else
 		udp:send(toOSC(msg))
 	end
 end
+function sendBlocked(msg)
+    udpB:send(toOSC(msg))
+    local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
+    return fromOSC(dgram)
+end
+--------------------------------
+
+
 -------------------------------------------------
 
 function initudp()
@@ -118,7 +126,7 @@ function prdgram(d)
 
 		print(str)
 end
-
+--[[
 function quitSC(block)
 	val=val or 1
 	if block==nil then block=false end
@@ -149,7 +157,7 @@ _SYNCED={}
 function SyncSC(block)
 	if block==nil then block=false end
 	--print("cccccccc ",math.huge)
-	local id=math.random(2^10)
+	local id = math.random(2^10)
 	_SYNCED.id=id
 	_SYNCED.isdone=false
 	if block then
@@ -190,6 +198,7 @@ function dumpTree(on)
 	on = on or 1
 	udp:send(toOSC({"/g_dumpTree",{0,on}}))
 end
+--]]
 function IDGenerator(ini)
 	local index = ini or -1
 	return function(inc)
@@ -225,7 +234,7 @@ GetBus=IDGenerator(8) --first after audio busses
 function InitSCCOMM()
 	print("InitSCCOMM")
 	if sc_comm_type == "udp" then
-		SERVER_CLOCK_LATENCY = 0.3
+		SERVER_CLOCK_LATENCY = 0.4
 		initudp()
 	elseif sc_comm_type == "internal" then
 		SERVER_CLOCK_LATENCY = 0.07

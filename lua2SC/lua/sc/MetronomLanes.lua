@@ -75,19 +75,20 @@ function theMetro:start()
 	--print("start reloj")
 	self.playing=1
 	theMetro.oldtimestamp = lanes.now_secs()
-	--lanes.timer(scriptlinda,"metronomLanes",self.period,0)--self.period)
+	--lanes.timer(scriptlinda,"metronomLanes",self.period,0)
 	lanes.timer(scriptlinda,"metronomLanes",self.period,self.period)
 	self.initial_time = lanes.now_secs()
 end
 function theMetro:stop()
 	--print("paro reloj")
 	self.playing=0
-	lanes.timer(scriptlinda,"metronomLanes",0)
+	lanes.timer(scriptlinda,"metronomLanes")
 end
 
 function theMetro:ppq2time(ppq)
 	return self.timestamp + (ppq - self.oldppqPos) * self.bpsi
 end
+
 
 function theMetro.backwards(ppq)
 	for i,v in ipairs(ActionPlayers) do
@@ -112,7 +113,7 @@ function theMetro.backwards(ppq)
 		named_events:delete_events()
 	end
 end
---TIMS = {}
+TIMS = {}
 --local initial_time
 function setMetronomLanes(timestamp)
 	--table.insert(TIMS,theMetro.oldtimestamp)
@@ -131,10 +132,10 @@ function setMetronomLanes(timestamp)
 
 	local tms1 = lanes.now_secs()
 	--initial_time = initial_time or tms1
-	local errorl = tms1 - timestamp
-	if  math.abs(errorl) >= 1/100 then
-		prerror("error metronomLanes ",errorl, theMetro.period)
-	end
+	--local errorl = tms1 - timestamp
+--	if  math.abs(errorl) >= 1/100 then
+--		prerror("error metronomLanes ",errorl, theMetro.period)
+--	end
 	-------------------------------
 	if theMetro.oldppqPos and theMetro.oldppqPos > theMetro.ppqPos then --backwards
 		prerror("xxxxxxxxxmetro back")
@@ -146,12 +147,19 @@ function setMetronomLanes(timestamp)
 	--theMetro.timestamp = timestamp
 	--theMetro.realperiod = timestamp - theMetro.oldtimestamp
 	--theMetro.abstime = theMetro.abstimeAcum + (theMetro.player.ppqPos - theMetro.ppqPosSave) / theMetro.bps
-	 
+
 	theMetro.oldppqPos = theMetro.ppqPos
 	theMetro.ppqPos = theMetro.ppqPos + theMetro.frame --theMetro.bps * theMetro.period 
 
 	--theMetro.abstime = theMetro.abstime + theMetro.realperiod
-	
+	local error2 = theMetro.timestamp - tms1
+	table.insert(TIMS,error2)
+	if math.abs(error2) >= theMetro.period then
+		theMetro.timestamp = theMetro.timestamp + theMetro.period
+		theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
+		prerror(string.format("lost metro %4.3f",error2))
+	end
+
 	_onFrameCb()
 
 	theMetro.oldtimestamp = theMetro.timestamp
@@ -163,4 +171,9 @@ end
 theMetro:play(120,-4,0,30)
 --table.insert(initCbCallbacks,function() print("init metronom");theMetro:play(120,-4,0,100) end)
 resetCbCallbacks = resetCbCallbacks or {}
-table.insert(resetCbCallbacks,function() theMetro:stop() end)
+table.insert(resetCbCallbacks,function() 
+	theMetro:stop() 
+	for i,v in ipairs(TIMS) do
+		--print(string.format("%4.3f",v))
+	end
+end)

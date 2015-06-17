@@ -85,7 +85,8 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 	if not ok then print("UDPSC: "..tostring(err)) return end
 	
 	local ip3, port3 = listenudp:getsockname()
-	print("UDPSC: listenudp receives as ip:"..ip3.." port"..port3)
+    print("UDPSC: args ",host,port,host1,port1)
+	print("UDPSC: listenudp sends to:"..host.." port:"..port.." receives as ip:"..ip3.." port"..port3)
 	listenudp:settimeout(1)
 	local detected=false
 	local Filters = {}

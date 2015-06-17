@@ -134,7 +134,7 @@ function wxVuMeter(parent,name,label,id,params)
 	assert(params.node)
 	assert(params.busin)
 	local msg ={"/s_new", {params.vumeter, params.node, 1, 0,"rate",{"float",10},"lag",{"float",0},"id",id,"busin",params.busin}}
-	SCSERVER:send(toOSC(msg))
+	IDESCSERVER:send(toOSC(msg))
 	
 	local height=params.height or 200
 	local width= params.width or 10
@@ -328,12 +328,12 @@ function wxFuncGraph3(parent,name,label,id,co)
 	local maxy = co.maxy or 1
 	local minx = co.minx or 0
 	local maxx = co.maxx or 1
+    local autorange = not (co.miny or co.maxy)
 	local biasx = co.biasx
-	local biasy = co.biasy
 	local height=co.height or 150
 	local width= co.width or 200
-	local facX=width/(maxx-minx)
-	local facY=height/(maxy-miny)
+	local facX= 1 --width/(maxx-minx)
+	local facY= 1 --height/(maxy-miny)
 	local label_height=20
 	local name_height=20
 	local extra_w=25
@@ -346,7 +346,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
 	wxwindow:SetLabel(label)
 	
-	local GraphClass={value={{0.1,0},{1,0}},window=wx.wxNULL,customclass="GraphClass"}
+	local GraphClass={values={{{0.1,0},{1,0}}},window=wx.wxNULL,customclass="GraphClass"}
 	local function bias(x,b,y)
 		return x^(math.log(b)/math.log(y or 0.5))
 	end
@@ -371,8 +371,9 @@ function wxFuncGraph3(parent,name,label,id,co)
 		local ini = 0
 		local endp = width
 		local step = 1
+        minx = valf.minx or minx
+        maxx = valf.maxx or maxx
 		biasx = valf.biasx or biasx
-		biasy = valf.biasy or biasy
 		local funcs = valf.funcs or {function(x) return x,x end}
 		local vals = {}
 		for i=ini,endp,step do
@@ -385,20 +386,29 @@ function wxFuncGraph3(parent,name,label,id,co)
 			end
 			for j=1,#funcs do
 				vals[j] = vals[j] or {}
-				table.insert(vals[j],{i,funcs[j](x)})
+                local ok,ret = pcall(funcs[j],x)
+                if ok then
+                    table.insert(vals[j],{i,ret})
+                else
+                    print("funcgraph3:",ret)
+                    return
+                end
 			end
 		end
 		--prtable("val",val)
 		GraphClass.valf=valf
-		GraphClass.values=vals
-		miny=math.huge
-		maxy=-math.huge
-		for j,val in ipairs(vals) do
-		for _,v in ipairs(val) do
-			if v[2] > maxy then maxy = v[2] end
-			if v[2] < miny then miny = v[2] end
-		end
-		end
+		GraphClass.values = vals or GraphClass.values
+        if autorange then
+            print(autorange)
+            miny=math.huge
+            maxy=-math.huge
+            for j,val in ipairs(vals) do
+                for _,v in ipairs(val) do
+                    if v[2] > maxy then maxy = v[2] end
+                    if v[2] < miny then miny = v[2] end
+                end
+            end
+        end
 		facX=width/(maxx-minx)
 		facY=height/(maxy-miny)
 		wxwindow:Refresh()
@@ -738,7 +748,7 @@ function wxFreqScope(parent,name,label,id,co)
 
 	
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
-	SCSERVER:send(toOSC(msg))
+	IDESCSERVER:send(toOSC(msg))
 	
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
@@ -791,6 +801,19 @@ function wxFreqScope(parent,name,label,id,co)
 				str=string.format("%.0f",22050*((fftsize*0.5)^(i/10 -1)))
 			end
 			dc:DrawText(str,x1,0)
+		end
+        local heightf=height/10
+        local offdb = -amp2db(0.00285)
+		for i=0,10 do
+            local posy = heightf*i
+            local y1=height + name_height - posy
+			dc:DrawLine(extra_w, y1, width+extra_w,y1);
+            local facY=height/(maxy-miny)
+            local valy = posy/facY + miny
+            local dbfac =0.02
+            local db = ((valy - 1)/dbfac) + offdb
+			local str = string.format("%.1f",db)
+			dc:DrawText(str,0,y1)
 		end
 		dc:SetPen(wx.wxGREEN_PEN)
 		dc:SetBrush(wx.wxGREEN_BRUSH)
@@ -870,10 +893,10 @@ function wxFreqScope(parent,name,label,id,co)
 			if FreqScopeClass.notclosed then
 				--print("set freqscope",co.scopebufnum)
 				FreqScopeClass:SetValue(msg[2])
-				QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+				QueueAction(0.1,{function() IDESCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 			end
 		end)
-	QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+	QueueAction(0.1,{function() IDESCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 	FreqScopeClass.notclosed=true
 	return FreqScopeClass 
 end
@@ -932,12 +955,8 @@ function wxScope(parent,name,label,id,co)
 	
 	
 	local msg ={"/s_new", {co.scope, co.node, 1, 0, "busin",{"int32",co.busin}, "scopebufnum", {"int32",co.scopebufnum}}}
-	--SCUDP.udp:send(toOSC(msg))
-	--prtable(msg)
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
-	--local msg2 = {"/b_alloc",{ co.scopebufnum, co.bins, 1}}
-	--SCUDP.udp:send(toOSC(msg2))
-	SCSERVER:send(toOSC(msg))
+	IDESCSERVER:send(toOSC(msg))
 		
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
@@ -1042,10 +1061,10 @@ function wxScope(parent,name,label,id,co)
 			if FreqScopeClass.notclosed then
 				--print("set scope",co.scopebufnum)
 				FreqScopeClass:SetValue(msg[2])
-				QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+				QueueAction(0.1,{function() IDESCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 			end
 		end)
-	QueueAction(0.1,{function() SCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
+	QueueAction(0.1,{function() IDESCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 	FreqScopeClass.notclosed=true
 	return FreqScopeClass 
 end

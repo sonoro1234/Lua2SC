@@ -10,9 +10,9 @@ function str2uint(a)
 	
 	return number
 end
-function int2str(int, len)
-   local signbit= (int < 0) and 1 or 0
-   local nn2=signbit * 2^(len*8-1)
+function int2str(int, len, notrev)
+   local signbit = (int < 0) and 1 or 0
+   local nn2 = signbit * 2^(len*8-1)
    local number = int + (signbit * (2^(len*8-1)))
    --print("signo:"..signbit.." numero:"..number.." nn2:"..nn2.."\n")
    assert(number >=0,"el entero no cabe en esta longitud")
@@ -24,11 +24,17 @@ function int2str(int, len)
    end
    
    assert(bytes[len]<128,"entero no cabe en longitud")
-   bytes[len]=bytes[len]+signbit*128
+   bytes[len] = bytes[len] + signbit * 128
    --prtable(bytes)
-   local str=""
-   for i=1,len do
-		str=str..string.char(bytes[len - i +1])
+   local str = ""
+   if notrev then
+    for i=1,len do
+       str=str..string.char(bytes[i])
+    end
+   else
+    for i=1,len do
+       str=str..string.char(bytes[len - i +1])
+    end
    end
    return str;
 end

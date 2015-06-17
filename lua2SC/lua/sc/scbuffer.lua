@@ -55,65 +55,58 @@ function SCBuffer:setn(data,ini)
 	for i,v in ipairs(self.data) do
 		dd[#dd + 1] = {"float",v}
 	end
-	udp:send(toOSC{"/b_setn",dd})
+    sendBundle({"/b_setn",dd})
 end
 function SCBuffer:alloc(block)
-	--print("calling b_alloc")
-	--prtable(self)
-	local dgram=toOSC({"/b_alloc",{{"int32",self.buffnum},{"int32",self.samples},{"int32",self.channels}}})
+
+	local msg = {"/b_alloc",{{"int32",self.buffnum},{"int32",self.samples},{"int32",self.channels}}}
 	if block==nil then block=false end
 	if block then
-		udpB:send(dgram)
-		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		printDone(fromOSC(dgram2))
+		local res = sendBlocked(msg)
+		printDone(res)
 	else
-		udp:send(dgram)
+        sendBundle(msg)
     end
 end
 function SCBuffer:read()
 
-	udpB:send(toOSC({"/b_read",{{"int32",self.buffnum},self.filename,
+	local msg = {"/b_read",{{"int32",self.buffnum},self.filename,
 	{"int32",0}, --start file
 	{"int32",self.samples}--,
 	--{"int32",0}, --start buffer
 	--{"int32",0} --leave open 0 1 for DiskIn
-	}})) 
-	dgram = assert(udpB:receive())
-	if dgram then
-		msg=fromOSC(dgram)
-		printDone(msg)
-	else
-        print("no datagram")
-	end
+	}}
+	local res = sendBlocked(msg)
+    printDone(res)
 end
 --"aiff", "next", "wav", "ircam", "raw"
 --"int8", "int16", "int24", "int32", "float", "double", "mulaw", "alaw"
 function SCBuffer:write()
 
-	udpB:send(toOSC({"/b_write",{{"int32",self.buffnum},self.filename,self.header_format,self.samples_format,
+	local msg = {"/b_write",{{"int32",self.buffnum},self.filename,self.header_format,self.samples_format,
 	{"int32",-1}, --frames to write
 	{"int32",0}, --start buffer
 	{"int32",self.leaveopen} --leave open 0 1 for DiskIn
-	}})) 
-	dgram = assert(udpB:receive())
-	if dgram then
-		msg=fromOSC(dgram)
-		printDone(msg)
-	else
-        print("no datagram")
-	end
+	}}
+	local res = sendBlocked(msg)
+    printDone(res)
+	-- if dgram then
+		-- msg=fromOSC(dgram)
+		-- printDone(msg)
+	-- else
+        -- print("no datagram")
+	-- end
 end
 function SCBuffer:allocRead(block)
 	assert(self.filename)
-	local dgram=toOSC{"/b_allocRead",{{"int32",self.buffnum},{"string",self.filename},{"int32",self.inisample},{"int32",self.samples}}}
+	local msg = {"/b_allocRead",{{"int32",self.buffnum},{"string",self.filename},{"int32",self.inisample},{"int32",self.samples}}}
 	if block==nil then block=false end
 	if block then
-		udpB:send(dgram)
-		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		printDone(fromOSC(dgram2),"allocRead response:")
+		local res = sendBlocked(msg)
+		printDone(res,"allocRead response:")
 		print("allocRead",self.filename)
 	else
-		udp:send(dgram)
+		sendBundle(msg)
     end
 end
 function printB_info(msg)
@@ -124,38 +117,35 @@ function printB_info(msg)
 	end
 end
 function SCBuffer:queryinfo(block)
-	print("inicio queryinfo")
-	local dgram=toOSC({"/b_query",{{"int32",self.buffnum}}})
+
+	local msg = {"/b_query",{{"int32",self.buffnum}}}
 	if block==nil then block=false end
 	if block then
-		udpB:send(dgram,"/b_info")
-		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		printB_info(fromOSC(dgram2))
+		local res = sendBlocked(msg)
+		printB_info(res)
 	else
-		udp:send(dgram)
+		sendBundle(msg)
     end
-	print("fin queryinfo")
+
 end
 function SCBuffer:free(block)
-	local dgram=toOSC({"/b_free",{{"int32",self.buffnum}}})
+	local msg = {"/b_free",{{"int32",self.buffnum}}}
 	if block==nil then block=false end
 	if block then
-		udpB:send(dgram)
-		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		printDone(fromOSC(dgram2))
+		local res = sendBlocked(msg)
+		printDone(res)
 	else
-		udp:send(dgram)
+		sendBundle(msg)
     end
 end
 function SCBuffer:close(block)
-	local dgram=toOSC{"/b_close",{self.buffnum}}
+	local msg = {"/b_close",{self.buffnum}}
 	if block==nil then block=true end
 	if block then
-		udpB:send(dgram)
-		local dgram2 = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
-		printDone(fromOSC(dgram2))
+		local res = sendBlocked(msg)
+		printDone(res)
 	else
-		udp:send(dgram)
+		sendBundle(msg)
     end
 end
 function SCBuffer:Init(block)
@@ -167,7 +157,7 @@ function SCBuffer:Init(block)
 		self:write(true)
 		self.DiskOutNode = GetNode()
 		assert(Master.node)
-		udp:send(toOSC{"/s_new",{ "DiskoutSt", self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}});
+		sendBundle({"/s_new",{ "DiskoutSt", self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}});
 		print("init disk out")
 		prtable(self)
 		self:queryinfo(true)
@@ -192,7 +182,7 @@ end
 		if v.isDiskOutBuffer then
 			print("reset isDiskOutBuffer")
 			prtable(v)
-			udp:send(toOSC{"/n_free",{v.DiskOutNode}});
+			sendBundle({"/n_free",{v.DiskOutNode}});
 			print("going to close isDiskOutBuffer")
 			v:close(true)
 			print("end free disk")

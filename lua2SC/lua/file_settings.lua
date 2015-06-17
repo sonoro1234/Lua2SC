@@ -20,6 +20,12 @@ function file_settings:_read()
 		local str = file:read("*a")
 		local t = assert(loadstring(str))()
 		self.table = t or self.defaults
+        --MERGE DEFAULTS
+        for k,v in pairs(self.defaults.settings) do
+            if not self.table.settings[k] then
+                self.table.settings[k] = v
+            end
+        end
 		file:close()
 	else
 		print"not file in file_settings _read"
