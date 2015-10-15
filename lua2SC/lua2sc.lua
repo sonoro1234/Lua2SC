@@ -111,7 +111,7 @@ local function strconcat(...)
 	end
 	str = str .. "\n"
 	return str
-	--return table.concat({...},'\t') .. "\n"
+	-- return table.concat({...},'\t') .. "\n"
 end
 function thread_print(...)
 	idlelinda:send("prout",{strconcat(...),false})

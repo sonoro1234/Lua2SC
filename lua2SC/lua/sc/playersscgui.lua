@@ -51,16 +51,23 @@ function FreqScope(...)
 	table.insert(initCbCallbacks,function()_FreqScope(unpack(args))end)
 end
 
-function _Scope(panel,scopesynth)
-	local scopesynth = scopesynth or "scope_mn" 
-	local panel=panel or panelMasterV
-	local busin=busin or 0
+function _Scope(panel,scopesynth,busin)
+	scopesynth = scopesynth or "scope_mn" 
+	panel=panel or panelMasterV
+	busin=busin or 0
 	addControl{value={0,0}, typex="scope",width=512,height=200,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=441 * 2,rate=4,panel=panel}
 end
 
 function Scope(...)
 	local args = {...}
 	table.insert(initCbCallbacks,function()_Scope(unpack(args))end)
+end
+function ScopeSt(panel,scopesynth,busin)
+	scopesynth = scopesynth or "scope_mn" 
+	panel=panel or panelMasterV
+	busin=busin or 0
+	table.insert(initCbCallbacks,function()_Scope(panel,scopesynth,busin)end)
+	table.insert(initCbCallbacks,function()_Scope(panel,scopesynth,busin+1)end)
 end
 function MIDIButton(value)
 	local value = value or 40
@@ -82,6 +89,7 @@ function MIDIButton(value)
 					end
 			end}
 end
+--for OscEP
 function SliderControl(name,min,max,val)
 	local min = min or 0
 	local max = max or 1
@@ -93,6 +101,7 @@ function SliderControl(name,min,max,val)
 	local elcontrol= addControl(newcontrol)
 	return FS(function() return elcontrol.value end,-1)
 end
+
 --GUIOPENED=false
 function opengui()
 	print("opengui\n")

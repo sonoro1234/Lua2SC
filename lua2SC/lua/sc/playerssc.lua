@@ -39,15 +39,21 @@ function doOscSchedule(window)
 end
 function ValsToOsc(msg,lista)
 	for name,value in pairs(lista) do
-		table.insert(msg,name)
+		--table.insert(msg,name)
+		msg[#msg + 1] = name
 		if type(value) ~= "table" then
-			table.insert(msg,{"float",value})
+			--table.insert(msg,{"float",value})
+			msg[#msg + 1] = {"float",value}
 		else
-			table.insert(msg,{"["})
+			--table.insert(msg,{"["})
+			msg[#msg + 1] = {"["}
 			for i,val in ipairs(value) do
-				table.insert(msg,{"float",val})
+				--assert(type(val)=="number")
+				--table.insert(msg,{"float",val})
+				msg[#msg + 1] = {"float",val}
 			end
-			table.insert(msg,{"]"})
+			--table.insert(msg,{"]"})
+			msg[#msg + 1] = {"]"}
 		end
 	end
 	return msg
@@ -83,11 +89,11 @@ function scEventPlayer:UsePreset(preset)
 	--return mergeTable(self.lista.stlist,{[preN]=ConstSt(preV)})
 	return self:MergeBind{[preN] = ConstSt(preV)}
 end
-function scEventPlayer:Release()
+function scEventPlayer:Release(time)
 	if self.node == nil then return end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
-	--udp:send(toOSC(msg))
-	sendBundle(msg) --,lanes.now_secs())
+	--prerror("Release",self.node)
+	sendBundle(msg,time) -- or lanes.now_secs())
 	self.node = nil
 	self.havenode = false
 end
@@ -96,13 +102,13 @@ function scEventPlayer:FreeNode()
 	if self.poly and self.NodeQueue then
 		for i,v in ipairs(self.NodeQueue) do
 			local msg = {"/n_set",{v,"gate",{"float",0}}}
-			sendBundle(msg)--,lanes.now_secs())
+			sendBundle(msg) --,lanes.now_secs())
 		end
 		return
 	end
 	if self.node == nil then return end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
-	sendBundle(msg)--,lanes.now_secs())
+	sendBundle(msg) --,lanes.now_secs())
 	self.node = nil
 end
 function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
@@ -120,9 +126,17 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	else
 		msg ={"/n_set", {self.node}}
 	end	
-	-- print("antes")
-	-- prtable(self.oldparams)
-	-- prtable(lista)
+
+-- get is_ctrl_mapper
+	local listafunc = {}
+	for k,v in pairs(lista) do
+		--if type(v)=="function" then
+		if type(v)=="table" and v.is_ctrl_mapper then
+			listafunc[k]=v
+			lista[k]=nil
+		end
+	end
+
 	for k,v in pairs(lista) do
 		if self.oldparams[k]~=v then
 			self.params[k]=v
@@ -132,17 +146,17 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 		end
 		-- self.params[k]=v
 	end
-	-- print("despues")
-	-- prtable(self.oldparams)
-	-- prtable(self.params)
-	--if #self.params > 0 then
-		getMsgLista(msg,self.params)
 
-		--scheduleOscEvent(msg)
-		--dont scheudule order is important for same delta
-		--udp:send(toOSC(msg))
-		--sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
-		sendBundle(msg,theMetro:ppq2time(beatTime))
+	getMsgLista(msg,self.params)
+	--sendBundle(msg,theMetro:ppq2time(beatTime))
+
+	local gbundle = {msg}
+	for k,v in pairs(listafunc) do
+		--v(k,self,beatTime,beatLen)
+		local bund = v:verb(k,self,beatTime,beatLen)
+		for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+	end
+	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)
 	--end
 	-- the gui updates every half beat
 	if _GUIAUTOMATE then
@@ -192,6 +206,7 @@ function scEventPlayer:sendToRegisteredControls()
 	if not self.RegControls then return end
 	--prtable("self.RegControls",self.RegControls,"self.params",self.params)
 	for name,value in pairs(self.params) do
+		if not (type(value)=="table" and value.is_ctrl_mapper) then
 		local control = self.RegControls[name]
 		if  control then
 			if control.isGUIcontrol then
@@ -201,6 +216,7 @@ function scEventPlayer:sendToRegisteredControls()
 					v:guiSetScaledValue(value[i])--,false)
 				end
 			end
+		end
 		end
 	end
 end
@@ -427,7 +443,7 @@ end
 function OscEventPlayer:Send(fx,lev)
 	lev =lev or 0
 	self.envios = self.envios or {}
-	node=GetNode() --lo coloca en la tail
+	local node=GetNode() --lo coloca en la tail
 	table.insert(self.envios,{node=node,level=lev})
 	msg ={"/s_new", {"envio", node, 1, self.group,"busin",{"int32",self.channel.busin},"busout",{"int32",fx.channel.busin},"level",{"float",lev}}}
 	sendBundle(msg)--,lanes.now_secs())
@@ -531,13 +547,21 @@ function OscEventPlayer:GetNode(beatTime)
 		return GetNode()
 	end
 end
+--dont need deepcopy
+local function copylist(lis)
+	local res = {}
+	for k,v in pairs(lis) do
+		res[k] = v
+	end
+	return res
+end
 function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta) 
 
 	--set defaults, get freq,escale,legato,inst
 	local lista=listaO --deepcopy(listaO)
-	self.curvals = lista
-	--local inst
-	--lista.dur=beatLen / theMetro.bps
+	lista.escale = lista.escale or "ionian"
+	local escale = lista.escale
+	self.curvals = copylist(lista)
 
 	--eval funcs
 	for k,v in pairs(lista) do
@@ -547,7 +571,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	end
 
 	--------------
-	local escale = lista.escale or "ionian"
+	
 	
 	--freq
 	local freq
@@ -577,7 +601,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	
 	if IsREST(freq) then
 		--self.havenode = false
-		self:Release() 
+		self:Release(theMetro:ppq2time(beatTime)) 
 		return  
 	end
 	if IsNOP(freq) then
@@ -587,27 +611,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 		lista.freq=freq*lista.detune
 		lista.detune=nil
 	end
-	--play osc-----------------
-	--[[
-	if self.mono == true then
-		if self.node == nil then
-		--if self.dontfree == false then
-			self.node = GetNode()
-			on ={"/s_new", {inst, self.node, 0, self.instr_group}}
-		else
-			on ={"/n_set", {self.node}}
-		end
-		
-		if legato and legato < 1 then
-			self.dontfree = false
-		else
-			self.dontfree = true
-		end
-	else
-		self.node = GetNode()
-		on ={"/s_new", {inst, self.node, 0, self.instr_group}}
-	end
-	--]]
+	
 	local dontfree = self.dontfree
 	if self.mono then
 		if self.havenode then
@@ -657,12 +661,15 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 --		table.insert(on[2],"freq")
 --		table.insert(on[2],{"float",freq})
 --	end
-	sendBundle(on,theMetro:ppq2time(beatTime))
+	--sendBundle(on,theMetro:ppq2time(beatTime))
 	--send functions
+	local gbundle = {on}
 	for k,v in pairs(listafunc) do
 		--v(k,self,beatTime,beatLen)
-		v:verb(k,self,beatTime,beatLen)
+		local bund = v:verb(k,self,beatTime,beatLen)
+		for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
 	end
+	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)
 	---
 	if _GUIAUTOMATE then
 		self.autom_dur=self.autom_dur+ beatLen
@@ -761,7 +768,7 @@ table.insert(onFrameCallbacks,function()
 end)
 ------------
 function copyplayer(player)
-	local player2=deepcopy(player)
+	local player2 = deepcopy_values(player) --deepcopy_values(player) 
 	OSCPlayers[#OSCPlayers+1]=player2
 	return player2
 end

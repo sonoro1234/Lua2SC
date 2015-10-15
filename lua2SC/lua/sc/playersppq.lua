@@ -70,6 +70,10 @@ function beats2Time(n)
 	n=n or 4
 	return n/theMetro.bps
 end
+function Time2beats(n)
+	n=n or 4
+	return n*theMetro.bps
+end
 function beats2Freq(n)
 	n=n or 4
 	return curHostTime.bpm/(n*60)
@@ -193,7 +197,7 @@ function EventPlayer:UpdatePos(dur)
 end
 function EventPlayer:Reset()
 	
-	if not self.binded then self:Bind{dur=math.huge}  end
+	if not self.binded then self:Bind{dur=math.huge,note=NOP}  end
 	self.lista:reset()
 	self.ppqPos = self.MUSPOS + self.ppqOffset
 	self.prevppqPos= -math.huge --self.MUSPOS

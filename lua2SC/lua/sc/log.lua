@@ -1,4 +1,4 @@
-file=nil
+local file=nil
 function prfile(d)
 		file:write("\n\n")
 		for i=1,string.len(d) do

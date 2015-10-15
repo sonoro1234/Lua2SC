@@ -2,11 +2,15 @@
 require"sc.midi"
 --require"sc.playerssc"
 require"sc.synthdefsc"
-
+table.insert(initCbCallbacks,function() SynthDef("ClickSynth",{out=0,freq=200,gate=1},function()
+	local env = EnvGen.kr{Env.asr(0,1,0),gate,doneAction=2}
+	local sig = env*SinOsc.ar(freq)
+	Out.ar(out,sig:dup())
+end):store() end)
 function Click(beats,transpose)
 	local beats = beats or 4
 	local transpose = transpose or 0
-	click = OscEP{inst="default"}
+	click = OscEP{inst="ClickSynth"}
 	click:Bind{note=LOOP{72,LS{60}:rep(beats-1)} + transpose,delta=1,dur=0.03,amp=0.1}
 end
 function MIDIRecord(instgui,ini,endr)

@@ -513,9 +513,13 @@ function serializeTable (name, value, saved)
 			saved[value] = name   -- save name for next time
 			table.insert(string_table, "{}\n")          
 			for k,v in pairs(value) do      -- save its fields
-			
-			local fieldname = string.format("%s[%s]", name,basicSerialize(k))
-			table.insert(string_table, serializeTable(fieldname, v, saved))
+				local fieldname 
+				if type(k)=="string" then
+					fieldname = string.format("%s.%s", name,k)
+				else
+					fieldname = string.format("%s[%s]", name,basicSerialize(k))
+				end
+				table.insert(string_table, serializeTable(fieldname, v, saved))
 			end
 		end
 	--else

@@ -183,7 +183,7 @@ function ScriptRun(pars)
 		
 		if USE_PROFILE then
 		ProFi:stop()
-		ProFi:writeReport( 'c:/MyProfilingReport.txt' )
+		ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
 		end
 
 		if _resetCb then
@@ -352,9 +352,10 @@ function ScriptRun(pars)
 				typerun = typerun,
 				typeshed = typeshed,
 				sc_comm_type = SCSERVER.type,
-				MsgLoop = MsgLoop
+				MsgLoop = MsgLoop,
+                lua2scpath = lua2scpath
 				},
-		priority=0},
+		priority=2},
 		pmain)
 		
 	script_lane = script_lane_gen(script)

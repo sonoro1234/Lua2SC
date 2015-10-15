@@ -261,4 +261,14 @@ function Window(title, x, y, w, h)
 		--thread_print(x,y)
 	end}
 end
-
+function Slider(name,min,max,val,func)
+	local min = min or 0
+	local max = max or 1
+	local name = name or ""
+	local newcontrol = {value =val or min,min=min,max=max, typex="vslider",label=0,name=name,
+			callback = function(value,str,c) 
+					c:setLabel(string.format("%.2f",value),0)
+					func(value)
+			end}
+	return addControl(newcontrol)
+end

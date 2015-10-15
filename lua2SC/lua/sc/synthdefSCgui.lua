@@ -116,7 +116,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					newcontrol = {panel=panel,value=0,typex="toggle",label=v}
 					newcontrol.FormatLabel=function(val) return v end
 				else
-					newcontrol = {panel=panel,value=defval,min=minval ,max=maxval,typex="knob",name=v,label=0}
+					newcontrol = {panel=panel,value=defval,min=minval ,max=maxval,typex="knob",name=v,label=0} --vslider
 					newcontrol.FormatLabel=function(val) return string.format("%4.2f",val) end
 				end
 				

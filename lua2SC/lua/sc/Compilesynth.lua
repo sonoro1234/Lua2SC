@@ -459,6 +459,12 @@ envio=SynthDef("envio", {busin=0, busout=0, level=1},function()
 				Out.ar(busout, In.ar(busin, 2) * level);
 			end);
 sintes[#sintes+1]=envio
+envio=SynthDef("to_mono", {busin=0, busout=0, bypass=1},function()
+				local input = In.ar(busin, 2)
+				local effect = Mix(input)*0.5
+				ReplaceOut.ar(busout,Select.ar(bypass,{effect,input}))
+			end);
+sintes[#sintes+1]=envio
 --]]
 ---[[
 bpeakeq=SynthDef("BPeakEQ", {busin=0, busout=0,freqEQ= 1200, rq= 1, db= -4,bypass=0},function()

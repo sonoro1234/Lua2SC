@@ -17,10 +17,11 @@ function Buffer(channels,samples)
 	buf:Init(true)
 	return buf
 end
-function FileBuffer(filename,samples,inisample)
+function FileBuffer(filename,chan,samples,inisample)
+	chan = chan or -1
 	samples=samples or 0
 	inisample=inisample or 0
-	local buf=SCBuffer:new({filename = filename,samples=samples,inisample=inisample,isFileBuffer=true})
+	local buf=SCBuffer:new({filename = filename,samples=samples,inisample=inisample,isFileBuffer=true,chan=chan})
 	table.insert(Buffers,buf)
 	buf:Init(true)
 	return buf
@@ -43,7 +44,8 @@ function DiskOutBuffer(filename,recording_bus,channels,header_format,samples_for
 	local buf=SCBuffer:new({filename = filename,channels = channels,samples=samples,inisample=inisample,
 	header_format=header_format,samples_format=samples_format,leaveopen=1,isDiskOutBuffer=true,recording_bus=recording_bus})
 	table.insert(Buffers,buf)
-	buf:Init(true)
+	--buf:Init(true)
+	table.insert(initCbCallbacks,function() buf:Init(true) end)
 	return buf
 end
 function SCBuffer:setn(data,ini)
@@ -109,6 +111,18 @@ function SCBuffer:allocRead(block)
 		sendBundle(msg)
     end
 end
+function SCBuffer:allocReadChannel(block)
+	assert(self.filename)
+	local msg = {"/b_allocReadChannel",{{"int32",self.buffnum},{"string",self.filename},{"int32",self.inisample},{"int32",self.samples},{"int32",self.chan}}}
+	if block==nil then block=false end
+	if block then
+		local res = sendBlocked(msg)
+		printDone(res,"allocReadChannel response:")
+		print("allocReadChannel",self.filename,self.chan)
+	else
+		sendBundle(msg)
+    end
+end
 function printB_info(msg)
 	if(msg[1]=="/b_info") then
 		print("buffer:",msg[2][1]," frames:",msg[2][2]," channels:",msg[2][3]," samprate:",msg[2][4])
@@ -150,8 +164,13 @@ function SCBuffer:close(block)
 end
 function SCBuffer:Init(block)
 	if self.isFileBuffer then
-		self:allocRead(true)
-		self:queryinfo(true)
+		if self.chan == -1 then
+			self:allocRead(true)
+			self:queryinfo(true)
+		else
+			self:allocReadChannel(true)
+			self:queryinfo(true)
+		end
 	elseif self.isDiskOutBuffer then
 		self:alloc(true)
 		self:write(true)

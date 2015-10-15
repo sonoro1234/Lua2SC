@@ -13,7 +13,22 @@ function NRT:sendBundle(msg,time)
 		local kSecondsToOSCunits = 4294967296
 		local timestamp = time*kSecondsToOSCunits 
 		local dgram = toOSC{timestamp,msg}
-		prerror(time,#dgram,str2int(int2str(#dgram,4,false)))
+		--prerror(time,#dgram,str2int(int2str(#dgram,4,false)))
+		self.file:write(int2str(#dgram,4,false))
+		self.file:write(dgram)
+	else
+		prerror("nrt closed:",prOSC(msg))
+	end
+end
+function NRT:sendMultiBundle(time,msg)
+	assert(self.file)
+	assert(time)
+	if not self.closed then
+		local kSecondsToOSCunits = 4294967296
+		local timestamp = time*kSecondsToOSCunits 
+		table.insert(msg,1,timestamp)
+		local dgram = toOSC(msg)
+		--prerror(time,#dgram,str2int(int2str(#dgram,4,false)))
 		self.file:write(int2str(#dgram,4,false))
 		self.file:write(dgram)
 	else
@@ -24,7 +39,7 @@ function NRT:close()
 	self.file:close()
 	self.closed = true
 end
-function NRT:Gen(endppq)
+function NRT:Gen(endppq,test)
 	local function pathnoext(P)
 		return P:match("([^%.]+)")
 	end
@@ -32,10 +47,20 @@ function NRT:Gen(endppq)
 	theMetro:play(nil,0,0,25)
 	local lastt = 0
     sendBundle = function(msg,ti)
+		
 		ti = ti or lastt
+		--if ti > 1000 then 
+		--	error"aa" 
+		--end
 		lastt = ti
 		prerror(ti,prOSC(msg))
 		NRT:sendBundle(msg,ti)
+	end
+	sendMultiBundle = function(ti,msg)
+		ti = ti or lastt
+		lastt = ti
+		prerror(ti,prOSC(msg))
+		NRT:sendMultiBundle(ti,msg)
 	end
 	sendBlocked = function(msg)
 		prerror(lastt,prOSC(msg))
@@ -48,6 +73,10 @@ function NRT:Gen(endppq)
 		theMetro:play(nil,0,0,25)
 		theMetro.oldtimestamp = -theMetro.period
 		while theMetro.ppqPos < endppq do
+			if cancel_test() then
+				print("NRT:required to cancel\n")
+				return true
+			end
 			theMetro.timestamp = theMetro.oldtimestamp + theMetro.period
 			theMetro.oldppqPos = theMetro.ppqPos
 			theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
@@ -55,9 +84,10 @@ function NRT:Gen(endppq)
 			_onFrameCb()
 			theMetro.oldtimestamp = theMetro.timestamp
 		end
-		sendBundle({"/quit",{}})
+		sendBundle({"/quit",{}},theMetro:ppq2time(endppq))
 		NRT:close()
 ---[=[
+	if not test then
 		-- call sc NRT
 		local is_windows = package.config:sub(1,1) == '\\'
 		local sep = is_windows and '\\' or '/'
@@ -80,6 +110,10 @@ function NRT:Gen(endppq)
 			exe:setvbuf("no")
 		end
 		repeat
+			if cancel_test() then
+				print("NRT:required to cancel\n")
+				return true
+			end
 			--print(stdout:read("*all") or stderr:read("*all") or "nil")
 			exe:flush()
 			--io.write("reading line bootsc\n")
@@ -93,6 +127,7 @@ function NRT:Gen(endppq)
 				return true
 			end
 		until false
+	end
 --]=]
     end)
 end

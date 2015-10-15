@@ -63,6 +63,7 @@ function oscout:send(...)
 	--udp:send(toOSC({select(1, ...),{select(2, ...)}}))
 	local addr = select(1, ...)
 	local msg = {select(2, ...)}
+
 	for i,v in ipairs(msg) do
 		if type(v)=="number" then
 			-- if not integer make it float osc

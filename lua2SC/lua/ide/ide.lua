@@ -369,7 +369,13 @@ function CreateTreeLog()
 	function tree:ShowTable(t)
 		tree:DeleteAllItems()
 		tableTotree(t,true,tree)
-		tree:ExpandAll()
+		--tree:Expand(tree:GetRootItem())
+        local root = tree:GetRootItem()
+        local child, cookie = tree:GetFirstChild(root)
+        while child:IsOk() do
+            tree:Expand(child)
+            child, cookie = tree:GetNextChild(root,cookie)
+        end
 	end
 	return tree
 end
@@ -1170,7 +1176,7 @@ function AppIDLE(event)
 				script_lane = nil 
 				collectgarbage()
 			end
-			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive","_midiEventCb" ) 
+			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive","_midiEventCb","wxeval" ) 
 			if val then
 				--print("idlelinda receive ",key,val)
 				if key=="prout" then
@@ -1242,6 +1248,9 @@ function AppIDLE(event)
 				elseif key=="_FileSelector" then
 					local res=_FileSelector(val[1],val[2],val[3])
 					val[4]:send("_FileSelectorResp",res)
+                elseif key == "wxeval" then
+                    local succes,res = pcall(val[1])
+                    val[2]:send("wxevalResp",{succes,res})
 				end
 				requestmore=true
 			end
@@ -1371,13 +1380,15 @@ function CloseWindow(event)
         return
     end
 	print("Main frame Closing")
-	while script_lane do
+    local count_cancel = 0
+	while script_lane and (count_cancel < 10) do
 		--local cancelled,err=script_lane:cancel(0.1)
 		local cancelled,err = ideCancelScript(0.1)
 		print("script cancel on close",cancelled,err)
 		if cancelled then
 			script_lane = nil
 		end
+        count_cancel = count_cancel + 1
 	end
 	ConfigSaveOpenDocuments(Config)
 	file_history:Save(Config.config)

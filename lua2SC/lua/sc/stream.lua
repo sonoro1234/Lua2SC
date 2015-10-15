@@ -613,7 +613,7 @@ function PairsStream:pnext(e)
 					self:reset()
 					return nil
 				end
-				-- convert arrys of streamss
+				-- convert arrays of streams
 				if type(k) == "table" then
 					for i2,v2 in ipairs(k) do
 						list2[v2]=list2[k][i2]
@@ -666,7 +666,41 @@ function PS(...)
 	end
 	return ps
 end
+---------------------------------------
+AdvStream = Stream:new{stlist=nil,N1=nil,N2=nil}
+function AdvStream:pnext(e)
+	if self.N1=="init" then
+		self.N1 = self.stlist:nextval(e)
+		self.N1.advance = nil
+	end
+	self.N2 = self.stlist:nextval(e)
+	
+	if  self.N2 and self.N2.advance and self.N1 then
+		local advance = self.N2.advance
+		self.N2.advance = nil
+		self.N1.delta = math.max(0,self.N1.delta + advance)
+		self.N2.delta = math.max(0,self.N2.delta - advance)
+		self.N1.dur = math.max(0,self.N1.dur + advance)
+		self.N2.dur = math.max(0,self.N2.dur - advance)
+		print("advance",advance)
+	end
+	--print(self.N1,self.N2)
+	local ret = self.N1
+	self.N1 = self.N2
+	if ret==nil then self:reset() end
+	return ret
+end
+function AdvStream:reset()
+	self.stlist:reset()
+	self.N1 = "init"
+end
 
+function ADV(st)
+	local adv =  AdvStream:new{stlist=st}
+	adv:reset()
+	return adv
+end
+----------------------------
 function StreamWrap(t)
 	for k,v in pairs(t) do
 		assert(type(k)~="number","PS item without key")
@@ -871,7 +905,26 @@ function PdefStream:input(pat)
 	self.stlist = pat
 	return deepcopy(self)
 end
-
+-----------------------------------------------------------------
+StreamFuncR = Stream:new()
+function StreamFuncR:pnext(e)
+	local ret = self.argus:nextval(e)
+	--if ret == nil then self.argus:reset() return nil end
+	ret = self.func(ret,e,self)
+	return ret
+end
+function StreamFuncR:reset()
+	self.argus:reset()
+	self.rfunc()
+	Stream.reset(self)
+end
+function SFr(pat,funG,...)
+	if  (type(pat)~="table") or (pat.nextval == nil) then --no es stream
+		pat=ConstantStream:new{value=pat}
+	end
+	local fun, rfun = funG(...)
+	return StreamFuncR:new({argus=pat,func=fun,rfunc=rfun})
+end
 -----------------------------------------------------------------
 StreamFunc = Stream:new()
 function StreamFunc:pnext(e)
@@ -971,8 +1024,33 @@ function FinDur(findur,pat)
 	return SFindur:new({findur=findur,cfindur=0,str=pat,acabado=false})
 end
 ------------------------
-SSkip = Stream:new{pat=nil,skipdur=0,c_dur=0}
+SSkip = Stream:new{pat=nil,pos=0}
 function SSkip:pnext(e)
+	if (self.pos < self.ini) then
+		self.pos = self.pos + 1
+		return self.pat:nextval(e)
+	elseif (self.pos < self.endp) then
+		while (self.pos < self.endp) do
+			local vals = self.pat:nextval(e)
+			if not vals then return nil end
+			self.pos = self.pos + 1
+		end
+		return self.pat:nextval(e)
+	else
+		return self.pat:nextval(e)
+	end
+end 
+function SSkip:reset()
+	self.pat:reset()
+	self.pos=0
+	Stream.reset(self)
+end
+function SKIP(ini,endp,pat)
+	return SSkip:new{pat=pat,ini=ini,endp=endp}
+end
+----------------------------------------
+SSkipDur = Stream:new{pat=nil,skipdur=0,c_dur=0}
+function SSkipDur:pnext(e)
 	while self.skipdur > self.c_dur do
 		local vals = self.pat:nextval(e)
 		if not vals then return nil end
@@ -983,13 +1061,13 @@ function SSkip:pnext(e)
 	if not vals then self:reset(); return nil end
 	return vals
 end 
-function SSkip:reset()
+function SSkipDur:reset()
 	self.pat:reset()
 	self.c_dur=0
 	Stream.reset(self)
 end
-function SKIP(dur,pat)
-	return SSkip:new{pat=pat,skipdur=dur}
+function SKIPdur(dur,pat)
+	return SSkipDur:new{pat=pat,skipdur=dur}
 end
 ---------------------------
 function DONOP(dur)
@@ -997,5 +1075,9 @@ function DONOP(dur)
 end
 function DOREST(dur)
 	return PS{dur = LS{dur}, note = REST}
+end
+function COUNT(str)
+	local turn = 0
+	PS{dur =LS{0},_dummy=function() turn=turn+1;print(str,turn) end}
 end
 -------------------

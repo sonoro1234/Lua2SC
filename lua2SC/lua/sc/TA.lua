@@ -138,7 +138,7 @@ function _TAmt.__call(t,ini,ends,step)
 	step = step or 1;ends = ((ends and ends < 0) and (#t+ends+1)) or ends or ini
 	local res = {}
 	for i=ini,ends,step do
-		res[#res + 1]= t[i]
+		res[#res + 1]= t[i] or 0
 	end 
 	return t:new(res) --self:new(res)
 end

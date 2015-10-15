@@ -153,7 +153,7 @@ function setMetronomLanes(timestamp)
 
 	--theMetro.abstime = theMetro.abstime + theMetro.realperiod
 	local error2 = theMetro.timestamp - tms1
-	table.insert(TIMS,error2)
+	--table.insert(TIMS,error2)
 	if math.abs(error2) >= theMetro.period then
 		theMetro.timestamp = theMetro.timestamp + theMetro.period
 		theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
@@ -169,7 +169,7 @@ function setMetronomLanes(timestamp)
 end
 
 theMetro:play(120,-4,0,30)
---table.insert(initCbCallbacks,function() print("init metronom");theMetro:play(120,-4,0,100) end)
+table.insert(initCbCallbacks,function() print("init metronom");theMetro:start() end)
 resetCbCallbacks = resetCbCallbacks or {}
 table.insert(resetCbCallbacks,function() 
 	theMetro:stop() 

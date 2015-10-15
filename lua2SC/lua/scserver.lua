@@ -1,44 +1,5 @@
-function lanegen(func_body,globals,thread_name)
-	thread_name = thread_name or "unamed thread"
-	local function prstak(stk)
-		local str=""
-		for i,lev in ipairs(stk) do
-			str= str..i..": \n"
-			for k,v in pairs(lev) do
-				str=str.."\t["..k.."]:"..v.."\n"
-			end
-		end
-		print(str)
-	end
-	
-	local function finalizer_func(err,stk)
-		print(thread_name.." finalizer:")
-		if err and type(err)~="userdata" then 
-			print( thread_name.." after error: "..tostring(err) )
-			print(thread_name.." finalizer stack table")
-			prstak(stk)
-		elseif type(err)=="userdata" then
-			print( thread_name.." after cancel " )
-		else
-			print( thread_name.." after normal return" )
-		end
-	end
-	local function outer_func(block,...)
-		
-		lanes = require "lanes" --.configure()
-		--lanes.require"lanes"
-		set_finalizer( finalizer_func ) 
-		set_error_reporting("extended")
-		set_debug_threadname(thread_name)
-		func_body(...)
-		
-		if block then
-			local block_linda = lanes.linda()
-			block_linda:receive("unblock")
-		end
-	end
-	return lanes.gen("*",{globals=globals},outer_func)
-end
+require"lanesutils"
+
 if jit then
 	ffi = require("ffi")
 	ffi.cdef[[
@@ -301,10 +262,11 @@ end
 end -- if jit
 
 local SCUDP = require"scudp"
-
+local SCTCP = require"sctcp"
 local SCSERVER = {}
 
 function SCSERVER:init(types,options,linda)
+    print"SCSERVER init"
 	assert(not self.inited)
 	if types == "udp" then
 		self.type = types
@@ -315,6 +277,12 @@ function SCSERVER:init(types,options,linda)
 		if not jit then prerror("must run luajit for internal server"); return end
 		self.type = types
 		self.sc = SCFFI
+		local res = self.sc:init(options,linda)
+		self.inited = res
+        if not res then self.sc = nil end
+    elseif types == "tcp" then
+		self.type = types
+		self.sc = SCTCP
 		local res = self.sc:init(options,linda)
 		self.inited = res
         if not res then self.sc = nil end

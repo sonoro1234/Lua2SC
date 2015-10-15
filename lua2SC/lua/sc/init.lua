@@ -14,7 +14,7 @@ require"sc.miditoosc"
 require"sc.playersscgui"
 require"sc.scbuffer"
 require"sc.ctrl_bus"
-
+require"sc.named_events"
 if typeshed == false then
 	require"sc.MetronomLanes"
 elseif typeshed then

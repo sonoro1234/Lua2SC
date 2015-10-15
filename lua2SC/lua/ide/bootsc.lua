@@ -1,6 +1,7 @@
 	local ID_DUMPTREE       = NewID()
 	local ID_DUMPOSC       = NewID()
 	local ID_BOOTSC       = NewID()
+    local ID_BOOTSC_tcp       = NewID()
 	local ID_BOOTSC_internal       = NewID()
 	local ID_QUITSC       = NewID()
 	local ID_AUTODETECTSC       = NewID()
@@ -11,6 +12,7 @@ function InitSCMenu()
 		{ ID_DUMPTREE,              "Dump SC Tree",               "Dumps SC Tree in SC console" },
 		{ ID_DUMPOSC,              "Dump OSC",               "Dumps OSC" , wx.wxITEM_CHECK },
 		{ ID_BOOTSC,              "Boot SC",               "Boots SC" },
+		{ ID_BOOTSC_tcp,              "Boot SC TCP",               "Boots SC TCP" },
 		{ ID_BOOTSC_internal,              "Boot SC internal",               "Boots SC internal" },
 		{ ID_QUITSC,              "Quit SC",               "Quits SC" },
 		{ ID_AUTODETECTSC,              "Autodetect SC",               "Autodetect SC", wx.wxITEM_CHECK  },
@@ -42,7 +44,8 @@ function InitSCMenu()
 				--idlelinda:receive(0,"statusSC")
 			end
 		end)
-	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,BootSC)
+	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(false) end)
+    frame:Connect(ID_BOOTSC_tcp,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(true) end)
 	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
 		IDESCSERVER:init("internal",file_settings:load_table("settings"),mainlinda)
 		ClearLog(ScLog)
@@ -85,6 +88,11 @@ function InitSCMenu()
 				event:Enable(IDESCSERVER.inited==nil)
 				--event:Enable(SCProcess==nil)
 			end)
+    frame:Connect(ID_BOOTSC_tcp, wx.wxEVT_UPDATE_UI,
+			function (event)
+				event:Enable(IDESCSERVER.inited==nil)
+				--event:Enable(SCProcess==nil)
+			end)
 	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(jit and IDESCSERVER.inited==nil)
@@ -95,7 +103,7 @@ function InitSCMenu()
 				-- event:Enable(SCProcess~=nil)
 			-- end)
 end
-function SCProcess_Loop(cmd)
+function SCProcess_Loop(cmd,bootedlinda)
     local exe,err
 	local lanes = require "lanes" --.configure()
 	local function prstak(stk)
@@ -136,6 +144,7 @@ function SCProcess_Loop(cmd)
 		--print("Command run successfully... ready!")
 		exe:setvbuf("no")
 	end
+    bootedlinda:send("booted",1)
 	repeat
 		--print(stdout:read("*all") or stderr:read("*all") or "nil")
 		exe:flush()
@@ -152,9 +161,8 @@ function SCProcess_Loop(cmd)
 		--exe:flush()
 	until false
 end		
-
-function BootSC() 
-	IDESCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
+require"lanesutils"
+function BootSC(use_tcp) 
 	
 	local this_file_settings = file_settings:load_table("settings")
 	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
@@ -174,7 +182,7 @@ function BootSC()
     -- if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
     systemclock_option = " -C "..this_file_settings.SC_SYSTEM_CLOCK.." "
     -- end
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..[[ -u ]]..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
 	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)
@@ -197,14 +205,21 @@ function BootSC()
 				--linda=linda
 				},
 		priority=0},
+        --function(cmd) os.execute(cmd) end)
 		SCProcess_Loop)
+        
+    local bootedlinda = lanes.linda()
+	SCProcess= process_gen(cmd,bootedlinda)
 
-	SCProcess=process_gen(cmd)
-	
 	if not SCProcess then
 		wx.wxMessageBox("Could not boot scsynth.")
 		SCProcess=nil
 	else
+        local key,val = bootedlinda:receive(3,"booted")
+        if not key then print"sc not booted in 3 seconds" end
+        --wait(1)
+        local typeserver = use_tcp and "tcp" or "udp"
+        IDESCSERVER:init(typeserver,file_settings:load_table("settings"),mainlinda)
 		ClearLog(ScLog)
 		udpsclinda:send("Detect",1)
 		lanes.timer(idlelinda,"statusSC",1,0)

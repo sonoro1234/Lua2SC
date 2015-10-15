@@ -203,7 +203,7 @@ function SCUDP:init(settings,receivelinda)
 	SCUDP.ReceiveUDPLoop_lane = udp_lane_gen(ip,port2,SCUDP.host,SCUDP.port)
 	SCUDP.listen_ip = ip
 	SCUDP.listen_port = port2
-
+    return true
 end
 
 function SCUDP:send(msg)

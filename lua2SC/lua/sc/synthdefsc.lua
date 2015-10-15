@@ -107,7 +107,20 @@ function Env.new(levels,times,curve,releaseNode,loopNode)
 	levels= levels or {0,1,0}
 	times=times or {1,1}
 	curve=curve or 'lin'
-	local ret={levels=levels,times=times,curve=curve,releaseNode=releaseNode,loopNode=loopNode}
+	local tim = {}
+	for i=1,#levels-1 do
+		tim[i] = WrapAtUG(times,i)
+	end
+	local ret={levels=levels,times=tim,curve=curve,releaseNode=releaseNode,loopNode=loopNode}
+	setmetatable(ret,Env)
+	Env.__index=Env
+	return ret
+end
+function Env.new_str_curves(levels,times,curve,releaseNode,loopNode)
+	levels= levels or {0,1,0}
+	times=times or {1,1}
+	curve=curve or 'lin'
+	local ret={str_curves=true,levels=levels,times=times,curve=curve,releaseNode=releaseNode,loopNode=loopNode}
 	setmetatable(ret,Env)
 	Env.__index=Env
 	return ret
@@ -122,6 +135,20 @@ function Env.newClear(numSegments)
 		local numSegments = numSegments or 8;
 		return Env.new(TA():Fill(numSegments+1,0), TA():Fill(numSegments,1))
 end
+
+function Env.get_Env_curve_coefs(cur,str_curves)
+	if str_curves then
+		return cur,0
+	end
+	if type(cur)=="string" then
+		local val = Env.shapeNames[cur]
+		assert(type(val)=="number","not valid curve name: "..cur)
+		return val,0
+	else
+		return 5,cur
+	end
+end
+
 function Env:prAsArray() 
 
 		local contents = {self.levels[1], #self.times,
@@ -130,21 +157,15 @@ function Env:prAsArray()
 		for i=1,#self.times do
 			contents[#contents+1] = self.levels[i+1]
 			contents[#contents+1] = self.times[i]
+			
 			if type(self.curve)=="table" then
-				--println("curva tipo table")
-				contents[#contents+1] = 5
-				contents[#contents+1] = WrapAtUG(self.curve,i)--self.curve[i]
-			elseif type(self.curve)=="string" then
-				--println("curva tipo string")
-				local val=Env.shapeNames[self.curve]
-				assert(type(val)=="number","not valid curve name: "..self.curve)
-				contents[#contents+1] = val
-				contents[#contents+1] = 0
+				local a,b = Env.get_Env_curve_coefs(WrapAtUG(self.curve,i),self.str_curves)
+				contents[#contents+1] = a
+				contents[#contents+1] = b
 			else
-				--println("curva tipo otro:"..self.curve)
-				assert(type(self.curve)=="number")
-				contents[#contents+1] = 5
-				contents[#contents+1] = self.curve
+				local a,b = Env.get_Env_curve_coefs(self.curve,self.str_curves)
+				contents[#contents+1] = a
+				contents[#contents+1] = b
 			end
 		end
 	return contents
@@ -1114,12 +1135,25 @@ end
 DynKlank={}
 function DynKlank.ar(spec, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
-	return Mix(Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset,spec[3]*decayscale,spec[2]})
+	--return Mix(Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]})
+	return Mix(Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]))
 end
 DynKlankS={}
 function DynKlankS.ar(spec, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
-	return Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset,spec[3]*decayscale,spec[2]}
+	--return Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset,spec[3]*decayscale,spec[2]}
+	return Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2])
+end
+DynKlang={}
+function DynKlang.ar(spec, freqscale, freqoffset)
+	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0;
+	return Mix(SinOsc.ar(freqscale*spec[1]+freqoffset, spec[3], spec[2]))
+end
+DynKlangS={}
+function DynKlangS.ar(spec, freqscale, freqoffset)
+	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0;
+	--return Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset,spec[3]*decayscale,spec[2]}
+	return SinOsc.ar(freqscale*spec[1]+freqoffset, spec[3], spec[2])
 end
 ---[[
 function GVerb.ar(in_a,roomsize,revtime,damping,inputbw,spread,drylevel,earlyreflevel,taillevel,maxroomsize)
@@ -1675,103 +1709,21 @@ function SYNTHDef:play(lista)
 	sendBundle(on)
 	return self
 end
-function SynthDef(name,parametersDef,graphfunc)
-	--print("SynthDef: ",name)
-	--prtable(parametersDef)
-	_BUILDSYNTHDEF=SYNTHDef:new()
-	_BUILDSYNTHDEF.name=name
-	_BUILDSYNTHDEF.parameters = {}
-	_BUILDSYNTHDEF.paramnames = {}
-	local parameters={}
-	local paramnames={}
-	local t_parameters={}
-	local t_paramnames={}
+function SYNTHDef:guiplay(lista)
+	lista = lista or {}
+	self:store()
+	local node = GetNode()
+	local on = getMsgLista({"/s_new", {self.name, node, 0, 0}},lista)
+	sendBundle(on)
 
-	
-	for k,v in pairs(parametersDef) do
-		if type(k)=="number" then
-			error("must suply default value for "..tostring(v))
-		elseif k:sub(1,2)=="t_" then
-			t_paramnames[#t_paramnames+1]=k
-			t_parameters[#t_parameters+1]=v
-		else
-			paramnames[#paramnames+1]=k
-			parameters[#parameters+1]=v
-		end
+	local notisink = {params={},node=node}
+	function notisink:notify(control)
+		local on = getMsgLista({"/n_set", {self.node}},self.params)
+		sendBundle(on)
 	end
- -- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	-- prtable(paramnames)
-	-- prtable(parameters)
-	-- prtable(t_paramnames)
-	-- prtable(t_parameters)
-	local controls,t_controls
-	if(#t_paramnames>0) then
-		t_controls=TrigControl.names(t_paramnames).kr(unpack(t_parameters))
-	end
-	if(#paramnames>0) then
-		controls=Control.names(paramnames).kr(unpack(parameters))
-	end
-	
-	
-	--prtable(_BUILDSYNTHDEF)
-	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcontrols")
-	-- prtable(controls)
-	-- prtable(t_controls)
-	local paramControl={}
-	local ind=1
-	for i,name in ipairs(t_paramnames) do
-		if type(t_parameters[i])=="table" then
-			local param={}
-			for i2,v2 in ipairs(t_parameters[i]) do
-				param[i2]=t_controls[ind]
-				ind=ind+1
-			end
-			paramControl[name]=param
-		else
-			paramControl[name]=t_controls[ind]
-			ind=ind+1
-		end
-	end
-	ind=1
-	for i,name in ipairs(paramnames) do
-		if type(parameters[i])=="table" then
-			local param=UGenArr:new()--{}
-			for i2,v2 in ipairs(parameters[i]) do
-				param[i2]=controls[ind]
-				ind=ind+1
-			end
-			paramControl[name]=param
-		else
-			paramControl[name]=controls[ind]
-			ind=ind+1
-		end
-	end
-	--prtable(paramControl)
-	--ind=1
-	-- for k,v in pairs(parametersDef) do
-		-- if type(v)=="table" then
-			-- local param={}
-			-- for i2,v2 in ipairs(v) do
-				-- param[i2]=controls[ind]
-				-- ind=ind+1
-			-- end
-			-- paramControl[k]=param
-		-- else
-			-- paramControl[k]=controls[ind]
-			-- ind=ind+1
-		-- end
-	-- end
-	
-	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxparamControl")
-	-- prtable(paramControl)
-	local newgt = paramControl -- create new environment
-	setmetatable(newgt, {__index = _G})
-	setfenv(graphfunc, newgt) -- set it
-	--print("amp es "..amp)
-	graphfunc()
-	local thissynthdef=_BUILDSYNTHDEF
-	_BUILDSYNTHDEF={} --erase global for new builds
-	return thissynthdef
+	local igui = InstrumentsGUI(self.name,false,parent,notisink.params,notisink)
+
+	return self
 end
 function UGen:dumpInputs(tab,ugens)
 	ugens=ugens or {}
@@ -1918,6 +1870,90 @@ function KLJunction.ar(input,lossarray,karray,delaylengtharray,mul,add)
 	--prtable("karray",delaylengtharray)
 	return KLJunction:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
 end
+KLJunction2=UGen:new{name='KLJunction2'}
+function KLJunction2.ar(input,lossarray,karray,delaylengtharray,mul,add)
+	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
+	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
+	local lossarrayfix = lossarray
+	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
+	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
+	--prtable("karray",delaylengtharray)
+	return KLJunction2:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
+end
+KLJunction3=UGen:new{name='KLJunction3'}
+function KLJunction3.ar(input,lossarray,karray,delaylengtharray,mul,add)
+	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
+	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
+	local lossarrayfix = lossarray
+	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
+	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
+	--prtable("karray",delaylengtharray)
+	return KLJunction3:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
+end
+HumanV=UGen:new{name='HumanV'}
+function HumanV.ar(input,loss,rg,rl,rn,areas,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;rn = rn or 1
+	return HumanV:MultiNew{2,input,loss,rg,rl,rn,unpack(areas)}:madd(mul,add)
+end
+--(input, loss,rg,rl,rn,area1len,numtubes, areas,areasNlen,areasN );
+HumanVN=UGen:new{name='HumanVN'}
+function HumanVN.ar(input,loss,rg,rl,rn,lmix,nmix,area1len,areas,areasN,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;rn = rn or 1
+	lmix = lmix or 1;nmix = nmix or 1
+	area1len = area1len or math.floor(#areas/2)
+	local data = concatTables(#areas,areas,#areasN,areasN)
+	return HumanVN:MultiNew{2,input,loss,rg,rl,rn,lmix,nmix,area1len,unpack(data)}:madd(mul,add)
+end
+--(input, loss,rg,rl,rn,area1len,numtubes, areas,areasNlen,areasN );
+HumanVNdel=UGen:new{name='HumanVNdel'}
+function HumanVNdel.ar(input ,inputnoise,noiseloc,loss,rg,rl,rn,lmix,nmix,area1len,del,areas,areasN,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;rn = rn or 1
+	lmix = lmix or 1;nmix = nmix or 1
+	del = del or 0
+	inputnoise = inputnoise or 0
+	noiseloc = noiseloc or 0
+	area1len = area1len or math.floor(#areas/2)
+	local data = concatTables(#del,del,#areas,areas,#areasN,areasN)
+	return HumanVNdel:MultiNew{2,input,loss,rg,rl,rn,lmix,nmix,area1len,inputnoise,noiseloc,unpack(data)}:madd(mul,add)
+end
+HumanVNdelU=UGen:new{name='HumanVNdelU'}
+function HumanVNdelU.ar(input ,inputnoise,noiseloc,loss,rg,rl,rn,lmix,nmix,area1len,del,areas,areasN,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;rn = rn or 1
+	lmix = lmix or 1;nmix = nmix or 1
+	del = del or 0
+	inputnoise = inputnoise or 0
+	noiseloc = noiseloc or 0
+	area1len = area1len or math.floor(#areas/2)
+	local data = concatTables(#areas,areas,#areasN,areasN)
+	return HumanVNdelU:MultiNew{2,input,loss,rg,rl,rn,lmix,nmix,area1len,del,inputnoise,noiseloc,unpack(data)}:madd(mul,add)
+end
+LFglottal = UGen:new{name="LFglottal"}
+function LFglottal.ar(freq, Tp,Te,Ta,alpha,namp,nwidth)
+	freq = freq or 100; Tp = Tp or 0.4;Te = Te or 0.5;Ta = Ta or 0.028;alpha= alpha or 3.2;namp= namp or 0.04;nwidth = nwidth or 0.4
+	return LFglottal:MultiNew{2,freq,Tp,Te,Ta,alpha,namp,nwidth}
+end
+ChenglottalU = UGen:new{name="ChenglottalU"}
+function ChenglottalU.ar(freq, OQ,asym,Sop,Scp)
+	freq = freq or 100; OQ = OQ or 0.8; asym = asym or 0.6; Sop = Sop or 0.5;Scp = Scp or 0.5
+	return ChenglottalU:MultiNew{2,freq, OQ,asym,Sop,Scp}
+end
+DWGReverb = MultiOutUGen:new{name="DWGReverb"}
+function DWGReverb.ar(inp,len,c1,c3,mix,coefs,doprime)
+	inp = inp or 0;c1 = c1 or 1;c3 = c3 or 1;len = len or 32000;mix = mix or 1
+	coefs = coefs or {1,0.9464,0.87352,0.83,0.8123,0.7398,0.69346,0.6349}
+	doprime = doprime or 1
+	assert(#coefs==8)
+	return DWGReverb:MultiNew{2,2,inp,len,c1,c3,mix,doprime,unpack(coefs)}
+end
+LDelay = UGen:new{name="LDelay"}
+function LDelay.ar(inp, delay)
+	inp=inp or 0;delay = delay or 0;
+	return LDelay:MultiNew{2,inp, delay}
+end
 ----------------------
 --[[
 Gendy1=UGen:new{name='Gendy1'}
@@ -2010,4 +2046,104 @@ IIRf = UGen:new{name="IIRf"}
 function IIRf.ar(inp, kB,kA)
 	inp = inp or 0;
 	return IIRf:MultiNew(concatTables({2,inp, #kB,#kA},kB,kA))
+end
+----------------------------------------
+function SynthDef(name,parametersDef,graphfunc)
+	--print("SynthDef: ",name)
+	--prtable(parametersDef)
+	_BUILDSYNTHDEF=SYNTHDef:new()
+	_BUILDSYNTHDEF.name=name
+	_BUILDSYNTHDEF.parameters = {}
+	_BUILDSYNTHDEF.paramnames = {}
+	local parameters={}
+	local paramnames={}
+	local t_parameters={}
+	local t_paramnames={}
+
+	
+	for k,v in pairs(parametersDef) do
+		if type(k)=="number" then
+			error("must suply default value for "..tostring(v))
+		elseif k:sub(1,2)=="t_" then
+			t_paramnames[#t_paramnames+1]=k
+			t_parameters[#t_parameters+1]=v
+		else
+			paramnames[#paramnames+1]=k
+			parameters[#parameters+1]=v
+		end
+	end
+ -- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	-- prtable(paramnames)
+	-- prtable(parameters)
+	-- prtable(t_paramnames)
+	-- prtable(t_parameters)
+	local controls,t_controls
+	if(#t_paramnames>0) then
+		t_controls=TrigControl.names(t_paramnames).kr(unpack(t_parameters))
+	end
+	if(#paramnames>0) then
+		controls=Control.names(paramnames).kr(unpack(parameters))
+	end
+	
+	
+	--prtable(_BUILDSYNTHDEF)
+	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcontrols")
+	-- prtable(controls)
+	-- prtable(t_controls)
+	local paramControl={}
+	local ind=1
+	for i,name in ipairs(t_paramnames) do
+		if type(t_parameters[i])=="table" then
+			local param={}
+			for i2,v2 in ipairs(t_parameters[i]) do
+				param[i2]=t_controls[ind]
+				ind=ind+1
+			end
+			paramControl[name]=param
+		else
+			paramControl[name]=t_controls[ind]
+			ind=ind+1
+		end
+	end
+	ind=1
+	for i,name in ipairs(paramnames) do
+		if type(parameters[i])=="table" then
+			local param=UGenArr:new()--{}
+			for i2,v2 in ipairs(parameters[i]) do
+				param[i2]=controls[ind]
+				ind=ind+1
+			end
+			paramControl[name]=param
+		else
+			paramControl[name]=controls[ind]
+			ind=ind+1
+		end
+	end
+	--prtable(paramControl)
+	--ind=1
+	-- for k,v in pairs(parametersDef) do
+		-- if type(v)=="table" then
+			-- local param={}
+			-- for i2,v2 in ipairs(v) do
+				-- param[i2]=controls[ind]
+				-- ind=ind+1
+			-- end
+			-- paramControl[k]=param
+		-- else
+			-- paramControl[k]=controls[ind]
+			-- ind=ind+1
+		-- end
+	-- end
+	
+	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxparamControl")
+	-- prtable(paramControl)
+	local newgt = paramControl -- create new environment
+	setmetatable(newgt, {__index = _G})
+    --setmetatable(newgt, {__index = getfenv(2)})
+	setfenv(graphfunc, newgt) -- set it
+	--print("amp es "..amp)
+	graphfunc(newgt)
+	local thissynthdef=_BUILDSYNTHDEF
+	_BUILDSYNTHDEF={} --erase global for new builds
+	return thissynthdef
 end
