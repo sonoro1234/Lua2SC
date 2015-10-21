@@ -133,6 +133,15 @@ function ctrl_mapper:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	--copy metamethods from parent
+	local m=getmetatable(self)
+    if m then
+        for k,v in pairs(m) do
+            if not rawget(self,k) and k:match("^__") then
+                self[k] = m[k]
+            end
+        end
+    end
 	return o
 end
 ctrl_mapper.__add = function (a,b)
@@ -285,7 +294,6 @@ local function make_multienvel(args)
 end
 
 
-
 function ENV(levels,times,curves,relative,istime,loopnode)
 	--MakeEnvelSynthNEW(#times)
 	local ctmap = ctrl_mapper:new{levels=levels,times=times}
@@ -294,12 +302,12 @@ function ENV(levels,times,curves,relative,istime,loopnode)
 		if type(levels)=="function" then
 			lev = levels(player)
 		else
-			lev = levels
+			lev = self.levels
 		end
 		if type(times)=="function" then
 			tim = times(player)
 		else
-			tim = times
+			tim = self.times
 		end
 		if type(curves)=="function" then
 			cur = curves(player)
@@ -326,12 +334,12 @@ function ENVstep(levels,times,curves,relative,istime)
 		if type(levels)=="function" then
 			lev = levels(player)
 		else
-			lev = levels
+			lev = self.levels
 		end
 		if type(times)=="function" then
 			tim = times(player)
 		else
-			tim = times
+			tim = self.times
 		end
 
 		local envel = E2ppq(lev,tim,"step",relative and beatLen or 1,istime)

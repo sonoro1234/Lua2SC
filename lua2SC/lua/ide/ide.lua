@@ -546,13 +546,14 @@ function fixUTF8(s, replacement)
   return s, invalid
 end
 function fixSTCOutput(s)
-	return s:gsub("[\128-\255]","\022")
+	s = s:gsub("[\128-\255]","\022")
+    return s:gsub("[^%w%s%p]+",function(m) return string.format("%q",m) end)
 end
 function DisplayOutput(message, iserror)
 	--print("DisplayOutput",message)
 	--message = wx.wxString(message):ToUTF8()
-	message = fixUTF8(message,"\022")
-	--message = fixSTCOutput(message)
+	--message = fixUTF8(message,"\022")
+	message = fixSTCOutput(message)
 	--print("DisplayOutput",message)
 	local wlen=string.len(message)
 	local pos=errorLog:GetLength()
@@ -898,7 +899,7 @@ end
 function NewFile(event)
     local editor = CreateEditor("untitled.lua")
 	frame:SetTitle("untitled.lua")
-	---[[
+	--[[
 	print("codepage",editor:GetCodePage())
 	local _text = ""
 	for i=0,255 do

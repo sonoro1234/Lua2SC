@@ -114,10 +114,11 @@ local function strconcat(...)
 	-- return table.concat({...},'\t') .. "\n"
 end
 function thread_print(...)
-	idlelinda:send("prout",{strconcat(...),false})
+    --max len is 32*1024-7
+	idlelinda:send("prout",{strconcat(...):sub(1,30000),false})
 end
 function thread_error_print(...)
-	idlelinda:send("prout",{strconcat(...),true})
+	idlelinda:send("prout",{strconcat(...):sub(1,30000),true})
 end
 function MidiOpen(options)
 	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,mainlinda,midilinda,{print=thread_print,
@@ -155,7 +156,7 @@ NO_IDE = true
 --]=]
 
 if not NO_IDE then idelane = ide_lane(lanes) end
-
+n_scriptrun = 0
 print"going into mainloop"
 while true do
 	local key,val = mainlinda:receive("sendsc","initsc","closesc","_midiEventCb","MidiClose","MidiOpen","ide_exit","ScriptRun","CancelScript","GetScriptLaneStatus")
@@ -178,7 +179,7 @@ while true do
 			dofile(lua2scpath.."lua"..path_sep.."scriptrun.lua") -- this allow to modify scriptrun.lua between runs
 			ScriptRun(val)
 		elseif key == "CancelScript" then
-			local res = CancelScript(val.timeout)
+			local res = CancelScript(val.timeout,val.forced,val.forced_timeout)
 			val.tmplinda:send("CancelScriptResp",res)
 		elseif key == "GetScriptLaneStatus" then
 			val:send("GetScriptLaneStatusResp",script_lane.status)

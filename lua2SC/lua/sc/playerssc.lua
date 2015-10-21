@@ -596,7 +596,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	local inst = lista.inst or self.inst
 	lista.inst=nil
 	
-	lista.amp	= lista.amp or lista.velo;lista.velo=nil
+	--lista.amp	= lista.amp or lista.velo;lista.velo=nil
 	--lista.amp	= lista.amp or 0.5
 	
 	if IsREST(freq) then

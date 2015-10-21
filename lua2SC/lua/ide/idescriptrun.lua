@@ -128,11 +128,11 @@ function InitRunMenu()
 					local cancelled,reason = ideCancelScript(0.1)
 					print("cancelled1",cancelled,reason);
 					if cancelled then
-						idlelinda:set("prout",{"CANCEL!"})
+						idlelinda:set("prout",{"softCANCEL!"})
 						--script_lane=nil
 						return
-					-- else
-						-- print("trying to kill")
+					elseif canceled == false then
+						print("trying to kill",reason)
 						-- cancelled,reason=script_lane:cancel(0.1,true)
 						-- print("cancelled2",cancelled,reason);
 						-- print("script_lane.status",script_lane.status)
@@ -140,6 +140,8 @@ function InitRunMenu()
 							-- idlelinda:set("prout",{"ABORT!"})
 							-- script_lane=nil
 						-- end
+                    elseif canceled == nil then
+                        print("linda timeout in CANCEL")
 					end
 					prtable(lanes.threads())
 				end
@@ -174,6 +176,7 @@ function ideScriptRun(typerun)
 
 	ClearAllCurrentLineMarkers()
 	CallStack:Clear()
+    idlelinda:set("prout")
 	if menuBar:IsChecked(ID_CLEAROUTPUT) then
         ClearLog(errorLog)
     end
@@ -216,9 +219,9 @@ function ideScriptRun(typerun)
 	script_lane = true 
 end
 
-function ideCancelScript(time)
+function ideCancelScript(time,forced,forced_timeout)
 		local tmplinda=lanes.linda()
-		mainlinda:send("CancelScript",{timeout=time,tmplinda=tmplinda})
+		mainlinda:send("CancelScript",{timeout=time,forced=forced,forced_timeout=forced_timeout,tmplinda=tmplinda})
 		local key,val=tmplinda:receive(3,"CancelScriptResp")
 		if key then
 			return unpack(val)

@@ -47,23 +47,23 @@ function NRT:Gen(endppq,test)
 	theMetro:play(nil,0,0,25)
 	local lastt = 0
     sendBundle = function(msg,ti)
-		
 		ti = ti or lastt
-		--if ti > 1000 then 
-		--	error"aa" 
-		--end
 		lastt = ti
-		prerror(ti,prOSC(msg))
+		local oscstr = prOSC(msg):sub(1,255)
+		prerror(ti,oscstr)
 		NRT:sendBundle(msg,ti)
 	end
 	sendMultiBundle = function(ti,msg)
 		ti = ti or lastt
 		lastt = ti
-		prerror(ti,prOSC(msg))
+		local oscstr = prOSC(msg):sub(1,255)
+		prerror(ti,oscstr)
 		NRT:sendMultiBundle(ti,msg)
 	end
 	sendBlocked = function(msg)
-		prerror(lastt,prOSC(msg))
+		--print(lastt,prOSC(msg))
+		local oscstr = prOSC(msg):sub(1,255)
+		prerror(lastt,oscstr)
 		--if msg[1]~="/d_recv" then
 		NRT:sendBundle(msg,lastt)
 		--end
@@ -73,10 +73,11 @@ function NRT:Gen(endppq,test)
 		theMetro:play(nil,0,0,25)
 		theMetro.oldtimestamp = -theMetro.period
 		while theMetro.ppqPos < endppq do
-			if cancel_test() then
-				print("NRT:required to cancel\n")
-				return true
-			end
+-- cancelstep already does the work
+--			if cancel_test() then 
+--				print("NRT:required to cancel\n")
+--				return true
+--			end
 			theMetro.timestamp = theMetro.oldtimestamp + theMetro.period
 			theMetro.oldppqPos = theMetro.ppqPos
 			theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
@@ -110,10 +111,10 @@ function NRT:Gen(endppq,test)
 			exe:setvbuf("no")
 		end
 		repeat
-			if cancel_test() then
-				print("NRT:required to cancel\n")
-				return true
-			end
+--			if cancel_test() then
+--				print("NRT:required to cancel\n")
+--				return true
+--			end
 			--print(stdout:read("*all") or stderr:read("*all") or "nil")
 			exe:flush()
 			--io.write("reading line bootsc\n")

@@ -239,8 +239,8 @@ function MarkovSynth.ar(...)
 end
 OteyPianoStrings=UGen:new{name='OteyPianoStrings'}
 function OteyPianoStrings.ar(...)
-	local   freq, vel, gate, release, rmin, rmax, rampl, rampr, rcore, lmin, lmax, lampl, lampr, rho, e, zb, zh, mh, k, alpha, p, hpos, loss, detune   = assign({ 'freq', 'vel', 'gate', 'release', 'rmin', 'rmax', 'rampl', 'rampr', 'rcore', 'lmin', 'lmax', 'lampl', 'lampr', 'rho', 'e', 'zb', 'zh', 'mh', 'k', 'alpha', 'p', 'hpos', 'loss', 'detune' },{ 440, 1, 1, 0.1, 0.35, 2, 4, 8, 1, 0.07, 1.4, -4, 4, 1, 1, 1, 0, 1, 1, 1, 1, 0.142, 1, 0.0003 },...)
-	return OteyPianoStrings:MultiNew{2,freq,vel,gate,release,rmin,rmax,rampl,rampr,rcore,lmin,lmax,lampl,lampr,rho,e,zb,zh,mh,k,alpha,p,hpos,loss,detune}
+	local   freq, vel, gate, rmin, rmax, rampl, rampr, rcore, lmin, lmax, lampl, lampr, rho, e, zb, zh, mh, k, alpha, p, hpos, loss, detune,hammer_type   = assign({ 'freq', 'vel', 'gate', 'rmin', 'rmax', 'rampl', 'rampr', 'rcore', 'lmin', 'lmax', 'lampl', 'lampr', 'rho', 'e', 'zb', 'zh', 'mh', 'k', 'alpha', 'p', 'hpos', 'loss', 'detune' ,'hammer_type'},{ 440, 1, 1, 0.35, 2, 4, 8, 1, 0.07, 1.4, -4, 4, 1, 1, 1, 0, 1, 1, 1, 1, 0.142, 1, 0.0003,1 },...)
+	return OteyPianoStrings:MultiNew{2,freq,vel,gate,rmin,rmax,rampl,rampr,rcore,lmin,lmax,lampl,lampr,rho,e,zb,zh,mh,k,alpha,p,hpos,loss,detune,hammer_type}
 end
 Pulse=UGen:new{name='Pulse'}
 function Pulse.kr(...)
