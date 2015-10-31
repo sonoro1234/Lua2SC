@@ -21,9 +21,10 @@ local function debugger_copy(object)
         local new_table = {}
         lookup_table[object] = new_table
         for index, value in pairs(object) do
+            new_table[tostring(index)] = _copy(value)
             --new_table[_copy(index)] = _copy(value)
 			--tables are not linda transfered in keys
-			new_table[ToStr(index)] = _copy(value)
+			--new_table[ToStr(index)] = _copy(value)
         end
 		local mt = getmetatable(object)
 		if mt then
@@ -35,10 +36,13 @@ local function debugger_copy(object)
     return _copy(object)
 end
 
-function Debugger.get_call_stack(inilevel)
+function Debugger:get_call_stack(inilevel)
+    local deph = self.maxdeph or math.huge
+    print("staklevel",deph)
+    local endlevel = inilevel + deph
 	local stack = {}
 	local vars = {}
-	for level = inilevel or 1,math.huge do
+	for level = inilevel or 1,endlevel do
 		local stlevel = level - inilevel + 1
 		local stinfo = debug.getinfo(level,"Snlf")
 		if not stinfo then return stack,vars end
@@ -66,6 +70,7 @@ function Debugger.get_call_stack(inilevel)
 		-- dont force lanes to send function
 		stinfo.func = nil
 	end
+    return stack,vars
 end
 local function getstacklevel()
 	for i = 1,math.huge do
@@ -120,7 +125,7 @@ function Debugger.debug_hook (event, line)
 			Debugger.step_into = false
 			Debugger.step_over = false
 			
-			local stack,vars = Debugger.get_call_stack(3)
+			local stack,vars = Debugger:get_call_stack(3)
 			--print("get_call_stack",ToStr(vars))
 			send_debuginfo(s,line,stack,vars,true)
 			
@@ -158,7 +163,8 @@ function Debugger.debug_hook (event, line)
 	end
 end
 
-function Debugger:init(bp)
+function Debugger:init(bp,maxdeph)
+    self.maxdeph = maxdeph
 	self.step_over = false
 	self.step_into = false
 	self.laststacklevel = {} 

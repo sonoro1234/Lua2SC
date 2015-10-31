@@ -392,7 +392,7 @@ function ENVm(levels,times,curves,relative,istime)
 		end
 		levels = LastPad(levels,MAX_ENVEL_STEPS + 1)
 		times = ZeroPad(times,MAX_ENVEL_STEPS)
-		local cur = type(curves)=="table" and curves or {curves}
+		local cur = (type(curves)=="table") and curves or {curves}
 		cur = ZeroPad(cur,MAX_ENVEL_STEPS)
 		return levels,times,cur --Env(levels,times,curves):prAsArray()
 	end
@@ -466,6 +466,7 @@ local function gnote(val,escale) return midi2freq(getNote(val,escale)) end
 local function envlev(pl,lev)
 	local l = pl.curvals
 	local _dummy = l.degree
+	if IsREST(_dummy) then return REST end
 	local res = {}
 	for i,v in ipairs(lev) do
 		res[i] = gnote(_dummy + v,l.escale)
@@ -487,7 +488,7 @@ function ENVdeg(levels,times,absolute)
 	local ctmap = ctrl_mapper:new{levels=levels}
 	function ctmap:verb(paramname,player,beatTime,beatLen)
 		local lev = envlev(player,levels)
-
+		if IsREST(lev) then return nil end
 		local envel = E2ppq(lev,tim,"exp",relative and beatLen or 1)
 		local envel_ar = make_multienvel(envel)
 		if #envel_ar == 1 then

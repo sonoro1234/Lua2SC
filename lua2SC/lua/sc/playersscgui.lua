@@ -39,7 +39,7 @@ function _FreqScope(panel,scopesynth,busin)
 	local scopesynth = scopesynth or "freqScopeLstLocal" 
 	local panel=panel or panelMasterV
 	local busin=busin or 0
-	addControl{value={0,0}, typex="freqscope",width=512,height=200,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=512,rate=4,panel=panel}
+	addControl{value={0,0}, typex="freqscope",width=512,height=400,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=512,rate=4,panel=panel}
 end
 function FreqScopeSt(...)
 	local args = {...}

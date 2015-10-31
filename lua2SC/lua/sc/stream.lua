@@ -682,7 +682,7 @@ function AdvStream:pnext(e)
 		self.N2.delta = math.max(0,self.N2.delta - advance)
 		self.N1.dur = math.max(0,self.N1.dur + advance)
 		self.N2.dur = math.max(0,self.N2.dur - advance)
-		print("advance",advance)
+		--print("advance",advance)
 	end
 	--print(self.N1,self.N2)
 	local ret = self.N1

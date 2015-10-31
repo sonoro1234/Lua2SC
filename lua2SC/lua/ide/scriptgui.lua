@@ -1175,10 +1175,14 @@ function ClearScriptGUI()
 	--prtable(theScriptGUI.Controls)
 	--prtable(theScriptGUI.Sizers)
 	--clear linda--
+    local keys = {"guiModify","guiUpdate","guiSetValue","guiGetValue","guiSetLabel","guiDeleteControl","guiDeletePanel" ,"/vumeter"}
+    for _,k in ipairs(keys) do scriptguilinda:set(k) end
+    --[[
 	repeat
 		local key,val=scriptguilinda:receive(0,"guiSetValue","guiGetValue","guiSetLabel","guiDeleteControl","guiDeletePanel" ,"/vumeter")
 		print("xxxxxxxxxxxxxxxxxxxxxxScriptGUI clear linda ",key)
 	until val==nil
+    --]]
 end
 function CreateScriptGUI()
 
@@ -1723,10 +1727,8 @@ function CreateScriptGUI()
 	manager:Update()
 	
 	--clear linda--
-	repeat
-		local key,val=scriptguilinda:receive(0,"guiModify","guiUpdate","guiSetValue","guiGetValue","guiSetLabel","guiDeleteControl","guiDeletePanel","/vumeter" )
-		print("xxxxxxxxxxxxxxxxxxxxxxScriptGUI clear linda ",key)
-	until val==nil
+    local keys = {"guiModify","guiUpdate","guiSetValue","guiGetValue","guiSetLabel","guiDeleteControl","guiDeletePanel" ,"/vumeter"}
+    for _,k in ipairs(keys) do scriptguilinda:set(k) end
 
 	ScriptGUI:Connect(wx.wxEVT_IDLE,
         function(event)

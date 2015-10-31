@@ -9,6 +9,7 @@
 
 lanes=require("lanes")
 lanes.configure({ nb_keepers = 1, with_timers = true, on_state_create = nil,track_lanes=true}) --,verbose_errors=true})
+
 idlelinda= lanes.linda("idlelinda")
 scriptlinda= lanes.linda("scriptlinda")
 scriptguilinda= lanes.linda("scriptguilinda")
@@ -130,7 +131,7 @@ function MidiClose()
 		midilane:cancel(0.1)
 	end
 end
-require"oscfunc"
+--require"sc.oscfunc"
 SCSERVER = require"scserver"
 
 require"ide.ide_lane"
@@ -183,12 +184,14 @@ while true do
 			val.tmplinda:send("CancelScriptResp",res)
 		elseif key == "GetScriptLaneStatus" then
 			val:send("GetScriptLaneStatusResp",script_lane.status)
+            --print("collectgarbage main",collectgarbage"count")
+			--collectgarbage()
+            --print("collectgarbage main",collectgarbage"count")
 		elseif key == "ide_exit" then
 			print"ide_exit arrived"
 			break
 		end
 	end
-	--prtable(lanes.threads())
 end
 MidiClose()
 print"exit: print lindas:"

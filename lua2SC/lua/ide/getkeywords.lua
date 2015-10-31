@@ -100,7 +100,7 @@ function GetSCKeyWords()
 			loadinEnv("sc.scbuffer",env)
 			loadinEnv("sc.routines",env)
 			loadinEnv("sc.ctrl_bus",env)
-			loadinEnv("oscfunc",env)
+			loadinEnv("sc.oscfunc",env)
             loadinEnv("sc.named_events",env)
 			loadinEnv("sc.MetronomLanes",env)
 			local keyword_table = {}

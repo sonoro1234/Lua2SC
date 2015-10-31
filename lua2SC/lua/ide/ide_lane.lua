@@ -37,7 +37,7 @@ function ide_main()
 	--dofile(lua2scpath .."lua"..path_sep .. "ide" ..path_sep .. "ide.lua")
 	
 	IDESCSERVER = require"ide.ide_server"
-	require"oscfunc"
+	require"sc.oscfunc"
 	
 	require"pmidi"
 	--require("socket")
@@ -71,7 +71,8 @@ function ide_lane()
 				lindas = lindas,
 				file_settings = file_config,
 				MidiOpen = MidiOpen,
-				MidiClose = MidiClose
+				MidiClose = MidiClose,
+                --print=thread_print
 				},
 		priority=0},
 		ide_main)

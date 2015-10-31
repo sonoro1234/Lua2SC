@@ -1,3 +1,4 @@
+require"sc.oscfunc"(scriptlinda)
 require"sc.callback_wrappers"
 require"sc.sc_comm"
 InitSCCOMM()

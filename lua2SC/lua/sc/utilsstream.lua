@@ -264,8 +264,9 @@ end
 function whitef(lohi)
 	return (lohi[2]-lohi[1])*RANDOM:value()+lohi[1]
 end
-function noisefStream(a)
-	return FS(function(pl,...) return whitef(...) end,-1,a)
+function noisefStream(a,r)
+	r = r or -1
+	return FS(function(pl,...) return whitef(...) end,r,a)
 end
 function brownNoiseGenerator(lo,hi,step,last)
 	local last = last or whitef{lo,hi}

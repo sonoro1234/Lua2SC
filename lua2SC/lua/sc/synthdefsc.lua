@@ -1683,6 +1683,7 @@ function SYNTHDef:makeDefStr()
 	return self
 end
 function SYNTHDef:send(block)
+	print(self.name,"sent to server")
 	if not self.compiledStr then self:makeDefStr() end
 	if block==nil then block=true end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}
@@ -1935,6 +1936,11 @@ LFglottal = UGen:new{name="LFglottal"}
 function LFglottal.ar(freq, Tp,Te,Ta,alpha,namp,nwidth)
 	freq = freq or 100; Tp = Tp or 0.4;Te = Te or 0.5;Ta = Ta or 0.028;alpha= alpha or 3.2;namp= namp or 0.04;nwidth = nwidth or 0.4
 	return LFglottal:MultiNew{2,freq,Tp,Te,Ta,alpha,namp,nwidth}
+end
+VeldhuisGlot = UGen:new{name="VeldhuisGlot"}
+function VeldhuisGlot.ar(freq, Tp,Te,Ta,namp,nwidth)
+	freq = freq or 100; Tp = Tp or 0.4;Te = Te or 0.5;Ta = Ta or 0.028;namp= namp or 0.04;nwidth = nwidth or 0.4
+	return VeldhuisGlot:MultiNew{2,freq,Tp,Te,Ta,namp,nwidth}
 end
 ChenglottalU = UGen:new{name="ChenglottalU"}
 function ChenglottalU.ar(freq, OQ,asym,Sop,Scp)

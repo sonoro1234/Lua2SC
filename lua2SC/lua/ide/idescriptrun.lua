@@ -10,6 +10,7 @@
 	local ID_RUN2              = NewID()
 	local ID_RUN3              = NewID()
 	local ID_RUN_SELECTED             = NewID()
+    local ID_SCRIPTEXIT       = NewID()
 	local ID_CANCELRUN       = NewID()
 	local ID_KILLRUN       = NewID()
 	local ID_CLEAROUTPUT      = NewID()
@@ -33,9 +34,9 @@ function InitRunMenu()
 		{ ID_STEPOUT,              "&Step out \tCtrl-F10",               "Step out" },
 		{ ID_BREAK,              "&Break ",               "Break" },
 		{},
-
-		{ ID_CANCELRUN,              "&Cancel Run\tF5",               "Stops execution" },
-		{ ID_KILLRUN,              "&Kill script",               "Stops execution" },
+        { ID_SCRIPTEXIT,              "&Script Exit\tF5",               "Stops script" },
+		{ ID_CANCELRUN,              "&Cancel Run",               "cancel execution" },
+		{ ID_KILLRUN,              "&Kill script",               "kill execution" },
 		{ ID_SHOWLANES,              "&Dump lanes",               "Dump lanes" },
         { },
         { ID_CLEAROUTPUT,"C&lear Output Window","Clear the output window before compiling or debugging", wx.wxITEM_CHECK },
@@ -99,6 +100,11 @@ function InitRunMenu()
 				local editor = GetEditor()
 				event:Enable((editor ~= nil) and (script_lane))
 			end)
+	frame:Connect(ID_SCRIPTEXIT, wx.wxEVT_UPDATE_UI,
+			function (event)
+				local editor = GetEditor()
+				event:Enable((editor ~= nil) and (script_lane~=nil))
+			end)
 	frame:Connect(ID_CANCELRUN, wx.wxEVT_UPDATE_UI,
 			function (event)
 				local editor = GetEditor()
@@ -111,7 +117,7 @@ function InitRunMenu()
 			end)
 	
 	
-	frame:Connect(ID_CANCELRUN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+	frame:Connect(ID_SCRIPTEXIT,  wx.wxEVT_COMMAND_MENU_SELECTED,
 			function(event) 
 				--local cancelled=script_lane:cancel(0.1)
 				--print("cancelled",cancelled);
@@ -121,7 +127,7 @@ function InitRunMenu()
 				debuggerlinda:send("debug_exit",1)
 				ClearAllCurrentLineMarkers()
 			end)
-	frame:Connect(ID_KILLRUN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+	frame:Connect(ID_CANCELRUN,  wx.wxEVT_COMMAND_MENU_SELECTED,
 			function(event)
 				if script_lane then
 					--local cancelled,reason=script_lane:cancel(0.1)
@@ -146,6 +152,31 @@ function InitRunMenu()
 					prtable(lanes.threads())
 				end
 			end)
+    frame:Connect(ID_KILLRUN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+			function(event)
+				if script_lane then
+					--local cancelled,reason=script_lane:cancel(0.1)
+					local cancelled,reason = ideCancelScript(0.1,true,2)
+					print("cancelled1",cancelled,reason);
+					if cancelled then
+						idlelinda:set("prout",{"hardCANCEL!"})
+						--script_lane=nil
+						return
+					elseif canceled == false then
+						print("trying to kill",reason)
+						-- cancelled,reason=script_lane:cancel(0.1,true)
+						-- print("cancelled2",cancelled,reason);
+						-- print("script_lane.status",script_lane.status)
+						-- if cancelled then --or reason=="killed" then
+							-- idlelinda:set("prout",{"ABORT!"})
+							-- script_lane=nil
+						-- end
+                    elseif canceled == nil then
+                        print("linda timeout in CANCEL")
+					end
+					prtable(lanes.threads())
+				end
+			end)
 	frame:Connect(ID_SHOWLANES,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
 			prtable(lanes.threads())
 			--lindas = {idlelinda,scriptlinda,scriptguilinda,midilinda,udpsclinda,debuggerlinda}
@@ -153,6 +184,9 @@ function InitRunMenu()
 				print("linda",linda)
 				prtable(linda:count())--,linda:dump())
 			end
+            print("collectgarbage",collectgarbage"count")
+			collectgarbage()
+            print("collectgarbage",collectgarbage"count")
 		end)
 	frame:Connect(ID_RUN, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) EnableDebugCommands(false,menuBar:IsChecked(ID_DEBUG)); ideScriptRun(1) end)
 	frame:Connect(ID_CONTINUE, wx.wxEVT_COMMAND_MENU_SELECTED,function(event) debuggerlinda:send("continue",1); EnableDebugCommands(false);ClearAllCurrentLineMarkers() end)

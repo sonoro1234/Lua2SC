@@ -320,6 +320,7 @@ function MASTER(t)
 	Master.params2 = t
 end
 function MASTER_INIT1()
+	print"MASTER_INIT1"
 	Master.params2 = Master.params2 or {}
 	Master.params2.dur = Master.params2.dur or math.huge
 	Master.params2.inst = "channel"
@@ -537,9 +538,6 @@ function OscEventPlayer:GetNode(beatTime)
 			local nodeout = self.NodeQueue[1]
 			local msg = {"/n_set",{nodeout,"gate",{"float",0}}}
 			sendBundle(msg,theMetro:ppq2time(beatTime))
-			--msg={"/n_free",{nodeout}}
-			--sendBundle(msg,theMetro.timestamp + (beatTime - theMetro.oldppqPos) / theMetro.bps)
-			--print("polyfree",self.NodeQueue[1])
 			table.remove(self.NodeQueue,1)
 		end
 		return node
@@ -667,7 +665,9 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	for k,v in pairs(listafunc) do
 		--v(k,self,beatTime,beatLen)
 		local bund = v:verb(k,self,beatTime,beatLen)
+		if bund then
 		for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+		end
 	end
 	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)
 	---

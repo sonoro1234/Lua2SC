@@ -14,7 +14,7 @@ function OSCTime(time)
 end
 --SERVER_CLOCK_LATENCY = 0.2
 function sendBundle(msg,time)
-	assert(msg)
+
 	if time then
 		local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 		udp:send(toOSC({timestamp,msg}))
@@ -23,6 +23,7 @@ function sendBundle(msg,time)
 	end
 end
 function sendMultiBundle(time,msg)
+		--print("send time",time)
 	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 	table.insert(msg,1,timestamp)
     udp:send(toOSC(msg))
@@ -77,7 +78,7 @@ function inittcp()
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udp==nil,"udp not closed")
+	assert(udp==nil,"tcp not closed")
 	local tcp = socket.connect(host, port)
 	assert(tcp,"tcp es nulo")
 	local ip, port2 = tcp:getsockname()
@@ -89,14 +90,14 @@ function inittcp()
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udpB == nil,"udpB not closed")
+	assert(udpB == nil,"tcpB not closed")
 	local tcpB = socket.connect(host, port)
 	tcpB:settimeout(4)
-	assert(tcpB,"udpB es nulo")
+	assert(tcpB,"tcpB es nulo")
 	local ip, port2 = tcpB:getsockname()
 	--tcpB:settimeout(2)
-	print("udpB sends to ip:"..host.." port:"..port)
-	print("udpB reveives as ip:"..ip.." port:"..port2)
+	print("tcpB sends to ip:"..host.." port:"..port)
+	print("tcpB reveives as ip:"..ip.." port:"..port2)
     
     local tcpT = {tcp=tcp}
     function tcpT:send(msg)

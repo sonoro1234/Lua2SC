@@ -35,15 +35,48 @@ function NRT:sendMultiBundle(time,msg)
 		prerror("nrt closed:",prOSC(msg))
 	end
 end
+local osctable = {}
+function NRT:sendBundleTable(msg,time)
+	assert(time)
+	table.insert(osctable,{time,msg})
+end
+function NRT:sendMultiBundleTable(time,msg)
+	assert(time)
+	table.insert(msg,1,time)
+	table.insert(osctable,msg)
+end
+function NRT:SaveTable(file)
+	local fich,err=io.open(file,"wb")
+	if not fich then error(err) end
+	fich:write("local ")
+	print"serialize"
+	local str = serializeTable("osctable",osctable)
+	print"serialize fich"
+	fich:write(str)
+	fich:write("return osctable ")
+	fich:close()
+end
+function NRT:LoadTable(file)
+	local fich,err=io.open(file,"r")
+	if not fich then error(err) end
+	local str=fich:read("*a")
+	fich:close()
+	return assert(loadstring(str))()
+end
 function NRT:close()
 	self.file:close()
 	self.closed = true
 end
 function NRT:Gen(endppq,test)
+	NRT.test = test
 	local function pathnoext(P)
 		return P:match("([^%.]+)")
 	end
-	NRT:open(pathnoext(scriptname)..".osc")
+	if not test then NRT:open(pathnoext(scriptname)..".osc") end
+	if test then
+		NRT.sendBundle = NRT.sendBundleTable
+		NRT.sendMultiBundle = NRT.sendMultiBundleTable
+	end
 	theMetro:play(nil,0,0,25)
 	local lastt = 0
     sendBundle = function(msg,ti)
@@ -70,6 +103,7 @@ function NRT:Gen(endppq,test)
 		return {"/done",{}}
 	end
     table.insert(initCbCallbacks,function()
+		print"NRT work"
 		theMetro:play(nil,0,0,25)
 		theMetro.oldtimestamp = -theMetro.period
 		while theMetro.ppqPos < endppq do
@@ -85,8 +119,14 @@ function NRT:Gen(endppq,test)
 			_onFrameCb()
 			theMetro.oldtimestamp = theMetro.timestamp
 		end
-		sendBundle({"/quit",{}},theMetro:ppq2time(endppq))
-		NRT:close()
+		if not NRT.test then
+			sendBundle({"/quit",{}},theMetro:ppq2time(endppq))
+			NRT:close()
+		else
+			print"saving osc table"
+			NRT:SaveTable(pathnoext(scriptname)..".osc")
+			print"osc table saved"
+		end
 ---[=[
 	if not test then
 		-- call sc NRT
@@ -129,6 +169,7 @@ function NRT:Gen(endppq,test)
 			end
 		until false
 	end
+	scriptlinda:send("script_exit",1)
 --]=]
     end)
 end

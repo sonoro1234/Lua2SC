@@ -1,5 +1,5 @@
 named_events = {events = {}}
-checkpl = {}
+local checkpl = {}
 function named_events:subscribe(name, func, pl,...)
 	prerror("subscribe ev",name)
 
@@ -34,6 +34,7 @@ end
 
 function named_events:delete_events()
 	self.events = {}
+	checkpl = {}
 end
 
 --for writing streams

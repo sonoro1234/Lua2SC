@@ -487,10 +487,12 @@ end
 
 --from the lua manual
 function basicSerialize (o)
-    if type(o) == "number" or type(o)=="boolean" then
-        return tostring(o)
+    if type(o) == "number" then
+        return string.format("%0.17g",o)
     elseif type(o) == "string" then
         return string.format("%q", o)
+	elseif type(o) == "boolean" then
+		return tostring(o)
 	else
 		--local try = tostring(o)
 		--return try or "nil"
@@ -498,8 +500,47 @@ function basicSerialize (o)
     end
 end
 
+local basicSerialize = basicSerialize
+function serializeTable (name, value)
+	local saved =  {}       
+	local string_table = {}
+	local function _serializeTable(name, value)
 
-function serializeTable (name, value, saved)
+		table.insert(string_table, name)
+		table.insert(string_table, " = ")
+		if type(value) == "table" then
+			if saved[value] then    -- value already saved?
+				table.insert(string_table,saved[value])
+				table.insert(string_table,"\n")
+			else
+				saved[value] = name   -- save name for next time
+				table.insert(string_table, "{}\n")          
+				for k,v in pairs(value) do      -- save its fields
+					local fieldname 
+					if type(k)=="string" then
+						fieldname = string.format("%s.%s", name,k)
+					else
+						fieldname = string.format("%s[%s]", name,basicSerialize(k))
+					end
+					local tb = _serializeTable(fieldname, v)
+					--for i,vv in ipairs(tb) do
+					--	table.insert(string_table, vv)
+					--end
+				end
+			end
+		else
+			table.insert(string_table,basicSerialize(value))
+			table.insert(string_table,"\n")
+		--else
+			--error("cannot save a " .. type(value))
+		end
+		--return string_table
+	end
+	_serializeTable(name, value)
+	return table.concat(string_table)
+end
+
+function serializeTableOLD (name, value, saved)
 	saved = saved or {}       -- initial value
 	local string_table = {}
 	

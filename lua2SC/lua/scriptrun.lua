@@ -265,7 +265,7 @@ function ScriptRun(pars)
 				end
 			end
 			local debuginfo = debug.getinfo(2,"Slf")
-			local stack,vars = Debugger.get_call_stack(3)
+			local stack,vars = Debugger:get_call_stack(3)
 			print("is require?",debuginfo.func == require)
 			print("is dofile?",debuginfo.func == dofile)
 			local is_comp_err = debuginfo.func == require or debuginfo.func == dofile or debuginfo.func == loadfile
@@ -288,12 +288,12 @@ function ScriptRun(pars)
 			send_debuginfo(debuginfo.source,debuginfo.currentline,stack,vars,false)
 		end
 		
-	local function pmain(scr)
+	local function pmain(scr,numberrun)
 
 		lanes = require "lanes" --.configure()
 		set_finalizer( finalizer_func ) 
 		set_error_reporting("extended")
-		set_debug_threadname("script_thread")
+		set_debug_threadname("script_thread"..numberrun)
 
 		Debugger = require"sc.debugger"
 		--clear linda-------------
@@ -302,7 +302,7 @@ function ScriptRun(pars)
 			for k,v in pairs(usedkeys) do scriptlinda:set(k) end
 		end
 		if debugging then
-			Debugger:init(Debuggerbp)
+			Debugger:init(Debuggerbp) --,3)
 		end
 				
 		return xpcall(function() 
@@ -344,7 +344,7 @@ function ScriptRun(pars)
 				_presetsDir=_presetsDir,
 				prtable=prtable,
 				ToStr=ToStr,
-				OSCFunc = OSCFunc,
+				--OSCFunc = OSCFunc,
 				OSCFuncLinda = scriptlinda,
 				Debuggerbp = Debuggerbp,
 				debugging = debugging,
@@ -355,16 +355,16 @@ function ScriptRun(pars)
 				MsgLoop = MsgLoop,
                 lua2scpath = lua2scpath
 				},
-		priority=2},
+		priority=0},
 		pmain)
-		
-	script_lane = script_lane_gen(script)
+	n_scriptrun = n_scriptrun + 1
+	script_lane = script_lane_gen(script,tostring(n_scriptrun))
 	print("script_lane",script_lane)
 end
 
-function CancelScript(timeout)
-	local cancelled,reason=script_lane:cancel(timeout)
-	io.write("CancelScript "..tostring(cancelled).." "..tostring(reason))
+function CancelScript(timeout,forced,forced_timeout)
+	local cancelled,reason=script_lane:cancel(timeout,forced,forced_timeout)
+	io.write("CancelScript "..tostring(cancelled).." "..tostring(reason).."\n")
 	return {cancelled,reason}
 end
 function send_debuginfo(source,line,stack,vars,activate)

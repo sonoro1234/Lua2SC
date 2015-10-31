@@ -1175,7 +1175,9 @@ function AppIDLE(event)
 			--if not checkstatus(script_lane) then print(script_lane.status)  end
 			if checkendScript(script_lane) then 
 				script_lane = nil 
-				collectgarbage()
+                --print("collectgarbage",collectgarbage"count")
+				--collectgarbage()
+                --print("collectgarbage",collectgarbage"count")
 			end
 			local key,val=idlelinda:receive(0,"Metro","DoDir","_FileSelector","TextToClipBoard","prout","proutSC","debugger","QueueAction","statusSC","/status.reply","OSCReceive","_midiEventCb","wxeval" ) 
 			if val then
