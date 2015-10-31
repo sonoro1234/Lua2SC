@@ -86,7 +86,8 @@ function theMetro:stop()
 end
 
 function theMetro:ppq2time(ppq)
-	return self.timestamp + (ppq - self.oldppqPos) * self.bpsi
+	--return self.timestamp + (ppq - self.oldppqPos) * self.bpsi
+	return self.oldtimestamp + (ppq - self.oldppqPos) * self.bpsi
 end
 
 
@@ -131,6 +132,7 @@ function setMetronomLanes(timestamp)
 		--]]
 
 	local tms1 = lanes.now_secs()
+	--assert(tms1 == timestamp)
 	--initial_time = initial_time or tms1
 	--local errorl = tms1 - timestamp
 --	if  math.abs(errorl) >= 1/100 then
@@ -138,7 +140,7 @@ function setMetronomLanes(timestamp)
 --	end
 	-------------------------------
 	if theMetro.oldppqPos and theMetro.oldppqPos > theMetro.ppqPos then --backwards
-		prerror("xxxxxxxxxmetro back")
+		prerror("xxxxxxxxxxxxxxxxx metro back")
 		theMetro.backwards(theMetro.ppqPos)
 	end 
 
@@ -152,12 +154,16 @@ function setMetronomLanes(timestamp)
 	theMetro.ppqPos = theMetro.ppqPos + theMetro.frame --theMetro.bps * theMetro.period 
 
 	--theMetro.abstime = theMetro.abstime + theMetro.realperiod
-	local error2 = theMetro.timestamp - tms1
+	local error2 = tms1 - theMetro.timestamp
 	--table.insert(TIMS,error2)
-	if math.abs(error2) >= theMetro.period then
-		theMetro.timestamp = theMetro.timestamp + theMetro.period
-		theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
-		prerror(string.format("lost metro %4.3f",error2))
+	if (math.abs(error2) >= theMetro.period) then
+		
+		if (error2 > 0) then
+			prerror(string.format("lost metro %4.3f",error2))
+			--prerror(string.format("lost metro %4.3f,tms1= %4.3f,timest = %4.3f",error2,tms1,timestamp))
+			theMetro.timestamp = tms1 --theMetro.timestamp + theMetro.period
+			theMetro.ppqPos = theMetro.ppqPos  + error2*theMetro.bps   --+ theMetro.frame
+		end
 	end
 
 	_onFrameCb()
