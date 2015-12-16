@@ -16,10 +16,10 @@ M.OpenOutput=mm.OpenOutput
 function M._sendMidi(ev)
 	midilinda:send("midiWriteShort",ev)
 end
-function M.exit_midi_thread()
-	midilinda:send("exit_midi_thread",1)
-	midilinda:receive( "exit_midi_thread_done" )
-end
+-- function M.exit_midi_thread()
+	-- midilinda:send("exit_midi_thread",1)
+	-- midilinda:receive( "exit_midi_thread_done" )
+-- end
 function M.GetMidiDevices()
 	local devices=mm.listDevices()
 	local res={inp={},out={}}
@@ -80,15 +80,8 @@ function M.midi_thread(inp,out)
 			end
 			print("PMIDI: midi_thread finalizer beguin")
 			lanes.timer(midilinda, "miditimer", 0 ) --reset
-			midilinda:receive (0, "miditimer" ) --clear last
-			print("PMIDI: midi_thread closing devices")
-			for i,v in ipairs( midiout) do
-				v.stream:close()
-			end
-			for i,v in ipairs( midiin) do
-				v.stream:close()
-			end
-			print("PMIDI: midi_thread closed devices")
+			midilinda:set ("miditimer" ) --clear last
+			print("PMIDI: midi_thread finalizer end")
 		end)
 	set_error_reporting("extended")
 	set_debug_threadname("midi_thread")
@@ -102,7 +95,7 @@ function M.midi_thread(inp,out)
 			if not mdin then 
 				print("PMIDI: "..tostring(err)) 
 			else 
-				midiin[#midiin+1]={stream=mdin,port=MIDIdev.inp[name].devID}
+				midiin[#midiin+1]={stream=mdin,port=MIDIdev.inp[name].devID,name=name}
 				print("PMIDI: midiin: ", #midiin, " opened:",name) 
 			end
 		end
@@ -115,7 +108,7 @@ function M.midi_thread(inp,out)
 				print("PMIDI: "..tostring(err)) 
 			else 
 				midi_out_opened=true
-				midiout[#midiout+1]={stream=mdin,port=MIDIdev.out[name].devID}
+				midiout[#midiout+1]={stream=mdin,port=MIDIdev.out[name].devID,name=name}
 				print("PMIDI: midiout: ",#midiout," opened:",name) 
 			end
 		end
@@ -124,7 +117,7 @@ function M.midi_thread(inp,out)
 	if #midiin > 0 or midi_out_opened then
 		lanes.timer( midilinda, "miditimer", 0.01, 0) --0.01 )
 		while(true) do
-			local key,val= midilinda:receive( "miditimer","midiWriteShort","exit_midi_thread" )
+			local key,val= midilinda:receive("exit_midi_thread", "miditimer","midiWriteShort" )
 			
 			--if key=="miditimer" and #midiin > 0 then
 			if key=="miditimer" then
@@ -154,8 +147,18 @@ function M.midi_thread(inp,out)
 					--prtable(val)
 				end
 			elseif key=="exit_midi_thread"  then
-				midilinda:send("exit_midi_thread_done",1)
-				--print(key,val)
+				io.write"PMIDI: exit_midi_thread arrived"
+				print("PMIDI: midi_thread closing devices")
+				for i,v in ipairs( midiout) do
+					print("closing ",v.name)
+					v.stream:close()
+				end
+				for i,v in ipairs( midiin) do
+					print("closing ",v.name)
+					v.stream:close()
+				end
+				print("PMIDI: midi_thread closed devices")
+				callbacklinda:send("exit_midi_thread_done",1)
 				break
 			end
 		end

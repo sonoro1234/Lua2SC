@@ -152,7 +152,7 @@ function PhISEM:MakeSynth(name,preset)
 	local t = makeShynthFromPreset(self.presets[preset])
 --------------------------------------
 ---[[
-	SynthDef(name, {out = 0,gate=1,freq = 400,pan = 0,amp=0.1,
+	SynthDef(name, {out = 0,gate=1,ffac = 1,pan = 0,amp=0.1,
 freqs=Ref(t.freqs),sys_dec=t.sys_dec,sound_dec=t.sound_dec,amps=Ref(t.amps),decays=Ref(t.decays),f_rand=Ref(t.freq_rand),objects=t.objects,GAIN=t.GAIN,Zeros=Ref(t.Zeros)}, function()
 	local objectsm = objects:max(2)
 	--local pulses = Dust.ar(objects*43, 1)
@@ -166,7 +166,7 @@ freqs=Ref(t.freqs),sys_dec=t.sys_dec,sound_dec=t.sound_dec,amps=Ref(t.amps),deca
 	--local driver = WhiteNoise.ar(1)*Integrator.ar(sysdriver,sound_dec)
 	local driver = WhiteNoise.ar(1)*Decay.ar(sysdriver,sound_dec)
 	--local freqs2 = freqs * (1.0 + Gate.ar((freq_rand * TA{WhiteNoise.ar()}),pulses))
-	local freqs2 = freqs *  (1 + TRand.ar( -f_rand, f_rand, pulses))
+	local freqs2 = ffac*freqs *  (1 + TRand.ar( -f_rand, f_rand, pulses))
 	local signal = Mix(Ringz.ar(driver,freqs2,decays,amps))
 	--local e2 = EnvGen.kr(Env.asr(attack, 0.5, 0.1),gate,nil,nil,nil,2);
 	--signal = sysdriver

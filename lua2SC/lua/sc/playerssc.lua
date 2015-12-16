@@ -4,7 +4,7 @@ require"sc.sc_comm"
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
 --------------------------------------------------------
 OsceventQueue = {}
-OsceventQueueDirty = false
+local OsceventQueueDirty = false
 function OsceventCompare(a, b)
     return b.time>a.time       
 end 
@@ -99,6 +99,7 @@ function scEventPlayer:Release(time)
 end
 function scEventPlayer:FreeNode()
 	--print("Freenode",self.name,self.node)
+	
 	if self.poly and self.NodeQueue then
 		for i,v in ipairs(self.NodeQueue) do
 			local msg = {"/n_set",{v,"gate",{"float",0}}}
@@ -106,9 +107,14 @@ function scEventPlayer:FreeNode()
 		end
 		return
 	end
-	if self.node == nil then return end
+	if self.node == nil then print("Freenode without node",self.name);return end
+--	if self.name=="om1" then
+--		print("om1 in",self.ppqPos)
+--		OSCFunc.newfilter("/n_info",self.node,function(v) prtable(v) end,true)
+--		sendBundle({"/n_query",{self.node}},theMetro:ppq2time(self.ppqPos))
+--	end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
-	sendBundle(msg) --,lanes.now_secs())
+	sendBundle(msg,theMetro:ppq2time(self.ppqPos)) --,lanes.now_secs())
 	self.node = nil
 end
 function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
@@ -118,6 +124,13 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	lista.dur=nil
 	--local inst=lista.inst
 	lista.inst=nil
+	--eval funcs
+	for k,v in pairs(lista) do
+		if type(v)=="function" then
+			lista[k]=v(self)
+		end
+	end
+
 	--play osc-----------------
 	local msg
 	if self.node == nil then
@@ -174,20 +187,20 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	end
 	
 end
-function scEventPlayer:SendParam(parnam)
+function scEventPlayer:SendParam(parnam,ti)
 	--assert(self.node," sin nodo")
 	if not self.node then return end
 	--local msg ={"/n_set", { self.node,parnam,{"float",self.params[parnam]}}}
 	local msg ={"/n_set", { self.node}}
 	msg = getMsgValue(msg,parnam,self.params[parnam])
-	sendBundle(msg) --,lanes.now_secs())
+	sendBundle(msg,ti) --,lanes.now_secs())
 end
-function scEventPlayer:SendParams()
+function scEventPlayer:SendParams(ti)
 	--if not self.node then print("scEventPlayer:SendParams ",self.name, " sin nodo"); return end
 	assert(self.node," sin nodo")
 	local msg ={"/n_set", { self.node}}
 	msg = getMsgLista(msg,self.params)
-	sendBundle(msg) --,lanes.now_secs())
+	sendBundle(msg,ti) --,lanes.now_secs())
 	self:sendToRegisteredControls()
 end
 function scEventPlayer:RegisterControl(control)
@@ -487,24 +500,10 @@ function OscEventPlayer:Reset(all)
 			insert:Reset()
 		end
 	end
-	EventPlayer.Reset(self)
 	self:FreeNode()
+	EventPlayer.Reset(self)
 end
---called once a frame
-function OscEventPlayer:ccPlayBAK()
-	local event
-	if self.group and self.cclist then
-	--if self.node then
-		event ={"/n_set", {self.group}}
-		for k,v in pairs(self.cclist) do
-			local val=v:nextval()
-			table.insert(event[2],k)
-			table.insert(event[2],{"float",val})
-		end
-		--print(event)
-		sendBundle(event)
-	end
-end
+
 function OscEventPlayer:Play()
 	--print("OscEventPlayer:Play",self.name)
 	self.channel:Play()
@@ -553,12 +552,13 @@ local function copylist(lis)
 	end
 	return res
 end
-function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta) 
 
+function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta) 
+	if self.piano then return self:playOnePianoEvent(lista,beatTime, beatLen,delta) end
 	--set defaults, get freq,escale,legato,inst
-	local lista=listaO --deepcopy(listaO)
 	lista.escale = lista.escale or "ionian"
 	local escale = lista.escale
+	--because lista will be changed
 	self.curvals = copylist(lista)
 
 	--eval funcs
@@ -567,9 +567,6 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 			lista[k]=v(self)
 		end
 	end
-
-	--------------
-	
 	
 	--freq
 	local freq
@@ -594,11 +591,8 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	local inst = lista.inst or self.inst
 	lista.inst=nil
 	
-	--lista.amp	= lista.amp or lista.velo;lista.velo=nil
-	--lista.amp	= lista.amp or 0.5
 	
 	if IsREST(freq) then
-		--self.havenode = false
 		self:Release(theMetro:ppq2time(beatTime)) 
 		return  
 	end
@@ -612,6 +606,7 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	
 	local dontfree = self.dontfree
 	if self.mono then
+		--if self.node then 
 		if self.havenode then
 			lista.type = "n_set"
 		end
@@ -655,11 +650,6 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	table.insert(on[2],"out")
 	table.insert(on[2],{"int32",self.channel.busin})
 	
---	if freq then
---		table.insert(on[2],"freq")
---		table.insert(on[2],{"float",freq})
---	end
-	--sendBundle(on,theMetro:ppq2time(beatTime))
 	--send functions
 	local gbundle = {on}
 	for k,v in pairs(listafunc) do
@@ -682,14 +672,183 @@ function OscEventPlayer:playOneEvent(listaO,beatTime, beatLen,delta)
 	if dontfree == false then
 			local off = {"/n_set",{self.node,"gate",{"float",0}}}
 			scheduleOscEvent(off,beatTime + beatLen)
-			--if self.mono then
-			--	self.node = nil
-			--end
-			--if not self.monogate then
-				--self.node = nil
-			--end
 			self.havenode = false
+			--self.node = nil
 	end	
+end
+------------------------------------------------
+------------------------------OscPianoEventPlayer--------------
+OscPianoEventPlayer = OscEventPlayer:new({isOscPianoEP=true})
+function OscPianoEP(t)
+	local player = OscPianoEventPlayer:new(t)
+	player.params={}
+	player.pedalqueue =  {}
+	player.pianofreequeue = {}
+	player.pianonodes =  {}
+	OSCPlayers[#OSCPlayers + 1]= player
+	return player
+end
+--function OscPianoEventPlayer:Play()
+--	
+--	self:doFreeQueue(self.ppqPos)
+--	if not self.pianopedal then
+--		self:doPedalQueue()
+--	end
+--	OscEventPlayer.Play(self)
+--end
+function OscPianoEventPlayer:setFreeQueue(node,time,freq)
+	table.insert(self.pianofreequeue,{time=time,node=node,freq=freq}) 
+	self.freeQueueDirty = true
+end
+function OscPianoEventPlayer:doFreeQueue()
+	local ppq = self.ppqPos
+	
+    --ensure the table is in order
+	if self.freeQueueDirty then
+		table.sort(self.pianofreequeue, function(a,b) return b.time>a.time end)
+		self.freeQueueDirty = false
+	end
+
+    --send all events in this window
+	local pianofreequeue = self.pianofreequeue
+    repeat        
+        if pianofreequeue[1] and pianofreequeue[1].time <= ppq then
+			if self.pianopedal then
+				self.pedalqueue[pianofreequeue[1].node] = pianofreequeue[1]
+			elseif self.pianonodes[pianofreequeue[1].freq] then
+				local off = {"/n_set",{pianofreequeue[1].node,"gate",{"float",0}}}
+				sendBundle(off, theMetro:ppq2time(pianofreequeue[1].time))
+				self.pianonodes[pianofreequeue[1].freq] = nil
+				self.pedalqueue[pianofreequeue[1].node] = nil
+			end
+            table.remove(pianofreequeue, 1)  
+		else
+			break
+        end              
+    until false 
+	if not self.pianopedal then
+		self:doPedalQueue()
+	end
+end
+function OscPianoEventPlayer:doPedalQueue()
+	for i,v in pairs(self.pedalqueue) do
+		local off = {"/n_set",{v.node,"gate",{"float",0}}}
+		sendBundle(off, theMetro:ppq2time(self.ppqPos))
+		self.pianonodes[v.freq] = nil
+	end
+	self.pedalqueue = {}
+end
+function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta) 
+	
+	--set defaults, get freq,escale,legato,inst
+	lista.escale = lista.escale or "ionian"
+	local escale = lista.escale
+	--because lista will be changed
+	self.curvals = copylist(lista)
+
+	--eval funcs
+	for k,v in pairs(lista) do
+		if type(v)=="function" then
+			lista[k]=v(self)
+		end
+	end
+	
+	--freq
+	local freq
+	if lista.freq then
+		freq = lista.freq
+	elseif lista.note then
+		--freq = functabla(lista.note,midi2freq)
+		freq = midi2freq(lista.note)
+	elseif lista.degree then
+		freq = midi2freq(getNote(lista.degree,escale))
+		--freq = functabla(freq,midi2freq)
+	end
+	lista.note=nil;lista.degree=nil;lista.freq=freq
+	
+	--legato
+	local legato
+	if lista.legato then 
+		beatLen = beatLen * lista.legato;legato=lista.legato;lista.legato=nil 
+	end
+
+	--inst = lista.inst or "default";
+	local inst = lista.inst or self.inst
+	lista.inst=nil
+	
+	if lista.pianopedal~=nil then
+		self.pianopedal = lista.pianopedal
+		--prerror("self.pianopedal",self.pianopedal)
+		--if self.pianopedal then
+			--self:doFreeQueue()
+		--end
+	end
+	self:doFreeQueue()
+	lista.pianopedal = nil
+
+	if IsREST(freq) then
+		--self:Release(theMetro:ppq2time(beatTime)) 
+		return  
+	end
+	if IsNOP(freq) then
+		return  
+	end
+
+	local thisnode,on
+	if not freq then
+	else
+		thisnode = self.pianonodes[freq]
+		if thisnode then
+			on ={"/n_set", {thisnode}}
+		else
+			thisnode = GetNode() --self:GetNode(beatTime)
+			self.pianonodes[freq] = thisnode
+			on ={"/s_new", {inst, thisnode, 0, self.instr_group}}
+			OSCFunc.newfilter("/n_end",thisnode,function(noty) 
+				self.pianonodes[freq] = nil
+				self.pedalqueue[thisnode] = nil
+			end,true)
+		end
+	end
+	
+	-- get is_ctrl_mapper
+	local listafunc = {}
+	for k,v in pairs(lista) do
+		--if type(v)=="function" then
+		if type(v)=="table" and v.is_ctrl_mapper then
+			listafunc[k]=v
+			lista[k]=nil
+		end
+	end
+	
+	lista.escale=nil --dont send escale
+	getMsgLista(on,lista)
+	lista.escale=escale
+
+	table.insert(on[2],"out")
+	table.insert(on[2],{"int32",self.channel.busin})
+	
+	--send functions
+	local gbundle = {on}
+	for k,v in pairs(listafunc) do
+		error"not implemented"
+		local bund = v:verb(k,self,beatTime,beatLen)
+		if bund then
+		for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+		end
+	end
+	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)
+	---
+	if _GUIAUTOMATE then
+		self.autom_dur=self.autom_dur+ beatLen
+		if self.autom_dur >= 0.5 then
+			self.autom_dur=0
+			self.params = lista
+			self:sendToRegisteredControls()
+		end
+	end
+	
+	self:setFreeQueue(thisnode,beatTime + beatLen,freq)
 end
 --------------------------------------Inicio
 function FillSends(val)

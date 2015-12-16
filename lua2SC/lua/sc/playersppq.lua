@@ -278,7 +278,7 @@ function EventPlayer:Play()
 	--end
 
 	self:Pull()
-	while self.ppqPos < curHostTime.ppqPos and curHostTime.oldppqPos <= self.ppqPos  do
+	while curHostTime.oldppqPos <= self.ppqPos and self.ppqPos < curHostTime.ppqPos do
 		local havenext = self:NextVals()
 		if havenext == nil  then
 			if  self.playing then
@@ -293,6 +293,7 @@ function EventPlayer:Play()
 			self.playing = false
 			break
 		else
+			--print("play",self.name,self.ppqPos,curHostTime.oldppqPos,curHostTime.ppqPos)
 			self:playEvent(self.curlist,self.ppqPos,self.curlist.dur,self.curlist.delta)
 			self:UpdatePos(self.curlist.delta)
 		end
@@ -586,18 +587,7 @@ function ActionEventPlayer:Reset()
 	self.playing= (self.doplay==nil) and true or self.doplay 
 	self.used=false
 end
-function ActionEventPlayer:playEventBAK(lista,beatTime, beatLen)
-	print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxplay action ",beatTime,curHostTime.ppqPos)
-	local v=lista.actions
-	--for i,v in ipairs(lista.actions) do
-		--if lista.actions.type == "unpack" then
-			v[1](unpack(v[2])) 
-			--prtable(v)
-		--else
-			--v[1](v[2])
-		--end
-	--end
-end
+
 function ActionEventPlayer:playEvent(lista,beatTime, beatLen)
 	print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx play action ",beatTime,self.ppqPos)
 	local v=lista.actions

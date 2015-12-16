@@ -1,6 +1,7 @@
 --to comunicate via linda with server
 local M = {}
-
+M.linda = {} --for using without init
+function M.linda:send() end
 function M:new(o)
 	o = o or {}
 	setmetatable(o, self)

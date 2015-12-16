@@ -448,10 +448,14 @@ function wxFuncGraph3(parent,name,label,id,co)
 			local str=string.format("%.2f",lab)
 			dc:DrawText(str,0,y1)
 		end
-		dc:SetPen(wx.wxGREEN_PEN)
-		dc:SetBrush(wx.wxGREEN_BRUSH)
+		local pens = {wx.wxCYAN_PEN,wx.wxGREEN_PEN,wx.wxYELLOW_PEN,wx.wxRED_PEN} --wx.wxBLUE_PEN
+		local brushes = {wx.wxCYAN_BRUSH,wx.wxGREEN_BRUSH,wx.wxYELLOW_BRUSH,wx.wxRED_BRUSH} --wx.wxBLUE_BRUSH,
 		local maxbin=#GraphClass.values[1]
-		for _,vals in ipairs(GraphClass.values) do
+		for npen,vals in ipairs(GraphClass.values) do
+		npen = npen%#pens
+		npen = npen==0 and #pens or npen
+		dc:SetPen(pens[npen])
+		dc:SetBrush(brushes[npen])
 		if maxbin > 1 then
 			--local vals = GraphClass.value
 			local x
@@ -467,9 +471,10 @@ function wxFuncGraph3(parent,name,label,id,co)
 			--prtable("points",points)
 			dc:DrawLines(points,0,height)
 		end
-		end
 		dc:SetPen(wx.wxNullPen)
 		dc:SetBrush(wx.wxNullBrush)
+		end
+
 
 	end
 	

@@ -56,7 +56,7 @@ function WAITEv(name)
 														e.prevppqPos = -math.huge --avoid reset
 														e.ppqPos = ppq;
 														e.playing = true
-														e:Play()
+														--e:Play()
 													end,e)
 					
 					return {dur=1,delta=math.huge,freq=NOP}
@@ -117,17 +117,17 @@ local function genUntilev(name,waitmark)
 		if named_events:is_set(name) then
 			if waitmark then
 				if val._mark then
-					--print("UNTILEV returns mark nil",lanes.now_secs()) 
+					--print("UNTILEV returns mark nil",e.name)
 					return nil
 				end
 			else
-				--print("UNTILEV returns nil",lanes.now_secs()) 
+				--print("UNTILEV returns nil",e.name) 
 				return nil
 			end
 		end
 		--print("UNTILEV not setted",val.degree,lanes.now_secs())
 		if val == nil then finished = true end
-		if finished then return {dur=1,delta=math.huge,freq=NOP} end
+		if finished then return {dur=1,delta=math.huge,freq=NOP} end --NOP
 		return val
 	end
 	local function rfunc()

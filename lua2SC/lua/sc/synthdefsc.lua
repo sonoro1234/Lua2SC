@@ -432,7 +432,6 @@ UGen.__add=function(a,b)
 	return BinaryOpUGen.newop('+',a,b)
 end
 UGen.__sub=function(a,b)
-	print"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzsoy sub"
 	if b == 0 then return a end
 	if a == 0 then return -b end
 	return BinaryOpUGen.newop('-',a,b)
@@ -490,7 +489,6 @@ function UGen:madd(mul,add)
 			return self + add
 		else
 			--return self * mul + add
-			print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz MULADD")
 			return MulAdd:newmuladd(self,mul,add)
 		end
 	end
@@ -1393,7 +1391,6 @@ function Mix(t)
 	
 	if t.isUGen then return t end
 	if isSimpleTable(t) then t = UGenArr:new(t) end
-	print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxMIX")
 	--prtable(t)
 	if(#t<=1) then print"mixing less than two chanels" end
 	local reducedArray = t:clump(4)

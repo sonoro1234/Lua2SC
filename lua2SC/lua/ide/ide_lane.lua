@@ -52,7 +52,11 @@ function ide_main()
 end
 function ide_lane()
 	local function MidiOpen(opt) return mainlinda:send("MidiOpen",opt) end
-	local function MidiClose() return mainlinda:send("MidiClose",1) end
+	local function MidiClose() 
+		local tmplinda = lanes.linda()
+		mainlinda:send("MidiClose",tmplinda)
+		tmplinda:receive("MidiClose_done")
+	end
 	local process_gen=lanes.gen("*",--"base,math,os,package,string,table",
 		{
 		cancelstep=10000,

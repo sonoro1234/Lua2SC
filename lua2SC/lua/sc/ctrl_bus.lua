@@ -40,7 +40,8 @@ function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 		local on = {"/n_set", {player.ctrl_buses.nodes[paramname],"t_gate",1}}
 		getMsgLista(on,lista)
 		--sendBundle(on,theMetro:ppq2time(beatTime))
-		table.insert(bundle,on)
+		--table.insert(bundle,on)
+        bundle[#bundle+1] = on
 		--local mapmsg = {"/n_map",{player.node,paramname,{"int32",player.ctrl_buses.buses[paramname]}}}
 		--sendBundle(mapmsg,theMetro:ppq2time(beatTime))
 	else
@@ -51,13 +52,15 @@ function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 		local on = {"/s_new", {synname, node, 0, player.ctrl_group, "bus", {"int32",bus},"t_gate",1}}
 		getMsgLista(on,lista)
 		--sendBundle(on,theMetro:ppq2time(beatTime))
-		table.insert(bundle,on)
+		--table.insert(bundle,on)
+        bundle[#bundle+1] = on
 		--local mapmsg = {"/n_map",{player.node,paramname,{"int32",bus}}}
 		--sendBundle(mapmsg,theMetro:ppq2time(beatTime))
 		--prerror("new envel one ",synname,paramname)
 	end
 	local mapmsg = {"/n_map",{player.node,paramname,{"int32",player.ctrl_buses.buses[paramname]}}}
-	table.insert(bundle,mapmsg)
+	--table.insert(bundle,mapmsg)
+    bundle[#bundle+1] = mapmsg
 	--sendMultiBundle(theMetro:ppq2time(beatTime),bundle)
 	return bundle
 end
@@ -94,7 +97,8 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
 		local nodes = player.ctrl_buses.nodes[paramname]
 		for i=1,#envel_ar do
 			local node = GetNode()
-			table.insert(nodes,node)
+			--table.insert(nodes,node)
+            nodes[#nodes+1]=node
 			local bus = firstbus + i -1
 			local on = {"/s_new", {synname, node, 0, player.ctrl_group, "bus", {"int32",bus},"t_gate",1}}
 			getMsgLista(on,envel_ar[i])
@@ -107,7 +111,7 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
     end
 	local mapmsg = {"/n_mapn",{player.node,paramname,{"int32",firstbus},{"int32",#envel_ar}}}
 	--sendBundle(mapmsg,theMetro:ppq2time(beatTime))
-	table.insert(bundle,mapmsg)
+    bundle[#bundle+1] = mapmsg
 	--sendMultiBundle(theMetro:ppq2time(beatTime),bundle)
 	return bundle
 end
@@ -176,6 +180,9 @@ ctrl_mapper.__mul = function (a,b)
 	end
 	return C
 end
+ctrl_mapper.__div = function (a,b)
+	return a*(1/b)
+end
 --------------------------
 
 function RAMP(inip,endp,time)
@@ -217,6 +224,10 @@ SynthDef("ENVEL",{envel=Ref(Env().newClear(MAX_ENVEL_STEPS):prAsArray()),bus=0,t
 SynthDef("ENVELm",{lev=Ref(TA():Fill(MAX_ENVEL_STEPS +1,0)),tim=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),cur=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),bus=0,t_gate=1},
 			function()
 			ReplaceOut.kr(bus,EnvGen.kr{Env(lev,tim,cur),t_gate})--doneAction=2})
+		end):store()
+SynthDef("ENVELm_st",{lev=Ref(TA():Fill(MAX_ENVEL_STEPS +1,0)),tim=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),cur=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),bus=0,t_gate=1},
+			function()
+			ReplaceOut.kr(bus,EnvGen.kr{Env.new_str_curves(lev,tim,cur),t_gate})--doneAction=2})
 		end):store()
 
 --]]
@@ -393,13 +404,20 @@ function ENVm(levels,times,curves,relative,istime)
 		levels = LastPad(levels,MAX_ENVEL_STEPS + 1)
 		times = ZeroPad(times,MAX_ENVEL_STEPS)
 		local cur = (type(curves)=="table") and curves or {curves}
-		cur = ZeroPad(cur,MAX_ENVEL_STEPS)
-		return levels,times,cur --Env(levels,times,curves):prAsArray()
+		local synthname = "ENVELm"
+		for i,v in ipairs(cur) do
+			if type(v)=="string" then
+				synthname = "ENVELm_st"
+				cur[i] = Env.shapeNames[v]
+			end
+		end
+		cur = LastPad(cur,MAX_ENVEL_STEPS)
+		return levels,times,cur,synthname --Env(levels,times,curves):prAsArray()
 	end
 	curves = curves or 0
 	local ctmap = ctrl_mapper:new{levels=levels,times=times}
 	function ctmap:verb(paramname,player,beatTime,beatLen)
-		local lev,tim,cur
+		local lev,tim,cur,synthname
 		if type(levels)=="function" then
 			lev = levels(player)
 		else
@@ -415,14 +433,13 @@ function ENVm(levels,times,curves,relative,istime)
 		else
 			cur = curves
 		end
-		lev,tim,cur = E2ppqm(lev,tim,cur,relative and beatLen or 1,istime)
+		lev,tim,cur,synthname = E2ppqm(lev,tim,cur,relative and beatLen or 1,istime)
 		local lev_ar = Envflop(lev,tim,cur)
 		if #lev_ar == 1 then
-			return SendCtrlSynth("ENVELm",lev_ar[1],paramname,player,beatTime)
+			return SendCtrlSynth(synthname,lev_ar[1],paramname,player,beatTime)
 		else
-			return SendCtrlSynth_ar("ENVELm",lev_ar,paramname,player,beatTime)
+			return SendCtrlSynth_ar(synthname,lev_ar,paramname,player,beatTime)
 		end
-		--return 0
 	end
 	return ctmap
 end

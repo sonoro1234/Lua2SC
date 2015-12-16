@@ -18,7 +18,7 @@ end
 modes = {
 ionian = constructMode(0),
 dorian = constructMode(1),
-phyrgian = constructMode(2),
+phrygian = constructMode(2),
 lydian = constructMode(3),
 mixolydian = constructMode(4),
 aeolian = constructMode(5),

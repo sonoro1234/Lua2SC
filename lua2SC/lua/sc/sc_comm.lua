@@ -1,6 +1,5 @@
 --- udp comunication
---require"init.init"
-require("socket") --.core")
+require("socket")
 require("osclua")
 require("sc.number2string")
 toOSC=osclua.toOSC

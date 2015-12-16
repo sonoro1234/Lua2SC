@@ -196,7 +196,10 @@ function InstrumentsGUI(synname,chooser,parent,params,notified)
 				value=1,
 				type=GUITypes.onOffButton,
 				FormatLabel=function() return "Release" end,
-				callback=function(val,str,c) self.oscfree =(val==1) end
+				callback=function(val,str,c) 
+					self.oscfree =(val==1)
+					--if self.free_queue
+				end
 				}
 	addControl{panel=panelbuttons,type=GUITypes.kickButton,label="Clipboard",
 		callback=function(val)
@@ -300,6 +303,7 @@ end
 --midiin to out osc
 MidiToOsc={
 	nodesMidi2Osc={},
+	free_queue = {},
 	vars={}
 	}
 	
@@ -310,7 +314,7 @@ function Midi2OSCEnvio(ch,fx,lev)
 	table.insert(MidiToOsc.vars[ch].envios,{node=node,level=lev})
 	msg ={"/s_new", {"envio", node, 1, MidiToOsc.vars[ch].group,"busin",{"int32",MidiToOsc.vars[ch].channel.busin},"busout",{"int32",fx.channel.busin},"level",{"float",lev}}}
 	--prtable(msg)
-	udp:send(toOSC(msg)) 
+	sendBundle(msg)
 end
 function iguiSendLevel(self,i,lev)
 	self.envios[i].level = lev
@@ -361,6 +365,8 @@ function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,mono)
 	igui.notify = iguinotify
 	MidiToOsc.nodesMidi2Osc[ch] = {}
 	igui.nodes = MidiToOsc.nodesMidi2Osc[ch]
+	MidiToOsc.free_queue[ch] = {}
+	igui.free_queue = MidiToOsc.free_queue[ch]
 	igui.inserts=inserts or {}
 	
 	MidiToOsc.vars[ch].on_maker = on_maker
@@ -375,10 +381,10 @@ function MidiToOsc.Init(ch)
 	print"Miditooscinit"
 	MidiToOsc.vars[ch].group = GetNode()
 	local msg={NEW_GROUP,{MidiToOsc.vars[ch].group,0,0}}
-	udp:send(toOSC(msg))
+	sendBundle(msg)
 	MidiToOsc.vars[ch].instr_group = GetNode()
 	msg={"/p_new",{MidiToOsc.vars[ch].instr_group,0,MidiToOsc.vars[ch].group}}
-	udp:send(toOSC(msg))
+	sendBundle(msg)
 	--prtable(MidiToOsc.vars[ch].channel)
 	MidiToOsc.vars[ch].channel=CHN(MidiToOsc.vars[ch].channel or {},MidiToOsc.vars[ch])
 	-----inserts
@@ -393,12 +399,12 @@ function MidiToOsc.Init(ch)
 	
 	self._inserts={}
 	for i,insert in ipairs(self.inserts) do
-		print"xxxxxxxxxxxxxxcreo ins"
+		print"miditoosc creo ins"
 		self._inserts[i]=INS(insert,self,true)
 	end
 	------------------------------------
 	for i2,v2 in ipairs(Effects) do
-		print"xxxxxxxxxxxxxxcreo send"
+		print"miditoosc creo send"
 
 		Midi2OSCEnvio(ch,v2,MidiToOsc.vars[ch].sends[i2] or 0)
 	end
@@ -440,8 +446,11 @@ function MidiToOsc.midi2osc(midiEvent)
 			--thisMidiOsc.keylist = thisMidiOsc.keylist or {}
 			table.insert(thisMidiOsc.keylist,midiEvent.byte2)
 		else
-			nodo = GetNode()
-			snew = true
+			nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			if not nodo then
+				nodo = GetNode()
+				snew = true
+			end
 		end
 		local freq = midi2freq(midiEvent.byte2)
 		local amp = midiEvent.byte3/127.0
@@ -455,6 +464,10 @@ function MidiToOsc.midi2osc(midiEvent)
 			else
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
+			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+			OSCFunc.newfilter("/n_end",nodo,function(noty) 
+				MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
+			end,true)
 		else
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
@@ -462,21 +475,23 @@ function MidiToOsc.midi2osc(midiEvent)
 			else
 				on ={"/n_set", { nodo, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
+			MidiToOsc.free_queue[ch][nodo] = nil
 		end
 		ValsToOsc(on[2],thisMidiOsc.params)
 		table.insert(on[2],"out")
 		table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
-		--to avoid repeating note
-		if not MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] then
-			sendBundle(on) --,lanes.now_secs())
-			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
-		end
+		sendBundle(on)
+		
+		--if not MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] then
+			--sendBundle(on) --,lanes.now_secs())
+			--MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+		--end
 
     elseif midiEvent.type==midi.noteOff then
 
-		local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
-		MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 		if mono then
+			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 			for i,v in ipairs(thisMidiOsc.keylist) do
 				if v == midiEvent.byte2 then
 					table.remove(thisMidiOsc.keylist, i)
@@ -496,12 +511,17 @@ function MidiToOsc.midi2osc(midiEvent)
 			end
 		
 		elseif thisMidiOsc.oscfree then
+			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 			if nodo then
 				local off = {"/n_set",{nodo,"gate",{"float",0}}}
 				sendBundle(off) --,lanes.now_secs())
 				--local off = {"/n_free",{nodo}}
 				--udp:send(toOSC(off))
 			end
+		else --poly dontfree
+			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			if nodo then MidiToOsc.free_queue[ch][nodo] = true end
 		end
 	else
 		--sendMidi(midiEvent)

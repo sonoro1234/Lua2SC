@@ -72,7 +72,7 @@ function Stream:reset()
 	self.creps = 0
 	self.recur = nil
 	if self.repSt then
-		print"TODO: this is not a complete reset of the outer stream"
+		--print"TODO: this is not a complete reset of the outer stream"
 		self.reps = self.repSt:nextval()
 	end
 end
@@ -593,6 +593,19 @@ function DIV(A,B)
 	return OpStreams:new({stA=A,stB=B,Op=divOp})
 end
 --------pairs streams----------------------------------------------
+local event_mt = {}
+function event_mt.__add(a,b)
+	local res = {}
+	for k,v in pairs(a) do
+		if b[k] then 
+			res[k] = v + b[k]
+		else
+			res[k] = v
+		end
+	end
+	return setmetatable(res,event_mt)
+end
+
 PairsStream = Stream:new{stlist=nil}
 PairsStream.isPairsStream=true
 function PairsStream:pnext(e)
@@ -626,7 +639,7 @@ function PairsStream:pnext(e)
 	end
 	list.delta = list.delta or list.dur
 	--e.tmplist = nil
-	return list
+	return setmetatable(list,event_mt)
 end
 function PairsStream:reset()
 	for i,t in ipairs(self.stlist) do
@@ -678,8 +691,10 @@ function AdvStream:pnext(e)
 	if  self.N2 and self.N2.advance and self.N1 then
 		local advance = self.N2.advance
 		self.N2.advance = nil
-		self.N1.delta = math.max(0,self.N1.delta + advance)
-		self.N2.delta = math.max(0,self.N2.delta - advance)
+		local newn1delta = math.max(0,self.N1.delta + advance)
+		local newadvance = newn1delta - self.N1.delta
+		self.N1.delta = newn1delta
+		self.N2.delta = math.max(0,self.N2.delta - newadvance)
 		self.N1.dur = math.max(0,self.N1.dur + advance)
 		self.N2.dur = math.max(0,self.N2.dur - advance)
 		--print("advance",advance)
@@ -769,6 +784,8 @@ function ParalelStream:reset()
 	Stream.reset(self)
 end
 function ParS(t)
+	--assert(#t > 0,"no tables in ParS, use { and not (")
+	if #t < 1 then error("no tables in ParS, use { and not (",2) end
 	return ParalelStream:new{stlist=t}
 end
 ------------Merge stream
@@ -816,13 +833,25 @@ end
 -- gets a value from pat and repeats n times
 RepeaterSt = Stream:new{}
 function RepeaterSt:pnext(e)
-	local n = self.N:nextval(e)
-	local val = self.pat:nextval(e)
-	if val then
-		return LS({val},n)
-	else
-		return nil
+	local val
+	if not self.privateL then
+		local n = self.N:nextval(e)
+		local val2 = self.pat:nextval(e)
+		if not val2 then return nil end
+		self.privateL = LS({val2},n)
 	end
+	val = self.privateL:nextval()	
+	if val then
+		return val
+	else
+		self.privateL = nil
+		return self:pnext(e)
+	end
+end
+function RepeaterSt:reset()
+	self.N:reset()
+	self.pat:reset()
+	self.privateL = nil
 end
 function REP(n,pat)
 ---[[
@@ -1079,5 +1108,36 @@ end
 function COUNT(str)
 	local turn = 0
 	PS{dur =LS{0},_dummy=function() turn=turn+1;print(str,turn) end}
+end
+--used for seting inserts from player stream
+function SETINS(i,parvals)
+	return FS(function(pl)
+				local function fun(pll)
+					for k,v in pairs(parvals) do
+						pl._inserts[i].params[k]=v
+					end
+					pl._inserts[i]:SendParams(theMetro:ppq2time(pll.ppqPos))
+				end
+					return {delta=0,dur=0,freq=NOP,_=fun}
+				end)
+end
+--used for seting channel from player stream
+function SETCHAN(parvals)
+	return FS(function(pl)
+				local beatLen = parvals.dur
+				parvals.dur = nil
+				local function fun(pll)
+					for k,v in pairs(parvals) do
+						if not (type(v)=="table" and v.is_ctrl_mapper) then
+							pl.channel.params[k]=v
+						else
+							local bund = v:verb(k,pl.channel,pll.ppqPos,beatLen)
+							sendMultiBundle(theMetro:ppq2time(pll.ppqPos),bund)
+						end
+					end
+					pl.channel:SendParams(theMetro:ppq2time(pll.ppqPos))
+				end
+					return {delta=0,dur=0,freq=NOP,_=fun}
+				end)
 end
 -------------------

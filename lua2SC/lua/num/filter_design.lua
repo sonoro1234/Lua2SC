@@ -1,5 +1,6 @@
 --inherits from polynomial.lua for filter design transfer functions
 --by Victor Bombi
+require"sc.utils"
 require"num.polynomial"
 filterpoly_mt = deepcopy(RationalPoly_mt)
 --setmetatable(filterpoly_mt,filterpoly_mt)
@@ -70,6 +71,7 @@ function filterpoly_mt.GroupDelay(H,om)
 	return H.grupdelf(om)
 end
 function FilterPoly(B,A)
+	if B.isRatPoly and A==nil then return setmetatable(B,filterpoly_mt) end
 	local res = ZRatPoly(B,A)
 	return setmetatable(res, filterpoly_mt)
 end
@@ -371,7 +373,7 @@ function Durbin_recursion(Hz,fix)
 		--assert(math.abs(Kaes[i]) < 1,"inestable filter coeffs in Durbin K:"..i..tostring(Kaes[i]))
 		if math.abs(Kaes[i]) >=1 then
 			prtable(Kaes)
-			error()
+			print"error coef"
 		end
 		HzN = (HzN - Kaes[i]*Flip(HzN))/(1 - Kaes[i]*Kaes[i])
 		HzN = HzN:Simplify():Normalize()

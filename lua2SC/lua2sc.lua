@@ -122,13 +122,25 @@ function thread_error_print(...)
 	idlelinda:send("prout",{strconcat(...):sub(1,30000),true})
 end
 function MidiOpen(options)
-	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,mainlinda,midilinda,{print=thread_print,
+	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,mainlinda,midilinda,{
+	print=thread_print,
 	prerror=thread_error_print,
-	prtable=prtable,idlelinda = idlelinda})
+	--prerror = print,
+	prtable=prtable,idlelinda=idlelinda})
 end
 function MidiClose()
-	if midilane then
-		midilane:cancel(0.1)
+	--if midilane then
+	--	midilane:cancel(0.1)
+	--end
+	if midilane  then
+		local status = midilane.status
+		if status == "pending" or status == "running" or status == "waiting" then
+			midilinda:send("exit_midi_thread",1)
+			io.write"waiting exit_midi_thread_done\n"
+			mainlinda:receive("exit_midi_thread_done")
+			io.write"received exit_midi_thread_done\n"
+		end
+		midilane = nil
 	end
 end
 --require"sc.oscfunc"
@@ -173,6 +185,7 @@ while true do
 			idlelinda:send("_midiEventCb",val)
 		elseif key == "MidiClose" then
 			MidiClose() 
+			val:send("MidiClose_done",1)
 		elseif key == "MidiOpen" then
 			MidiOpen(val)
 		elseif key == "ScriptRun" then

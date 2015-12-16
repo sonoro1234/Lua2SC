@@ -170,9 +170,9 @@ function Debugger:init(bp,maxdeph)
 	self.laststacklevel = {} 
 	self.functable = {}
 	self.breakpoints = bp.breakpoints or {}
-	repeat
-		local key,val= debuggerlinda:receive(0,"continue","debug_exit","step_into","step_over","step_out","brpoints","break")
-	until val==nil
+    --clean linda
+	local keys = {"continue","debug_exit","step_into","step_over","step_out","brpoints","break"}
+    for i,v in ipairs(keys) do debuggerlinda:set(v) end
 	--for debugging coroutines
 	local oldcocreate = coroutine.create
 	coroutine.create = function(f)
