@@ -48,5 +48,5 @@ function nextBusIndex()
 	busIndex = busIndex + 1
 	return busIndex
 end
-
+nextBusIndex = GetCtrlBus or nextBusIndex
 return funcs

@@ -3406,8 +3406,8 @@ function Filter.create(...)
 end
 Vibrato=UGen:new{name='Vibrato'}
 function Vibrato.kr(...)
-	local   freq, rate, depth, delay, onset, rateVariation, depthVariation, iphase   = assign({ 'freq', 'rate', 'depth', 'delay', 'onset', 'rateVariation', 'depthVariation', 'iphase' },{ 440.0, 6, 0.02, 0.0, 0.0, 0.04, 0.1, 0.0 },...)
-	return Vibrato:MultiNew{1,freq,rate,depth,delay,onset,rateVariation,depthVariation,iphase}
+	local   freq, rate, depth, delay, onset, rateVariation, depthVariation, iphase,trig   = assign({ 'freq', 'rate', 'depth', 'delay', 'onset', 'rateVariation', 'depthVariation', 'iphase',"trig" },{ 440.0, 6, 0.02, 0.0, 0.0, 0.04, 0.1, 0.0,1 },...)
+	return Vibrato:MultiNew{1,freq,rate,depth,delay,onset,rateVariation,depthVariation,iphase,trig}
 end
 function Vibrato.ar(...)
 	local   freq, rate, depth, delay, onset, rateVariation, depthVariation, iphase   = assign({ 'freq', 'rate', 'depth', 'delay', 'onset', 'rateVariation', 'depthVariation', 'iphase' },{ 440.0, 6, 0.02, 0.0, 0.0, 0.04, 0.1, 0.0 },...)

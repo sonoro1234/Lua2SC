@@ -38,12 +38,13 @@ function lanegen(func_body,globals,thread_name)
 		set_finalizer( finalizer_func ) 
 		set_error_reporting("extended")
 		set_debug_threadname(thread_name)
-		func_body(...)
+		local ret = {func_body(...)}
 		
 		if block then
 			local block_linda = lanes.linda()
 			block_linda:receive("unblock")
 		end
+		return unpack(ret)
 	end
 	return lanes.gen("*",{globals=globals},outer_func)
 end

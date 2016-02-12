@@ -1,4 +1,4 @@
-require("socket")
+socket = require("socket")
 
 local SCTCP={}
 local function ReceiveTCPLoop(host,port,host1,port1)
@@ -53,7 +53,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 	set_error_reporting("extended")
 	set_debug_threadname("ReceiveUDPLoop")
 	
-	require("socket")
+	socket = require("socket")
 	require("osclua")
 	toOSC=osclua.toOSC
 	fromOSC=osclua.fromOSC
@@ -147,14 +147,14 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 			key,val = udpsclinda:receive(0,"sendsc","addFilter","clearFilter","Detect","exit")
 		end
 		if dgram then
-            --[[
+            ---[[
 			local succ,msg = pcall(fromOSC,dgram)
             if not succ then 
                 io.write(msg.."\n");io.write(dgram.."\n");io.write("status:"..tostring(status).."\n") 
-                filelog(dgram)
+                --filelog(dgram)
             end
             --]]
-            local msg = fromOSC(dgram)
+           -- local msg = fromOSC(dgram)
 			--print("TCPSC: "..prOSC(msg))
 			--print("SCTCP receives",msg[1])
 			if msg[1]=="/metronom" then

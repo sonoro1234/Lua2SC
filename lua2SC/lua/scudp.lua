@@ -1,4 +1,4 @@
-require("socket")
+socket = require("socket")
 
 local SCUDP={}
 local function ReceiveUDPLoop(host,port,host1,port1)
@@ -42,7 +42,7 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 	set_error_reporting("extended")
 	set_debug_threadname("ReceiveUDPLoop")
 	
-	require("socket")
+	socket = require("socket")
 	require("osclua")
 	toOSC=osclua.toOSC
 	fromOSC=osclua.fromOSC

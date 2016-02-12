@@ -1,8 +1,11 @@
 --GetControlBus=IDGenerator(0)
 
 ctrl_buses = {holes = {},allocated = {}}
-
+GetCtrlBus=IDGenerator(0)
 function ctrl_buses:new_bus(N)
+	N = N or 1
+	return GetCtrlBus(N)
+	--[[
 	local busnum
 	if N and N > 1 then --sequentially allocate
 		table.insert(self.allocated,true)
@@ -20,9 +23,11 @@ function ctrl_buses:new_bus(N)
 		busnum = #self.allocated
 	end
 	return busnum
+--]]
 end
 
 function ctrl_buses:free_bus(n)
+	error"not implemented"
 	table.insert(self.holes,n)
 	--self.allocated[n] = nil
 end
@@ -129,6 +134,9 @@ table.insert(initCbCallbacks,function()
 	SynthDef("SINE",{freq=44 ,phase=0 ,amp=1,add=0,bus=0,t_gate=1},function()
 		Out.kr(bus,SinOsc.kr(freq,phase,amp,add))
 	end):store()
+	SynthDef("VIB",{bus=0,freq=1,rate=5,delay=0,depth=0.1,rv=0.04,dv=0.1,t_gate=1},function()
+		Out.kr(bus,Vibrato.kr{freq=freq, rate=rate, depth=depth, delay=delay,rateVariation=rv,depthVariation=dv,trig=t_gate})
+	end):store()
 end)
 
 -----------------------------
@@ -171,12 +179,14 @@ ctrl_mapper.__mul = function (a,b)
 	if A.inip then
 		C.inip = A.inip * B
 		C.endp = A.endp * B
-	else
+	elseif A.levels then
 		local levels = {}
 		for i,v in ipairs(A.levels) do
 			levels[i] = v * B
 		end
 		C.levels = levels
+	else --SINE?
+		
 	end
 	return C
 end
@@ -200,11 +210,26 @@ function SINE(freq,phase,amp,add)
 	end
 	return ctmap
 end
+function SINEr(freq,phase,lo,hi)
+	local amp = hi-lo
+	local add = (hi+lo)*0.5
+	return SINE(freq,phase,amp,add)
+end
 function ERAMP(inip,endp,time)
 	local ctmap = ctrl_mapper:new{inip=inip,endp=endp,time=time}
 	function ctmap:verb(paramname,player,beatTime,beatLen)
 		local time = self.time or beatLen
 		return SendCtrlSynth("ERAMP",{inip=self.inip ,endp=self.endp ,time=beats2Time(time)},paramname,player,beatTime)
+	end
+	return ctmap
+end
+function VIB(val,rate,depth,delay,rv,dv)
+	rate = rate or 5
+	depth = depth or 0.1
+	delay = delay or 0
+	local ctmap = ctrl_mapper:new{}
+	function ctmap:verb(paramname,player,beatTime,beatLen)
+		return SendCtrlSynth("VIB",{freq=val, rate=rate, depth=depth, delay=delay,rv=rv,dv=dv,trig=t_gate},paramname,player,beatTime)
 	end
 	return ctmap
 end

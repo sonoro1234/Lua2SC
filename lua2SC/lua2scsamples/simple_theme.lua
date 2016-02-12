@@ -1,6 +1,6 @@
 --this has to be executed at least once
 --for compiling essential SynthDefs
-require("sc.Compilesynth")
+--require("sc.Compilesynth")
 
 
 SynthDef("PPongF", {gate=1,busin=0, busout=0,ffreq=1500,rq=0.4, fdback=0.25,delaytime=0.5,volumen=2,bypass=0},function()
@@ -43,4 +43,3 @@ MidiToOsc.AddChannel(0,instgui,{0.2})
 
 FreqScope()
 
-theMetro:start()

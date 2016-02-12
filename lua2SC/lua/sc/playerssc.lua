@@ -240,6 +240,19 @@ function scEventPlayer:notify(control)
 	local var=self.params
 	--control variable is {name} for simple params
 	-- or {name,index} for params with several indexes
+	if #control.variable == 1 then
+		self.params[control.variable[1]] = control:val()
+	else
+		--self.params[control.variable[1]] = self.params[control.variable[1]] or {}
+		self.params[control.variable[1]][control.variable[2]] = control:val()
+	end
+	self:SendParam(control.variable[1])
+end 
+function scEventPlayer:notifyBAK(control)
+	--print("scEventPlayer:notify")
+	local var=self.params
+	--control variable is {name} for simple params
+	-- or {name,index} for params with several indexes
 	for i=1,#control.variable-1 do
 		--if indexed take in var the param[name] of this guicontrol
 		var=var[control.variable[i]]
@@ -553,7 +566,7 @@ local function copylist(lis)
 	return res
 end
 
-function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta) 
+function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 	if self.piano then return self:playOnePianoEvent(lista,beatTime, beatLen,delta) end
 	--set defaults, get freq,escale,legato,inst
 	lista.escale = lista.escale or "ionian"
@@ -656,7 +669,7 @@ function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		--v(k,self,beatTime,beatLen)
 		local bund = v:verb(k,self,beatTime,beatLen)
 		if bund then
-		for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+			for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
 		end
 	end
 	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)

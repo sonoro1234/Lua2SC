@@ -1,6 +1,6 @@
 
-local function MakeTractSynth(Tract,syname,args,excifunc)
-	local defargs = {out=0, gate=1,t_gate=1, freq=60,amp=0.6,pan=0,lossG=0.97,lossL=0.97,lossN=0.95,lossF=1,area1len=8*22/17.5,Gain=1,lmix=1,nmix=1,Ar=Ref(TA():Fill(#Tract.areas.A,1.5)),ArN=Ref(Tract.AreaNoseC),lenT = 17.5,df=Ref(TA():Fill(#Tract.areas.A,1)),noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,thlev=0,fexci=6000,fout=8000}
+local function MakeTractSynth(Tract,syname,args,excifunc,resamp)
+	local defargs = {out=0, gate=1,t_gate=1, freq=60,amp=0.6,pan=0,lossG=0.97,lossL=0.97,lossN=0.95,lossF=1,area1len=8*22/17.5,Gain=1,lmix=1,nmix=1,fA0=1,Ar=Ref(TA():Fill(#Tract.areas.A,1.5)),ArN=Ref(Tract.AreaNoseC),lenT = 17.5,df=Ref(TA():Fill(#Tract.areas.A,1)),noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,thlev=0,fexci=6000,fout=8000}
 	local function deffunc(excifunc)
 		return function(newgt)
 		setfenv(excifunc,newgt)
@@ -8,11 +8,12 @@ local function MakeTractSynth(Tract,syname,args,excifunc)
 		exci = exci*amp*Gain
 		local env=EnvGen.ar(Env.asr(0.001, 1, 0.1), gate, nil,nil,nil,2);
 		local nsecs = math.floor(#Ar*0.5 + 0.5)
-		local pend = (1- fAc)/(nsecs - 1)
-		for ii=1,nsecs do
-			Ar[ii] = Ar[ii]*(fAc + (ii-1)*pend)
+		local pend = (1- fAc)/(nsecs - 2)
+		for ii=2,nsecs do
+			Ar[ii] = Ar[ii]*(fAc + (ii-2)*pend)
 			--df[ii] = df[ii]*(fAc + (ii-1)*pend)
 		end
+		Ar[1] = Ar[1]*fA0
 		local noise = WhiteNoise.ar()*0.1*amp --*EnvGen.ar(Env({0,0,1},{0,0.08}),t_gate)
 		noise = BBandPass.ar(noise,noisef,noisebw) --Resonz.ar(noise,noisef,0.08)
 		noise = Mix(noise)
@@ -20,7 +21,12 @@ local function MakeTractSynth(Tract,syname,args,excifunc)
 		--lenT  = EnvGen.kr(Env({lenT,lenT},{rate}),t_gate)
 		local lenf = SampleRate.ir()*lenT*fA/(35000*#Ar)
 		local dels = df*lenf
-		local signal = HumanVNdel.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 
+		local signal 
+		if resamp then
+			signal = HumanVNdelO2.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 
+		else
+			signal = HumanVNdel.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 
+		end
 		local throat = LPF.ar(exci,400)
 		signal = signal + throat*thlev
 		signal = LPF.ar(signal,fout)
@@ -78,8 +84,9 @@ end
 
 
 local function InitSynths(Tract,doinit)
-	function Tract:MakeSynth(syname,args,excifunc)
-		return MakeTractSynth(self,syname,args,excifunc)
+	Tract.Rd2Times = Rd2Times
+	function Tract:MakeSynth(syname,args,excifunc,resamp)
+		return MakeTractSynth(self,syname,args,excifunc,resamp)
 	end
 	function Tract:MakeCoralSynth(name,freqs)
 		MakeCoralSynth(self,name,freqs)
@@ -91,8 +98,8 @@ local function InitSynths(Tract,doinit)
 	Tract:MakeCoralSynth("coral",freqs)
 	
 
-	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01},function()
-		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= 0.5, depthVariation= 0.1, iphase =  0}
+	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.5},function()
+		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 		local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)
 		
 		local exci = LFglottal.ar(vibratoF,Tp,Te,Ta,alpha,namp,nwidth)*glot*3*Ee
@@ -103,7 +110,19 @@ local function InitSynths(Tract,doinit)
 		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 		return exci
 	end)
-
+	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.5},function()
+		fA = fA*2 --fA is get from defargs
+		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
+		local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)
+		
+		local exci = LFglottal.ar(vibratoF,Tp,Te,Ta,alpha,namp,nwidth)*glot*3*Ee
+		--local exci = VeldhuisGlot.ar(vibratoF,Tp,Te,Ta,namp,nwidth)*glot*3*Ee
+		exci =  WhiteNoise.ar()*plosive + exci
+		exci = Mix(exci)
+		exci = LPF.ar(exci,fexci)
+		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
+		return exci
+	end,true)
 	Tract:MakeSynth("sinte_chen",{OQ=0.8,asym=0.6,Sop=0.4,Scp=0.12,vibrate=5},function()
 		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= 0.01, delay= 0.0, onset= 0, 	rateVariation= 0.5, depthVariation= 0.1, iphase =  0}
 		local exci = ChenglottalU.ar(vibratoF,OQ,asym,Sop,Scp)*glot*3
@@ -127,33 +146,33 @@ Tract.NN = NN
 local function copy_phoneme(a,b)
 	for k,v in pairs(Tract) do
 		if type(v)=="table" and v[b] then
-			v[a] = v[b]
+			v[a] = deepcopy(v[b])
 		end
 	end
 end
 
 
-Tract.areas.B = Tract.areas.P
-Tract.areas.D = Tract.areas.T
-Tract.areas.G = Tract.areas.K
+Tract.areas.B = deepcopy(Tract.areas.P)
+Tract.areas.D = deepcopy(Tract.areas.T)
+Tract.areas.G = deepcopy(Tract.areas.K)
 
 --Tract["areas"]["R"] = Tract["areas"]["L"]
-Tract["areas"]["S"] = Tract["areas"]["N"]
-Tract["areas"]["S"][#Tract.areas.S] = 3
-Tract["areas"]["F"] = Tract["areas"]["M"]
-Tract["areas"]["Z"] = Tract["areas"]["F"]
-Tract["areas"][" "] = Tract["areas"]["Ae"]
-Tract.areas.H = Tract.areas.Ae
+Tract.areas.S = deepcopy(Tract.areas.N)
+Tract.areas.S[#Tract.areas.S] = 3
+Tract.areas.F = deepcopy(Tract.areas.M)
+Tract.areas.Z = deepcopy(Tract.areas.F)
+Tract.areas[" "] = deepcopy(Tract.areas.Ae)
+Tract.areas.H = deepcopy(Tract.areas.Ae)
 ------------------
-Tract["glot"] = {}
-Tract["glot"]["S"] = 0.5
-Tract["glot"]["F"] = 0
-Tract["glot"]["Z"] = 0
-Tract["glot"][" "] = 0
+Tract.glot = {}
+Tract.glot.S = 0.5
+Tract.glot.F = 0
+Tract.glot.Z = 0
+Tract.glot[" "] = 0
 Tract.glot.T = 1
 Tract.glot.D = 1
 Tract.glot.P = 0 --1
-Tract.glot.B = 1 --1 --0.5
+Tract.glot.B = 0.25 --1 --0.5
 Tract.glot.K = 0
 Tract.glot.G = 1
 Tract.glot.H = 0
@@ -161,7 +180,7 @@ Tract.plosive = {}
 Tract.plosive.K = 1 --0.5 --db2amp(-15)
 Tract.plosive.G = 0
 Tract.plosive.P  = 0.5
-Tract.plosive.B = 0.5
+Tract.plosive.B = 0.25
 Tract.plosive.T = 2
 Tract.plosive.D  = 0
 
@@ -176,12 +195,12 @@ Tract.gains.Ite = db2amp(5)
 Tract.gains.Ote = db2amp(0)
 Tract.gains.Ute = db2amp(0)
 
-Tract.gains.B = db2amp(-45)-- -61)
+Tract.gains.B = db2amp(-25)-- -61)
 Tract.gains.P = db2amp(-25)
 Tract.gains.D = db2amp(-15)
 Tract.gains.T = db2amp(-20)
-Tract.gains.R = db2amp(-25) --db2amp(-5)
-Tract.gains.K = db2amp(-5)
+Tract.gains.R = db2amp(-5) --db2amp(-5)
+Tract.gains.K = db2amp(0)
 Tract.gains.G = db2amp(-20)
 Tract["gains"]["O"] = db2amp(-4)
 Tract.gains.L = db2amp(-5)
@@ -230,6 +249,14 @@ Tract.krate.S = 0.05
 Tract.krate.M = 0.07
 Tract.krate.N = 0.07
 Tract.krate.H = 0.03
+copy_phoneme("J","G")
+Tract.gains.J = db2amp(6)
+Tract.noise.J = deepcopy(Tract.noise.Z)
+copy_phoneme("X","T")
+Tract.noise.X = deepcopy(Tract.noise.S)
+Tract.noise.X.freqs = {2500,5500}
+Tract.plosive.X = 0
+Tract.glot.X = 0
 copy_phoneme("_v"," ")
 copy_phoneme("Nv","N")
 copy_phoneme("Mv","M")
@@ -242,8 +269,27 @@ copy_phoneme("Eq","E")
 Tract.rate.Eq = 0.0
 copy_phoneme("_q"," ")
 Tract.rate._q = 0.0
-Tract.dur._q = 0.0
+Tract.dur._q = 0.01
 Tract.krate._q = 0.0
+--default noise
+for ph,v in pairs(Tract.noise) do
+	--Tract.glot[ph] = Tract.glot.S
+	Tract.krate[ph] = Tract.krate.S
+	Tract.rate[ph] = Tract.rate.S
+	Tract.areas[ph][Tract.noise[ph].pos] = 1.6
+	Tract.areas[ph][#Tract.areas.S] = 3
+end
+for k,v in pairs(Tract.areas) do
+	--Tract.noise[k] = Tract.noise[k] or {pos=0,freqs={2500,7500},bw={0.15,0.15}}
+end
+--make closed
+Tract.closed = {}
+for ph,areas in pairs(Tract.areas) do
+	local closed_secs = {}
+	for i,v in ipairs(areas) do
+		if v == 0 then closed_secs[#closed_secs + 1] = i;Tract.closed[ph] = closed_secs end
+	end
+end
 --[[
 --------convert zeros to tiny for allowing cub and exp curves
 if true then
@@ -367,7 +413,7 @@ function Tract.phon.get(ph)
 	local noise = Tract.noise[ph]
 	local noiseloc = noise and noise.pos or MINIMAL --0
 	local noisefreq = noise and noise.freqs or {2500,7500}
-	local noisebw = noise and noise.bw or {1,1}
+	local noisebw = noise and noise.bw or {0.1,0.1}
 
 	local glot = Tract.glot[ph] or 1
 	local plosive = Tract.plosive[ph] or MINIMAL --0
@@ -396,6 +442,8 @@ local function makeenv_tgate(t,name,t1,t2)
 	table.insert(t[name][2],t2)
 end
 function Tract.doSpeak(syl,DURA,fade)
+	assert(DURA)
+	--print("DURA",DURA)
 	DURA = beats2Time(DURA)
 	local vocaldur = (DURA - (syl.totdur - DEFDUR*syl.numvocals))/syl.numvocals
 	local res = {}
@@ -411,7 +459,7 @@ function Tract.doSpeak(syl,DURA,fade)
 		local noise = Tract.noise[ph]
 		local noiseloc = noise and noise.pos or MINIMAL --0
 		local noisefreq = noise and noise.freqs or {2500,7500}
-		local noisebw = noise and noise.bw or {1,1}
+		local noisebw = noise and noise.bw or {0.1,0.1}
 
 		local glot = Tract.glot[ph] or 1
 		local plosive = Tract.plosive[ph] or MINIMAL --0
@@ -425,14 +473,33 @@ function Tract.doSpeak(syl,DURA,fade)
 
 		--assert(rate >=0)
 		--assert(dur >=0)
-		makeenv(res,"Ar",Tract.areas[ph],rate,dur)
+		local tmpareas = Tract.areas[ph]
+		--[=[
+		if Tract.closed[ph] and syl[i2+1] then
+			print("closing",ph,"to",syl[i2+1][1])
+			tmpareas = deepcopy(Tract.areas[syl[i2+1][1]])
+			for _,sec in ipairs(Tract.closed[ph]) do 
+				tmpareas[sec] = 0
+			end
+		elseif Tract.fixed[ph] and syl[i2+1] then
+			print("fiing",ph,"to",syl[i2+1][1])
+			tmpareas = deepcopy(Tract.areas[syl[i2+1][1]])
+			for _,sec in ipairs(Tract.fixed[ph]) do 
+				tmpareas[sec] = Tract.areas[ph][sec]
+			end
+		else
+			tmpareas = Tract.areas[ph]
+		end
+		--]=]
+		makeenv(res,"Ar",tmpareas,rate,dur)
 		makeenv(res,"ArN",isN and Tract.AreaNose or Tract.AreaNoseC,rate,dur)
 		makeenv(res,"Gain",gain,rate,dur)
 		makeenv(res,"lenT",lenT,rate,dur)
-		makeenv(res,"noiseloc",noiseloc,0,rate+dur)
+		--makeenv(res,"noiseloc",noiseloc,0,rate+dur)
+		makeenv(res,"noiseloc",noiseloc,rate,dur)
 		--makeenv_tgate(res_t_gate,"gate_t",0.01,rate+dur-0.01)
 		makeenv_tgate(res_t_gate,"t_gate",0.01,rate+dur-0.01)
-		makeenv(res,"noisefreq",noisefreq,rate,dur)
+		makeenv(res,"noisef",noisefreq,rate,dur)
 		makeenv(res,"noisebw",noisebw,rate,dur)
 		makeenv(res,"glot",glot,rate,dur)
 		makeenv(res,"plosive",plosive,rate,dur)
@@ -465,7 +532,7 @@ function Tract.doSpeakXtime(syl,fade)
 		local noise = Tract.noise[ph]
 		local noiseloc = noise and noise.pos or 0
 		local noisefreq = noise and noise.freqs or {2500,7500}
-		local noisebw = noise and noise.bw or {1,1}
+		local noisebw = noise and noise.bw or {0.1,0.1}
 
 		local glot = Tract.glot[ph] or 1
 		local plosive = Tract.plosive[ph] or 0
@@ -487,7 +554,7 @@ function Tract.doSpeakXtime(syl,fade)
 		makeenv(res,"lenT",lenT,rate,dur)
 		makeenv(res,"noiseloc",noiseloc,0,rate_plus_dur)
 		makeenv(res,"gate_t",1,0,rate_plus_dur)
-		makeenv(res,"noisefreq",noisefreq,rate,dur)
+		makeenv(res,"noisef",noisefreq,rate,dur)
 		makeenv(res,"noisebw",noisebw,rate,dur)
 		makeenv(res,"glot",glot,rate,dur)
 		makeenv(res,"plosive",plosive,rate,dur)
@@ -662,7 +729,7 @@ function Tract.doM(args,dd)
 			local noise = Tract.noise[ph]
 			local noiseloc = noise and noise.pos or 0
 			local noisefreq = noise and noise.freqs or {2500,7500}
-			local noisebw = noise and noise.bw or {1,1}
+			local noisebw = noise and noise.bw or {0.1,0.1}
 
 			local glot = Tract.glot[ph] or 1
 			local plosive = Tract.plosive[ph] or 0
@@ -692,7 +759,7 @@ function Tract.doMnodur(args,dd)
 			local noise = Tract.noise[ph]
 			local noiseloc = noise and noise.pos or 0
 			local noisefreq = noise and noise.freqs or {2500,7500}
-			local noisebw = noise and noise.bw or {1,1}
+			local noisebw = noise and noise.bw or {0.1,0.1}
 
 			local glot = Tract.glot[ph] or 1
 			local plosive = Tract.plosive[ph] or 0
@@ -708,7 +775,7 @@ end
 Tract.paramskey = {"Ar","ArN","Gain","rate","lenT","noiseloc","noisef","noisebw","glot","plosive","area1len","dur"}
 Tract.paramskey_nodur = {"Ar","ArN","Gain","rate","lenT","noiseloc","noisef","noisebw","glot","plosive","area1len"}
 	function Tract:Talk(frase,allvocals,fade)
-		return {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,allvocals,fade)}}
+		return {[Tract.paramskey_speak] = LS{Tract:doTalk(frase,true,allvocals,fade)}}
 	end
 
 	return Tract

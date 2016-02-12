@@ -32,7 +32,7 @@ function InitSCMenu()
 		function(event) 
 			if event:IsChecked() then
                 if not IDESCSERVER.inited then
-                    IDESCSERVER:init("udp",file_settings:load_table("settings"),mainlinda)
+                    IDESCSERVER:init("tcp",file_settings:load_table("settings"),mainlinda)
                 end
                 udpsclinda:send("Detect",1)
 				--IDESCSERVER:sync()

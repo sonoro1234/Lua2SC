@@ -53,13 +53,14 @@ function WAITEv(name)
 						return nil 
 					end
 					named_events:subscribe(name,function(ppq) 
+														--print("WatiEv triger",ppq)
 														e.prevppqPos = -math.huge --avoid reset
 														e.ppqPos = ppq;
 														e.playing = true
-														--e:Play()
+														e:Play()
 													end,e)
 					
-					return {dur=1,delta=math.huge,freq=NOP}
+					return {dur=0,delta=math.huge,freq=NOP}
 				end)
 end
 --[[

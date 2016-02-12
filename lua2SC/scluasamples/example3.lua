@@ -1,5 +1,4 @@
-require"lfs"
-lfs.chdir([[C:\LUA\lua-5.1.5set\build482posixdwrf\libmodules\]])
+
 --[[
 This example shows:
 	- starting server
@@ -42,7 +41,8 @@ end):store()
 ---------------------------------------------------------
 local sclua = require "sclua.Server"
 local s = sclua.Server()
-local Synth, Group, Bus, Buffer = s.Synth, s.Group, s.Bus, s.Buffer
+--local 
+Synth, Group, Bus, Buffer = s.Synth, s.Group, s.Bus, s.Buffer
 
 s:freeAll() -- free all synths playing and clear up the server
 
@@ -65,14 +65,18 @@ delay:moveToTail(groop)
 groox = Group(groop)
 groox:below(groop)
 reverb:moveToTail(groox)
----[[
+
+--prtable(getfenv(2))
+--debuglocals(true)
+--[[
+prtable(Synth)
 local ctx = "sclua test"
 win = Window(ctx, 0, 0, 380, 200)
 
 function win:mouse(event, btn, x, y)
 	--print(event, btn, x, y)
 	if ((event == "down") and (btn == "left"))then
-		mouseSynth = Synth("luaimpulse", { freq = 2222, amp = 0.1 })
+		mouseSynth = Synth("luaimpulse", { freq = 159, amp = 0.1 })
 		mouseSynth:moveToHead(groox)
 		groox:above(groop)
 	elseif event == "drag" then

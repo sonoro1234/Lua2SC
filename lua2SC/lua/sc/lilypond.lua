@@ -38,29 +38,43 @@ end
 --MASTER_INIT1()
 table.insert(initCbCallbacks,1,MASTER_INIT1)
 -------------------------------------
-
-
-local notenumbers = {[0]="c","cis","d","dis","e","f","fis","g","gis","a","ais","b"}
+--local notenumbers = {[0]="c","cis","d","dis","e","f","fis","g","gis","a","ais","b"}
 local notenumbers = {[0]="c","des","d","ees","e","f","ges","g","aes","a","bes","b"}
-local function numberToNote(number,numbernote)
-	numbernote = numbernote or notenumbers
-	if number == REST or number==NOP then return "r",0 end
+local function numberToNote(number,scale)
+
 	local numberround = math.floor(number + 0.5)
-    local octave = math.floor(numberround / 12) - 1
+    local octave = math.floor(numberround / 12) - 4
     local note = numberround % 12
-	octave = octave - 3 --??
+	--local degree = (numberround - scale[1])%12
 	local octavestr
 	if octave >=0 then
 		octavestr = ("'"):rep(octave)
 	else
 		octavestr = (","):rep(-octave)
 	end
-    return numbernote[note]..octavestr ---..diffstr
+    return notenumbers[note]..octavestr ---..diffstr
 end
-local function makeLilyEvent(name,beatTime,note,dur)
-	--if note == NOP then return "" end
+local lilyalts = {'eses', 'es', '', 'is' , 'isis'}
+local function makeLilyEvent(name,beatTime,note,dur,data)
+	if note == REST or note==NOP then return " r",0 end
 	--local dura = math.floor(4/(dur))
-	local nota = numberToNote(note)
+	if data.degree then
+		local nv = data.degree - 1
+		local nota = nv % #data.escale 
+		--local octave = math.floor(nv / #data.escale) - 4
+		local octave = math.floor(note / 12) - 4
+
+		local octavestr
+		if octave >=0 then
+			octavestr = ("'"):rep(octave)
+		else
+			octavestr = (","):rep(-octave)
+		end
+		local nname = data.escale.notenames[nota + 1] --+ octava * 12
+		local notname = " "..nname[1]..lilyalts[nname[2]+3]..octavestr
+		return notname
+	end
+	local nota = numberToNote(note,data.escale)
 	--prerror(name,beatTime,nota,dur,dura)
 	return " "..nota --..dura
 end
@@ -158,19 +172,24 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 	if beatLen <= 0 then return end
 	local maxlen = getmaxlen(lista)
 	local allkeydata = {}
-	local score = LILY.score[self.lilyscorenum]
+	local scores = LILY.score[self.lilyscorenum]
 	local started = LILY.started[self.lilyscorenum]
 	if not started then
 		LILY.started[self.lilyscorenum] = true
 		if beatTime > LILY.inippq then
-			table.insert(score," \\key c \\minor ")
-			score[#score+1] = " r"
-			calcduration(score,beatTime - LILY.inippq)
+			for ii,score in ipairs(scores) do
+				table.insert(score," \\key c \\minor ")
+				score[#score+1] = " r"
+				calcduration(score,beatTime - LILY.inippq)
+			end
 		end
 	end
 	if maxlen > 1 then
-		table.insert(score,"<")
+		for ii,score in ipairs(scores) do
+			table.insert(score,"<")
+		end
 	end
+	local piano_scores = {{},{}}
 	for i=1,maxlen do
 		local keydata = {}
 		for k,v in pairs(lista) do
@@ -199,24 +218,50 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 		LILY.maxnote[self.lilyscorenum] = maxnote
 		end
 		--armadura
-		if keydata.escale then
-			local tonic = keydata.escale[1]
-			if LILY.tonics[self.lilyscorenum]~=tonic then
-				LILY.tonics[self.lilyscorenum]=tonic
-				local key = notenumbers[tonic%12]
-				table.insert(score," \\key "..key.." \\"..getmode(keydata.escale).." ")
+		--if keydata.escale then
+		keydata.escale = keydata.escale or modes.ionian
+			if LILY.scales[self.lilyscorenum]~=keydata.escale then
+				LILY.scales[self.lilyscorenum]=keydata.escale
+				local tonicT = keydata.escale.notenames[1]
+				local key = tonicT[1]..lilyalts[tonicT[2]+3] --notenumbers[tonic%12]
+				for ii,score in ipairs(scores) do
+					table.insert(score," \\key "..key.." \\"..keydata.escale.name.." ")
+					--table.insert(score," \\key "..key.." \\"..getmode(keydata.escale).." ")
+				end
 			end
-		end
+		--end
 		--if note == NOP then return end
-		local str = makeLilyEvent(self.name,beatTime,note,keydata.dur)
-		table.insert(score,str)
+		local str = makeLilyEvent(self.name,beatTime,note,keydata.dur,keydata)
+		--for ii,score in ipairs(scores) do
+		--	table.insert(score,str)
+		--end
+		if #scores < 2 then
+			table.insert(scores[1],str)
+		else
+			local scnum = 1
+			if type(note)=="number" and note < 60 and #scores>1 then scnum=2 end
+			table.insert(piano_scores[scnum],str)
+		end
 		allkeydata[i] = keydata
 	end
-	if maxlen > 1 then
-		table.insert(score,">")
+	if #scores > 1 then 
+		for ii,score in ipairs(piano_scores) do
+			if #score == 0 then 
+				table.insert(score," r")
+			end
+			for jj,str in ipairs(score) do
+				table.insert(scores[ii],str)
+			end
+		end
 	end
-	calcduration(score,beatLen)
-	
+	if maxlen > 1 then
+		for ii,score in ipairs(scores) do
+			table.insert(score,">")
+		end
+	end
+	for ii,score in ipairs(scores) do
+		calcduration(score,beatLen)
+	end
 	--print("dur",beatLen,dura)
 end
 
@@ -254,9 +299,34 @@ function LILY:SaveStr(file)
 		local clindex = math.floor(0.5+((midn - 67)/12))
 		clindex = clip(clindex,-3,2)
 		local clef = clefs[clindex]
-		table.insert(self.score[i],2,"\\clef \""..clef.."\" ")
+		local scores = self.score[i]
+		if #scores > 1 then
+			fich:write("\n\\new PianoStaff <<")
+			local score = scores[1]
+
+		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
+		table.insert(score,2,"\\clef \"".."treble".."\" ")
+		score[#score+1] = "}"
 		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
-		fich:write(table.concat(self.score[i]))
+		fich:write(table.concat(score))
+		
+		score = scores[2]
+		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
+		table.insert(score,2,"\\clef \"".."bass".."\" ")
+		score[#score+1] = "}"
+		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
+		fich:write(table.concat(score))
+
+
+			fich:write(">>")
+		else
+			local score = scores[1]
+			table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
+			table.insert(score,2,"\\clef \""..clef.."\" ")
+			score[#score+1] = "}"
+			print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
+			fich:write(table.concat(score))
+		end
 	end
 	fich:write(">>")
 	fich:close()
@@ -271,20 +341,27 @@ function LILY:Gen(inippq,endppq,players)
 	self.inippq = inippq
 	self.endppq = endppq
 	self.score = {}
+	self.isPiano = {}
 	self.started = {}
 	self.players = players
-	self.tonics = {}
+	self.scales = {}
 	self.minnote = {}
 	self.maxnote = {}
 	for i=1,#players do
 		players[i].name =  players[i].name or players[i]:findMyName()
-		local staftype = players[i].isOscPianoEP and "PianoStaff" or "Staff" 
+		--local staftype = players[i].isOscPianoEP and "PianoStaff" or "Staff" 
+		self.isPiano[i] = players[i].isOscPianoEP
 --%\remove "Note_heads_engraver"
 --%\consists "Completion_heads_engraver"
 --%\remove "Rest_engraver"
 --%\consists "Completion_rest_engraver"
 --%\consists "Rhythmic_column_engraver" 
-		self.score[i] = {string.format("\n\\new %s \\with{instrumentName = #%q } {",staftype,players[i].name)}
+		--self.score[i] = {string.format("\n\\new %s \\with{instrumentName = #%q } {",staftype,players[i].name)}
+		if self.isPiano[i] then
+			self.score[i] = {{},{}}
+		else
+			self.score[i] = {{}}
+		end
 		players[i].lilyscorenum = i
 	end
 	self.test = test
@@ -323,10 +400,7 @@ function LILY:Gen(inippq,endppq,players)
 		end
 
 		print"saving osc table"
-		for i=1,#players do
-			local score = self.score[i]
-			score[#score+1] = "}"
-		end
+
 		local lilyfile = pathnoext(scriptname)..".ly"
 		local pdffile = pathnoext(scriptname)..".pdf"
 		self:SaveStr(lilyfile)
@@ -335,7 +409,7 @@ function LILY:Gen(inippq,endppq,players)
 		--print(lfs.currentdir())
 		--os.execute([[C:\Program Files\LilyPond\usr\bin\lilypond.exe -fpdf ]].. lilyfile)
 		os.remove(pdffile)
-		os.execute(string.format([["C:\Program Files (x86)\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s]],pathnoext(scriptname),lilyfile))
+		os.execute(string.format([["C:\Program Files\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s]],pathnoext(scriptname),lilyfile))
 		print"pdf done"
 		--os.execute(pathnoext(scriptname)..".pdf")
 		io.popen(pdffile)

@@ -8,7 +8,7 @@ function NRT:open(filepath)
 end
 function NRT:sendBundle(msg,time)
 	assert(self.file)
-	assert(time)
+	assert(time>=0)
 	if not self.closed then
 		local kSecondsToOSCunits = 4294967296
 		local timestamp = time*kSecondsToOSCunits 
@@ -22,7 +22,7 @@ function NRT:sendBundle(msg,time)
 end
 function NRT:sendMultiBundle(time,msg)
 	assert(self.file)
-	assert(time)
+	assert(time>=0)
 	if not self.closed then
 		local kSecondsToOSCunits = 4294967296
 		local timestamp = time*kSecondsToOSCunits 
@@ -105,7 +105,7 @@ function NRT:Gen(endppq,test)
     table.insert(initCbCallbacks,function()
 		print"NRT work"
 		theMetro:play(nil,0,0,25)
-		theMetro.oldtimestamp = -theMetro.period
+		theMetro.oldtimestamp = 0 -- -theMetro.period
 		while theMetro.ppqPos < endppq do
 -- cancelstep already does the work
 --			if cancel_test() then 
@@ -120,6 +120,7 @@ function NRT:Gen(endppq,test)
 			theMetro.oldtimestamp = theMetro.timestamp
 		end
 		if not NRT.test then
+			print("sending /quit on",theMetro:ppq2time(endppq),endppq)
 			sendBundle({"/quit",{}},theMetro:ppq2time(endppq))
 			NRT:close()
 		else

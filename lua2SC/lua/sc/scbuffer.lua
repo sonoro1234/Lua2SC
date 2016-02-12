@@ -21,7 +21,7 @@ function FileBuffer(filename,chan,samples,inisample)
 	chan = chan or -1
 	samples=samples or 0
 	inisample=inisample or 0
-	local buf=SCBuffer:new({filename = filename,samples=samples,inisample=inisample,isFileBuffer=true,chan=chan})
+	local buf=SCBuffer:new({filename = filename,channels=-1,samples=samples,inisample=inisample,isFileBuffer=true,chan=chan})
 	table.insert(Buffers,buf)
 	buf:Init(true)
 	return buf
@@ -136,6 +136,14 @@ function SCBuffer:queryinfo(block)
 	if block==nil then block=false end
 	if block then
 		local res = sendBlocked(msg)
+		assert(self.buffnum == res[2][1])
+		if self.channels==-1 then
+			self.channels = res[2][3]
+		else
+			assert(self.channels == res[2][3])
+		end
+		self.frames = res[2][2]
+		self.samprate = res[2][4]
 		printB_info(res)
 	else
 		sendBundle(msg)

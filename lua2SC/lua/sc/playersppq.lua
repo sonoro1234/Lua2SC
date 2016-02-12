@@ -240,8 +240,9 @@ end
 function EventPlayer:NextVals()
 	--print("NextVals ",self.name)
 	self.used=true
+	self.tmplist = nil --initialize tmplist before list.nextval
 	self.curlist = self.lista:nextval(self)
-		
+	--print(self.name,self.curlist.delta)	
 	if self.curlist == nil then
 		return nil
 	end
@@ -560,6 +561,7 @@ ActionEventPlayer = EventPlayer:new({})
 function ActionEventPlayer:NextVals()
 	--print("NextVals ",self.name)
 	self.used=true
+	self.tmplist = nil
 	self.curlist = self.lista:nextval(self)
 	--prtable(self.curlist)
 	print("N self.curlist ",self.curlist)

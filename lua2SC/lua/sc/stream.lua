@@ -609,10 +609,13 @@ end
 PairsStream = Stream:new{stlist=nil}
 PairsStream.isPairsStream=true
 function PairsStream:pnext(e)
-	local list= {}
+	local list= e.tmplist or {}
+	--local list= {}
 	e.tmplist = list
 	for i,t in ipairs(self.stlist) do
 		local list2 = {}
+		--if t.isPairsStream then
+		--else
 		if t.isStream then
 			list2 = t:nextval(e)
 			if not list2 then
@@ -637,9 +640,12 @@ function PairsStream:pnext(e)
 		end
 		list = mergeTable(list,list2)
 	end
+	--if list.delta then
+--		print(list.delta)
+--	end
 	list.delta = list.delta or list.dur
-	--e.tmplist = nil
-	return setmetatable(list,event_mt)
+	return list
+	--return setmetatable(list,event_mt)
 end
 function PairsStream:reset()
 	for i,t in ipairs(self.stlist) do
@@ -1100,10 +1106,11 @@ function SKIPdur(dur,pat)
 end
 ---------------------------
 function DONOP(dur)
-	return PS{dur = LS{dur}, note = NOP}
+	return PS{dur = LS{dur},delta = LS{dur}, freq = NOP, note = NOP}
 end
 function DOREST(dur)
-	return PS{dur = LS{dur}, note = REST}
+	return PS{dur = LS{dur},delta = LS{dur}, freq = REST, note = REST,_dummy=function() 
+print("DOREST",dur) end}
 end
 function COUNT(str)
 	local turn = 0
@@ -1139,5 +1146,49 @@ function SETCHAN(parvals)
 				end
 					return {delta=0,dur=0,freq=NOP,_=fun}
 				end)
+end
+function SETCHANS(pls,parvals)
+	return FS(function(pl)
+			local beatLen = parvals.dur
+			parvals.dur = nil
+			local function fun(pll)
+				local time = theMetro:ppq2time(pll.ppqPos)
+				for i,vpl in ipairs(pls) do
+					for k,v in pairs(parvals) do
+						if not (type(v)=="table" and v.is_ctrl_mapper) then
+							vpl.channel.params[k]=v
+						else
+							local bund = v:verb(k,vpl.channel,pll.ppqPos,beatLen)
+							sendMultiBundle(time,bund)
+						end
+					end
+					vpl.channel:SendParams(time)
+				end
+			end
+			return {delta=0,dur=0,freq=NOP,_=fun}
+		end)
+end
+function SETPLAYERS(pls,parvals)
+	return FS(function(pl)
+			local beatLen = parvals.dur
+			parvals.dur = nil
+			local function fun(pll)
+				local time = theMetro:ppq2time(pll.ppqPos)
+				for i,vpl in ipairs(pls) do
+					for k,v in pairs(parvals) do
+						if not (type(v)=="table" and v.is_ctrl_mapper) then
+							vpl.params[k]=v
+							vpl:SendParams(time)
+						else
+							local bund = v:verb(k,vpl,pll.ppqPos,beatLen)
+							--prtable(bund)
+							sendMultiBundle(time,bund)
+						end
+					end
+
+				end
+			end
+			return {delta=0,dur=0,freq=NOP,_=fun}
+		end)
 end
 -------------------

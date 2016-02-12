@@ -1523,11 +1523,20 @@ function SYNTHDef:findTerminals()
 			terminals[actualv]=nil
 		end
 	end
+	--[[
 	--print("terminals")
 	self.outputugens={}
 	for k,v in pairs(terminals) do
 		self.outputugens[#self.outputugens+1]=k
 		--print("terminal",k.name)
+	end
+	--]]
+	-- same as above in AllUgens order
+	self.outputugens={}
+	for i,v in ipairs(self.Allugens) do
+		if terminals[v] then
+			self.outputugens[#self.outputugens+1]=v
+		end
 	end
 end
 function SYNTHDef:build()
@@ -1917,6 +1926,18 @@ function HumanVNdel.ar(input ,inputnoise,noiseloc,loss,rg,rl,rn,lmix,nmix,area1l
 	local data = concatTables(#del,del,#areas,areas,#areasN,areasN)
 	return HumanVNdel:MultiNew{2,input,loss,rg,rl,rn,lmix,nmix,area1len,inputnoise,noiseloc,unpack(data)}:madd(mul,add)
 end
+HumanVNdelO2=UGen:new{name='HumanVNdelO2'}
+function HumanVNdelO2.ar(input ,inputnoise,noiseloc,loss,rg,rl,rn,lmix,nmix,area1len,del,areas,areasN,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;rn = rn or 1
+	lmix = lmix or 1;nmix = nmix or 1
+	del = del or 0
+	inputnoise = inputnoise or 0
+	noiseloc = noiseloc or 0
+	area1len = area1len or math.floor(#areas/2)
+	local data = concatTables(#del,del,#areas,areas,#areasN,areasN)
+	return HumanVNdelO2:MultiNew{2,input,loss,rg,rl,rn,lmix,nmix,area1len,inputnoise,noiseloc,unpack(data)}:madd(mul,add)
+end
 HumanVNdelU=UGen:new{name='HumanVNdelU'}
 function HumanVNdelU.ar(input ,inputnoise,noiseloc,loss,rg,rl,rn,lmix,nmix,area1len,del,areas,areasN,mul,add)
 	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
@@ -1944,14 +1965,21 @@ function ChenglottalU.ar(freq, OQ,asym,Sop,Scp)
 	freq = freq or 100; OQ = OQ or 0.8; asym = asym or 0.6; Sop = Sop or 0.5;Scp = Scp or 0.5
 	return ChenglottalU:MultiNew{2,freq, OQ,asym,Sop,Scp}
 end
-DWGReverb = MultiOutUGen:new{name="DWGReverb"}
-function DWGReverb.ar(inp,len,c1,c3,mix,coefs,doprime)
+DWGReverbC1C3 = MultiOutUGen:new{name="DWGReverbC1C3"}
+function DWGReverbC1C3.ar(inp,len,c1,c3,mix,coefs,perm,doprime)
 	inp = inp or 0;c1 = c1 or 1;c3 = c3 or 1;len = len or 32000;mix = mix or 1
 	coefs = coefs or {1,0.9464,0.87352,0.83,0.8123,0.7398,0.69346,0.6349}
 	doprime = doprime or 1
+  --perm = perm or {0,1,2,3,4,5,6,7} 
+	perm = perm or {1,2,3,4,5,6,7,0}
+	--perm = perm or {3,4,5,6,7,0,1,2}
+	--perm = perm or {7,0,1,2,3,4,5,6}
 	assert(#coefs==8)
-	return DWGReverb:MultiNew{2,2,inp,len,c1,c3,mix,doprime,unpack(coefs)}
+	assert(#perm==8)
+	return DWGReverbC1C3:MultiNew(concatTables({ 2,2,inp,len,c1,c3,mix,doprime},coefs,perm))
 end
+DWGReverb = DWGReverbC1C3
+
 LDelay = UGen:new{name="LDelay"}
 function LDelay.ar(inp, delay)
 	inp=inp or 0;delay = delay or 0;

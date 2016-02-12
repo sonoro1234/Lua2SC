@@ -653,9 +653,7 @@ function UpdateStatusText(editor)
                   iff(editor:GetReadOnly(), "R/O", "R/W"),
                   "Ln "..tostring(line + 1).." Col "..tostring(col), 
 				  "CodeP "..tostring(editor:GetCodePage())}
-    end
 
-    if frame then
         for n = 1, 4 do
             if (texts[n] ~= statusTextTable[n]) then
                 frame:SetStatusText(texts[n], n)

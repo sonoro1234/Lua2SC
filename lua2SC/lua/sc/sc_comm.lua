@@ -1,5 +1,5 @@
 --- udp comunication
-require("socket")
+socket = require("socket")
 require("osclua")
 require("sc.number2string")
 toOSC=osclua.toOSC
@@ -12,24 +12,44 @@ function OSCTime(time)
 	return (time + fSECONDS_FROM_1900_to_1970)*kSecondsToOSCunits
 end
 --SERVER_CLOCK_LATENCY = 0.2
+strdatalens ={}
 function sendBundle(msg,time)
-
+	local ret,err
 	if time then
 		local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
-		udp:send(toOSC({timestamp,msg}))
+		ret,err = udp:send(toOSC({timestamp,msg}))
 	else
-		udp:send(toOSC(msg))
+		ret,err = udp:send(toOSC(msg))
 	end
+	if not ret then print("sendBundle error:",err);error(err) end
 end
+
 function sendMultiBundle(time,msg)
 		--print("send time",time)
 	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 	table.insert(msg,1,timestamp)
-    udp:send(toOSC(msg))
+	local dgram = toOSC(msg)
+	--strdatalens[#strdatalens + 1] = #dgram
+	--print(#dgram)
+    local ret,err,last = udp:send(dgram)
+	if not ret then
+--		while not ret do
+--		if err=='timeout' then
+--			print("sendMultiBundle from byte:",last+1)
+--			ret,err,last = udp:send(dgram,last+1)	
+--		else
+			print("sendMultiBundle error:",err);
+			--prtable(strdatalens);
+			error(err)
+--		end
+--		end
+	end
 end
 function sendBlocked(msg)
-    udpB:send(toOSC(msg))
-    local dgram = assert(udpB:receive(),"Not receiving from SCSYNTH\n")
+    local ret,err = udpB:send(toOSC(msg))
+	if not ret then print("sendBlocked error:",err);error(err) end
+    local dgram,err2 = udpB:receive()
+	if not dgram then print(err2,"Not receiving from SCSYNTH\n");error(err2) end
     return fromOSC(dgram)
 end
 --------------------------------
@@ -81,7 +101,7 @@ function inittcp()
 	local tcp = socket.connect(host, port)
 	assert(tcp,"tcp es nulo")
 	local ip, port2 = tcp:getsockname()
-	--udp:settimeout(0)
+	--tcp:settimeout(0)
 	print("tcp sends to ip:"..host.." port:"..port)
 	print("tcp reveives as ip:"..ip.." port:"..port2)
 	
@@ -260,11 +280,12 @@ function dumpTree(on)
 end
 --]]
 function IDGenerator(ini)
-	local index = ini or -1
+	local index = ini or 0
 	return function(inc)
+		local ret_index = index
 		inc = inc or 1
 		index = index + inc
-		return index
+		return ret_index
 	end
 end
 function initinternal()
@@ -288,8 +309,8 @@ function initinternal()
 	end
 	return t,tb
 end
-GetNode=IDGenerator(1000)
-GetBus=IDGenerator(8) --first after audio busses
+GetNode=IDGenerator(1001)
+GetBus=IDGenerator(16) --first after audio busses
 --dumpOSC=0
 function InitSCCOMM()
 	print("InitSCCOMM")
@@ -322,25 +343,22 @@ end
 --table.insert(resetCbCallbacks,ResetUDP)
 function ResetUDP()
 	print("reset udps")
-	local ret,err=udp:send(toOSC{"/clearSched",{}})
-	if not ret then print(err) end
+	sendBundle{"/clearSched",{}}
 	--local ret,err=udp:send(toOSC({"/dumpOSC",{dumpOSC}}))
 	--if not ret then print(err) end
-	local ret,err=udp:send(toOSC({"/g_freeAll",{0}}))
-	if not ret then print(err) end
-	local ret,err=udp:send(toOSC({"/g_deepFree",{0}}))
-	if not ret then print(err) end
-	local ret,err=udp:send(toOSC({"/error",{{"int32",1}}}))
-	if not ret then print(err) end
-	local ret,err=udp:send(toOSC({"/g_dumpTree",{0,1}}))
-	if not ret then print(err) end
+	sendBundle{"/g_freeAll",{0}}
+	sendBundle({"/g_deepFree",{0}})
+	sendBundle{"/error",{{"int32",1}}}
+	sendBundle{"/g_dumpTree",{0,1}}
 	sendBlocked{"/sync",{1}}
 	print("closing udps")
+	if sc_comm_type == "tcp" then
+		udp.tcp:shutdown()
+		udpB.tcp:shutdown()
+	end
 	udp:close()
 	udpB:close()
 	print("closed udps")
-	--
-	--udp2:close()
 end
 
 --table.insert(initCbCallbacks,InitUDP)

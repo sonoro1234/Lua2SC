@@ -23,6 +23,7 @@ elseif typeshed then
 else
 	error("typeshed is nil")
 end
+theMetro:play(120,-4,0,30)
 --MASTER_INIT1()
 --require"sc.lilypond"
 table.insert(initCbCallbacks,1,MASTER_INIT1)

@@ -175,7 +175,7 @@ function setMetronomLanes(timestamp)
 	--collectgarbage("collect")
 end
 
-theMetro:play(120,-4,0,30)
+
 table.insert(initCbCallbacks,function() print("init metronom");theMetro:start() end)
 resetCbCallbacks = resetCbCallbacks or {}
 table.insert(resetCbCallbacks,function() 

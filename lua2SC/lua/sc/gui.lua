@@ -146,7 +146,7 @@ function GUIconstructor:guiSetScaledValue(value,docallback)
 	end
 end
 --------------------------------------------------------
-function IDGenerator(ini)
+function GUIIDGenerator(ini)
 	local index=ini or -1
 	return function(step)
 		step = step or 1
@@ -154,9 +154,9 @@ function IDGenerator(ini)
 		return index
 	end
 end
-GetTag=IDGenerator(0)	
-GetTagPanel=IDGenerator(0)
-GetTagWindow=IDGenerator(0)
+GetTag=GUIIDGenerator(0)	
+GetTagPanel=GUIIDGenerator(0)
+GetTagWindow=GUIIDGenerator(0)
 function doAddControl(constructor)
 	if constructor.clabel then constructor.label = constructor.clabel end
 	guiAddControl(constructor)
@@ -240,9 +240,9 @@ function addWindowAV(win)
 end
 
 function Window(title, x, y, w, h)
-	local win = addWindowAV{x=x,y=y,w=w,h=h}
+	local win = addWindow{x=x,y=y,w=w,h=h}
 	local panel=addPanel{window=win,type="hbox"}
-	glcanvas=addControl{window=win,panel=panel,typex="glcanvas",
+	local glcanvas=addControl{window=win,panel=panel,typex="glcanvas",
 	DrawCb = function(self) 
 		local mx = self.mx or 0
 		local my = self.my or 0
@@ -272,3 +272,5 @@ function Slider(name,min,max,val,func)
 			end}
 	return addControl(newcontrol)
 end
+
+gui = {default_control = "knob"}

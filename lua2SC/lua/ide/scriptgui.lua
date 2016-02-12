@@ -1738,7 +1738,7 @@ function CreateScriptGUI()
 	ScriptGUI:Connect(wx.wxEVT_IDLE,
         function(event)
 			local requestmore = true
-			for mes=1,10 do
+			for mes=1,1000 do
 				local key,val=scriptguilinda:receive(0,"guiModify","guiUpdate","guiSetValue","guiGetValue","guiSetLabel","/vumeter" )
 				if val then
 					--only one linda key, order in creation is important for layout

@@ -24,7 +24,9 @@ Atk.userKernelDir = Atk.userSupportDir .. "/kernels";
 Atk.systemSupportDir = Platform.systemAppSupportDir .. "/ATK";		
 Atk.systemSoundsDir = Atk.systemSupportDir .. "/sounds";
 Atk.systemKernelDir = Atk.systemSupportDir .. "/kernels";
-
+Atk.portabSupportDir = lua2scpath .. "../ATK";
+Atk.portabSoundsDir = Atk.portabSupportDir .. "/sounds";
+Atk.portabKernelDir = Atk.portabSupportDir .. "/kernels";
 FoaDecoderKernel = {}
 function FoaDecoderKernel:new(o)
 	o = o or {}
@@ -45,10 +47,12 @@ function FoaDecoderKernel:initPath()
 	end
 --]]
 	require"lfs"
-	if lfs.attributes(Atk.userKernelDir).mode == "directory" then
+	if lfs.attributes(Atk.userKernelDir) and lfs.attributes(Atk.userKernelDir).mode == "directory" then
 		kernelLibPath = Atk.userKernelDir
-	elseif lfs.attributes(Atk.systemKernelDir).mode == "directory" then
+	elseif lfs.attributes(Atk.systemKernelDir) and lfs.attributes(Atk.systemKernelDir).mode == "directory" then
 		kernelLibPath = Atk.systemKernelDir
+	elseif lfs.attributes(Atk.portabKernelDir) and lfs.attributes(Atk.portabKernelDir).mode == "directory" then
+		kernelLibPath = Atk.portabKernelDir
 	else
 		error("is Atk instaled?")
 	end
@@ -106,7 +110,7 @@ function AtkKernelConv.ar(inp,kernel,mul,add)
 	for i=1,#kernel do
 		convs[#convs + 1] = {}
 		for j=1,#kernel[1] do
-			table.insert(convs[#convs],Convolution2.ar(inp[i],kernel[i][j].buffnum,0,kernel.kernelSize))
+			table.insert(convs[#convs],Convolution2.ar(inp[i],kernel[i][j].buffnum,0,kernel[i][j].frames))
 		end
 	end
 	return Mix(convs):madd(mul or 1,add or 0)

@@ -68,8 +68,12 @@ end
 function SetLuaPath(arg)
 	--print(arg[0],lfs.currentdir (),lfs.attributes(arg[0]).dev,debug.getinfo(2,"S").source)
 	--print(abspath(arg[0]),splitpath(abspath(arg[0])))
-
-	lua2scpath = splitpath(abspath(arg[0])) --.. sep
+    
+    --lua2scpath_portable = splitpath(abspath(arg[0]))
+	--lua2scpath = lua2scpath_portable.."lua2sc".. sep
+    lua2scpath = splitpath(abspath(arg[0]))
+	lua2scpath_portable = abspath(lua2scpath.."..".. sep)
+    
 	_presetsDir = lua2scpath .. "presets" .. sep
 	----_scscriptsdir = lua2scpath .."sc\\"
 	-- .. lua2scpath .. "lua\\?\\init.lua;"
@@ -104,7 +108,7 @@ settings_defaults = {
 	},
 }
 file_config = require"file_settings"
-file_config:init(lua2scpath .. "settings.txt",settings_defaults)
+file_config:init(lua2scpath .. "settings.txt",settings_defaults,lua2scpath_portable)
 local function strconcat(...)
 	local str=""
 	for i=1, select('#', ...) do

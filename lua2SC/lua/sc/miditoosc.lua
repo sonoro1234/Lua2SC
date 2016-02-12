@@ -465,9 +465,9 @@ function MidiToOsc.midi2osc(midiEvent)
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
-			OSCFunc.newfilter("/n_end",nodo,function(noty) 
-				MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
-			end,true)
+			--OSCFunc.newfilter("/n_end",nodo,function(noty)
+			--	MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
+			--end,true)
 		else
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
@@ -518,6 +518,8 @@ function MidiToOsc.midi2osc(midiEvent)
 				sendBundle(off) --,lanes.now_secs())
 				--local off = {"/n_free",{nodo}}
 				--udp:send(toOSC(off))
+			else
+				print"off without on"
 			end
 		else --poly dontfree
 			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
