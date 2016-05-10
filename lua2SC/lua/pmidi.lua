@@ -133,7 +133,8 @@ function M.midi_thread(inp,out)
 						callbacklinda:send("_midiEventCb",ev)
 					end
 					if ev==nil then
-						print("PMIDI: "..tostring(err))
+						print("PMIDI: read:"..tostring(err))
+						error()
 					end
 				end
 			elseif key=="midiWriteShort"  and midi_out_opened then
@@ -141,7 +142,7 @@ function M.midi_thread(inp,out)
 				local outPort = val.outPort or 1
 				local erro=midiout[outPort].stream:writeShort(val)
 				if erro then
-					prerror("PMIDI: "..tostring(erro))
+					prerror("PMIDI: writeShort:"..tostring(erro))
 				else
 					--print("envio")
 					--prtable(val)

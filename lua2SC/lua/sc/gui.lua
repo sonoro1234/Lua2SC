@@ -265,11 +265,20 @@ function Slider(name,min,max,val,func)
 	local min = min or 0
 	local max = max or 1
 	local name = name or ""
-	local newcontrol = {value =val or min,min=min,max=max, typex="vslider",label=0,name=name,
+	local newcontrol = {panel=curr_panel,value =val or min,min=min,max=max, typex="vslider",label=0,name=name,
 			callback = function(value,str,c) 
 					c:setLabel(string.format("%.2f",value),0)
 					func(value)
 			end}
+	return addControl(newcontrol)
+end
+
+function Button(name,func)
+	local newcontrol = {panel=curr_panel,value =val or min,min=min,max=max, typex="button",clabel=name,name=name,
+	callback = function(value,str,c) 
+					--c:setLabel(string.format("%.2f",value),0)
+					func(value)
+	end}
 	return addControl(newcontrol)
 end
 

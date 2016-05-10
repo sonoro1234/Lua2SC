@@ -74,7 +74,9 @@ function scale.__eq(a,b)
 	end
 	return true
 end
-
+function newScale(t)
+	return scale:new(t)
+end
 
 local function constructMode(offset)
     local note = 0

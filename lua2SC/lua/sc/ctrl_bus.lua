@@ -164,8 +164,16 @@ ctrl_mapper.__add = function (a,b)
 		A,B = b,a
 	end
 	local C = A:new()
-	C.inip = A.inip + B
-	C.endp = A.endp + B
+	if A.inip then
+		C.inip = A.inip + B
+		C.endp = A.endp + B
+	elseif A.levels then
+		local levels = {}
+		for i,v in ipairs(A.levels) do
+			levels[i] = v + B
+		end
+		C.levels = levels
+	end
 	return C
 end
 ctrl_mapper.__mul = function (a,b)
@@ -516,7 +524,7 @@ local function envlev(pl,lev)
 	table.insert(res,1,res[1]) --repeat first value
 	return res
 end
---just get _dummy
+--just get degree
 function getdegree(pl)
 	local l = pl.curvals
 	return gnote(l.degree,l.escale)

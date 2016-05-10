@@ -1,9 +1,8 @@
 --- debugger module
 -- @warning need to copy not to make lanes transfer functions
 local Debugger = {}
-local function debugger_copy(object)
+local function debugger_copy(object,lookup_table)
 
-    local lookup_table = {}
 	local basicCopy = function(ob)
 		--if ob then 
 			return tostring(ob)
@@ -42,6 +41,7 @@ function Debugger:get_call_stack(inilevel)
     local endlevel = inilevel + deph
 	local stack = {}
 	local vars = {}
+	local lookup_table = {}
 	for level = inilevel or 1,endlevel do
 		local stlevel = level - inilevel + 1
 		local stinfo = debug.getinfo(level,"Snlf")
@@ -55,7 +55,7 @@ function Debugger:get_call_stack(inilevel)
 			local name,value = debug.getlocal(level,i)
 			if not name then break end
 			if string.sub(name, 1, 1) ~= '(' then
-				vars[stlevel].locals[name] = debugger_copy(value)
+				vars[stlevel].locals[name] = debugger_copy(value,lookup_table)
 			end
 			i = i + 1
 		end
@@ -64,7 +64,7 @@ function Debugger:get_call_stack(inilevel)
 		while func do
 			local name,value = debug.getupvalue(func,i)
 			if not name then break end
-			vars[stlevel].upvalues[name] = debugger_copy(value)
+			vars[stlevel].upvalues[name] = debugger_copy(value,lookup_table)
 			i = i + 1
 		end
 		-- dont force lanes to send function

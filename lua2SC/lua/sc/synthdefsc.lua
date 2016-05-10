@@ -627,6 +627,9 @@ function UGen:varlag(time, curvature, warp, start)
 end
 --for Mix and MultiNew():madd and table with * or +
 UGenArr={name="UGenArr",isUGenArr=true}
+function TAU(t)
+	return UGenArr:new(t)
+end
 function UGenArr:new(o)
 	o = o or {}
 	setmetatable(o, UGenArr)
@@ -657,11 +660,11 @@ function UGenArr:madd(mul,add)
 	-- self=self*mul + add
 	-- return self
 end
-function UGenArr:dumpInputs(tab,ugens)
+function UGenArr:dumpInputs(tab,synthdef)
 	tab=tab or ""
 	print(tab.."Error: UGenArr slots: ",#self,"\n")
 	for i,v in ipairs(self) do
-		v:dumpInputs(tab.."\t",ugens)
+		v:dumpInputs(tab.."\t",synthdef)
 	end
 end
 function UGenArr:DoBinaryOp(op,b)
@@ -1490,10 +1493,11 @@ function SYNTHDef:dumpInputs()
 	self.theUgens={}
 	for i,v in ipairs(self.outputugens) do
 		--prtable("outputugen",v)
-		v:dumpInputs("",self.theUgens)
+		v:dumpInputs("",self)
 	end
 	print("\nnumero de ugens:"..tablelength(self.theUgens))
 	print("Dumping SYNTHDef:",self.name," ENDED xxxxxxxxxxxxxxxxxxxxxxxx")
+	return self
 end
 function SYNTHDef:findTerminals()
 	local terminals={}
@@ -1538,6 +1542,7 @@ function SYNTHDef:findTerminals()
 			self.outputugens[#self.outputugens+1]=v
 		end
 	end
+	return self
 end
 function SYNTHDef:build()
 	self.ugens= {}
@@ -1613,61 +1618,64 @@ function SYNTHDef:writeDefFile()
 	fout:close()
 	return self
 end
-function SYNTHDef:makeDefStr()
+function SYNTHDef:makeDefStr(version)
+	local version = version or 2
+	local lens
+	if version == 1 then lens = 2 elseif version == 2 then lens = 4 else error("wrong version") end
 	--assert(self.isBuild,"Not already build!!")
 	if not self.isBuild then self:build() end
 	local tout = {}
 	table.insert(tout,"SCgf")
-	table.insert(tout,int2str(1,4)) --version
+	table.insert(tout,int2str(version,4)) --version
 	table.insert(tout,int2str(1,2)) --numdefs
 	table.insert(tout,pstring(self.name))
 	
 	local constants=swapkeyvalue(self.constants)
-	table.insert(tout,int2str(#constants,2)) --numconstants
+	table.insert(tout,int2str(#constants,lens)) --numconstants
 	for i,v in ipairs(constants) do
 		table.insert(tout,float2str(v)) 
 	end
-	table.insert(tout,int2str(#self.parameters,2)) --paramaeters
+	table.insert(tout,int2str(#self.parameters,lens)) --paramaeters
 	for i,v in ipairs(self.parameters) do
 		table.insert(tout,float2str(v)) 
 	end
-	table.insert(tout,int2str(#self.paramnames,2)) --paramnames
+	table.insert(tout,int2str(#self.paramnames,lens)) --paramnames
 	for i,v in ipairs(self.paramnames) do
 		table.insert(tout,pstring(v.name))
-		table.insert(tout,int2str(v.index-1,2))
+		table.insert(tout,int2str(v.index-1,lens))
 	end
 	
 	local ugens=self.indugens
 	--fout:write(int2str(0,2))
 	--print("xxxxxxxxxxxxxxxxxxxxxxxxxescribo numugens",#ugens)
 	--prtable(ugens)
-	table.insert(tout,int2str(#ugens,2)) 
+	table.insert(tout,int2str(#ugens,lens)) 
 	for i,v in ipairs(ugens) do
 		table.insert(tout,pstring(v.name))
 		table.insert(tout,int2str(v.calcrate,1))
-		table.insert(tout,int2str(#v.inputs,2))
+		table.insert(tout,int2str(#v.inputs,lens))
 		if #v.channels > 0 then --numoutputs
-			table.insert(tout,int2str(#v.channels,2))
+			table.insert(tout,int2str(#v.channels,lens))
 		else
 			if v.isOutUGen then
-				table.insert(tout,int2str(0,2))
+				table.insert(tout,int2str(0,lens))
 			else
-				table.insert(tout,int2str(1,2))
+				table.insert(tout,int2str(1,lens))
 			end
 		end
 		table.insert(tout,int2str(v.specialIndex,2))
 		--inputspec
 		for i2,v2 in ipairs(v.inputs) do
 			if type(v2)=="number" then
-				table.insert(tout,int2str(-1,2))
-				table.insert(tout,int2str(self.constants[v2]-1,2))
+				table.insert(tout,int2str(-1,lens))
+				table.insert(tout,int2str(self.constants[v2]-1,lens))
 			else
 				if v2.name=="OutputProxy" then
-					table.insert(tout,int2str(self.ugens[v2.source]-1,2))
-					table.insert(tout,int2str(v2.index-1,2))
+					table.insert(tout,int2str(self.ugens[v2.source]-1,lens))
+					table.insert(tout,int2str(v2.index-1,lens))
 				else
-					table.insert(tout,int2str(self.ugens[v2]-1,2))
-					table.insert(tout,int2str(0,2))
+					table.insert(tout,int2str(self.ugens[v2]-1,lens))
+					table.insert(tout,int2str(0,lens))
 				end
 			end
 		end
@@ -1708,12 +1716,21 @@ function SYNTHDef:store()
 	self:send()
 	return self
 end
-function SYNTHDef:play(lista)
+function SYNTHDef:play(lista,tail)
 	lista = lista or {}
 	self:send()
-	local on = {"/s_new", {self.name, GetNode(), 0, 0}}
+	self.playnode = GetNode()
+	local on = {"/s_new", {self.name, self.playnode, tail and 1 or 0, 0}}
+	
 	getMsgLista(on,lista)
 	sendBundle(on)
+	return self
+end
+function SYNTHDef:stop()
+	if self.playnode then
+		local on = {"/n_free", {self.playnode}}
+		sendBundle(on)
+	end
 	return self
 end
 function SYNTHDef:guiplay(lista)
@@ -1729,43 +1746,45 @@ function SYNTHDef:guiplay(lista)
 		sendBundle(on)
 	end
 	local igui = InstrumentsGUI(self.name,false,parent,notisink.params,notisink)
-
+	self.playnode = node
 	return self
 end
-function UGen:dumpInputs(tab,ugens)
-	ugens=ugens or {}
-	tab=tab or ""
-	local ug=self
-	local inputs=0
-	local name=""
-	local actualugen=ug
+function UGen:dumpInputs(tab,synthdef)
+	local ugens = synthdef.theUgens
+	tab = tab or ""
+	local ug = self
+	local inputs = 0
+	local name = ""
+	local actualugen = ug
 	--local indexout=1
 	
-	if ug.name=="OutputProxy" then
-		inputs=ug.source.inputs
-		name="OutputProxy-"..ug.source.name.."-"..ug.index
-		actualugen=ug.source
-		if actualugen.name=="Control" then name=name.." special: "..actualugen.specialIndex end
-	elseif ug.name=="BinaryOpUGen" or ug.name=="UnaryOpUGen" then
-		inputs=ug.inputs
-		name=ug.name..ug.selector
+	if ug.name == "OutputProxy" then
+		inputs = ug.source.inputs
+		name = ug.source.name.."["..ug.index.."]" --"OutputProxy-"..ug.source.name.."-"..ug.index
+		actualugen = ug.source
+		if actualugen.name=="Control" then 
+			name = name .."("..synthdef.paramnames[ug.index].name..")"
+			name = name.." special: "..actualugen.specialIndex 
+		end
+	elseif ug.name == "BinaryOpUGen" or ug.name=="UnaryOpUGen" then
+		inputs = ug.inputs
+		name = ug.selector --ug.name..ug.selector
 	else
-		inputs=ug.inputs
-		name=ug.name
+		inputs = ug.inputs
+		name = ug.name
 	end
 	--print("AAAA ES:"..type(actualugen).."\n")
 	if not ugens[actualugen] then ugens[actualugen]=true end 
-	--print(tab..name)
-	--print(" rate:"..ug.calcrate)
-	--print(" #inputs:"..#inputs.."\n")
-	print(tab..name.." rate:"..ug.calcrate.." #inputs:"..#inputs)
+	
+	local inpstr = #inputs == 0 and "" or " #inputs:"..#inputs
+	print(tab..name.." rate:"..ug.calcrate..inpstr)
 	for i,v in ipairs(inputs) do
 		if type(v)=="number" then
-			print(tab.."\t".."constant:",v)
+			print(tab.."\t"..string.format("%f",v))--"const:",v)
 		elseif v.isUGen then
-			v:dumpInputs(tab.."\t",ugens)
+			v:dumpInputs(tab.."\t",synthdef)
 		elseif v.isUGenArr then
-			v:dumpInputs(tab.."\t",ugens)
+			v:dumpInputs(tab.."\t",synthdef)
 		else
 			print("Error compilacion: ")
 			--io.write("name: ",v.name,"\n")
@@ -2027,6 +2046,13 @@ function Pitch.kr(...)
 	local   inp, initFreq, minFreq, maxFreq, execFreq, maxBinsPerOctave, median, ampThreshold, peakThreshold, downSample, clar   = assign({ 'inp', 'initFreq', 'minFreq', 'maxFreq', 'execFreq', 'maxBinsPerOctave', 'median', 'ampThreshold', 'peakThreshold', 'downSample', 'clar' },{ 0.0, 440.0, 60.0, 4000.0, 100.0, 16, 1, 0.01, 0.5, 1, 0 },...)
 	return Pitch:MultiNew{1,2,inp,initFreq,minFreq,maxFreq,execFreq,maxBinsPerOctave,median,ampThreshold,peakThreshold,downSample,clar}
 end
+
+StereoConvolution2L=MultiOutUGen:new{name='StereoConvolution2L'}
+function StereoConvolution2L.ar(...)
+	local   inp, kernelL, kernelR, trigger, framesize, crossfade, mul, add   = assign({ 'inp', 'kernelL', 'kernelR', 'trigger', 'framesize', 'crossfade', 'mul', 'add' },{ nil, nil, nil, 0, 2048, 1, 1.0, 0.0 },...)
+	return StereoConvolution2L:MultiNew{2,2,inp,kernelL,kernelR,trigger,framesize,crossfade}:madd(mul,add)
+end
+
 Demand=MultiOutUGen:new{name='Demand'}
 function Demand.kr(trig,reset,demandUGens)
 	--local ddd = {1,#demandUGens,trig,reset}..TA(demandUGens)
@@ -2056,6 +2082,32 @@ FFTPeak=MultiOutUGen:new{name='FFTPeak'}
 function FFTPeak.kr(...)
 	local   buffer, freqlo, freqhi   = assign({ 'buffer', 'freqlo', 'freqhi' },{ nil, 0, 50000 },...)
 	return FFTPeak:MultiNew{1,2,buffer,freqlo,freqhi}
+end
+MichaelPhaser1 = {}
+function MichaelPhaser1.ar(...)
+		--input, depth = 0.5, rate = 1, fb = 0.3, cfb = 0.1, rot = 0.5pi;
+	local   input, depth,rate, fb,cfb,rot   = assign({'input', 'depth','rate', 'fb','cfb','rot' },{ nil, 0.5, 1, 0.3,0.1,0.5*math.pi },...)
+	local  output, lfo, feedback, ac;
+
+	-- compute allpass coefficient
+	local function ac(freq)
+		local theta = math.pi*SampleDur.ir()*freq;
+		local tantheta = theta:tan()
+		local a1 = (1 - tantheta)/(1 + tantheta);
+		return a1;
+	end
+
+	local lfo = TA({0, rot}):Do( function(w) return SinOsc.ar(rate, w):range(0, 1) end)
+	local feedback = LocalIn.ar(2);
+	local output = input + (feedback*fb) + (feedback:reverse()*cfb);
+	TA({{16, 1600}, {33, 3300}, {48, 4800}, {98, 9800}, {160, 16000}, {260, 22050}}):Do(function(freqs)
+		local a1 = ac(freqs[1] + ((freqs[2] - freqs[1])*lfo));
+		output = FOS.ar(output, a1, -1, a1);   -- 1st order allpass
+	end)
+	output = depth*output;
+	LocalOut.ar(output);
+
+	return ((1 - depth)*input + output);
 end
 ------------------------
 DWGClarinet = UGen:new{name="DWGClarinet"}

@@ -97,7 +97,7 @@ function scEventPlayer:Release(time)
 	self.node = nil
 	self.havenode = false
 end
-function scEventPlayer:FreeNode()
+function scEventPlayer:FreeNode(now)
 	--print("Freenode",self.name,self.node)
 	
 	if self.poly and self.NodeQueue then
@@ -114,7 +114,10 @@ function scEventPlayer:FreeNode()
 --		sendBundle({"/n_query",{self.node}},theMetro:ppq2time(self.ppqPos))
 --	end
 	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
-	sendBundle(msg,theMetro:ppq2time(self.ppqPos)) --,lanes.now_secs())
+	if now then sendBundle(msg)
+	else
+		sendBundle(msg,theMetro:ppq2time(self.ppqPos)) --,lanes.now_secs())
+	end
 	self.node = nil
 end
 function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
@@ -513,7 +516,7 @@ function OscEventPlayer:Reset(all)
 			insert:Reset()
 		end
 	end
-	self:FreeNode()
+	self:FreeNode(true)
 	EventPlayer.Reset(self)
 end
 

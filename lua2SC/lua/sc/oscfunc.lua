@@ -1,5 +1,5 @@
 -----------------------------------------------------------
-OSCFuncLinda = idlelinda
+local OSCFuncLinda = idlelinda
 OSCFunc={filters={}}
 function OSCFunc.newfilter(path,template,func,runonce,block,alt_linda)
 	template = template or "ALL"

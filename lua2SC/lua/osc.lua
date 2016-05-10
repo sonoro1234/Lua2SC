@@ -72,7 +72,8 @@ function oscout:send(...)
 			end
 		end
 	end
-	udp:send(toOSC{addr,msg})
+	--udp:send(toOSC{addr,msg})
+	sendBundle({addr,msg})
 end
 local M = {}
 function M.Send()

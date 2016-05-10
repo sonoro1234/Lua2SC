@@ -120,7 +120,13 @@ local function strconcat(...)
 end
 function thread_print(...)
     --max len is 32*1024-7
-	idlelinda:send("prout",{strconcat(...):sub(1,30000),false})
+	local str = strconcat(...)
+	local strle = #str
+	local blocklen = 30000
+	local numblocks = math.ceil(strle/blocklen)
+	for i=1,numblocks do
+		idlelinda:send("prout",{str:sub((i-1)*blocklen + 1,i*blocklen),false})
+	end
 end
 function thread_error_print(...)
 	idlelinda:send("prout",{strconcat(...):sub(1,30000),true})
@@ -129,7 +135,7 @@ function MidiOpen(options)
 	midilane = pmidi.gen(options.midiin, options.midiout, lanes ,mainlinda,midilinda,{
 	print=thread_print,
 	prerror=thread_error_print,
-	--prerror = print,
+	--prerror = print, 
 	prtable=prtable,idlelinda=idlelinda})
 end
 function MidiClose()

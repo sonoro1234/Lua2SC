@@ -87,16 +87,19 @@ function FoaDecoderKernel:initKernel()
 	return self
 end
 
-function FoaDecoderKernel.newUHJ()
-	local o = FoaDecoderKernel:new{kind="uhj",kernelSize = 512,subjectID=0}
+function FoaDecoderKernel.newUHJ(t)
+	t = t or {}
+	local o = FoaDecoderKernel:new{kind="uhj",kernelSize = t.kernelSize or 512,subjectID=0}
 	return o:initKernel()
 end
-function FoaDecoderKernel.newListen()
-	local o = FoaDecoderKernel:new{kind="listen",kernelSize = 512,subjectID=1002}
+function FoaDecoderKernel.newListen(t)
+	t = t or {}
+	local o = FoaDecoderKernel:new{kind="listen",kernelSize = t.kernelSize or 512,subjectID=1002}
 	return o:initKernel()
 end
-function FoaDecoderKernel.newCIPIC()
-	local o = FoaDecoderKernel:new{kind="cipic",kernelSize = 512,subjectID=21}
+function FoaDecoderKernel.newCIPIC(t)
+	t = t or {}
+	local o = FoaDecoderKernel:new{kind="cipic",kernelSize = t.kernelSize or 512,subjectID=21}
 	return o:initKernel()
 end
 

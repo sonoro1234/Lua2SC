@@ -601,6 +601,26 @@ function serializeTableF(value,name,saved)
 	end
 	return table.concat(string_table)
 end
-
+function PrintTable(ta, maxl, level)
+	maxl = maxl or 1
+	
+	level = level or 0
+	if level >= maxl then return end
+	
+	local sorted_names = {}
+	
+	for k,v in pairs(ta) do
+		table.insert(sorted_names, k)
+	end
+	
+	table.sort(sorted_names)
+	
+	for i, name in ipairs(sorted_names) do
+		print(string.rep("\t",level) .. name, ta[name])
+		if type(ta[name]) == "table" then
+			PrintTable(ta[name], maxl, level + 1)
+		end
+	end
+end
 
 require"sc.TA"

@@ -225,7 +225,7 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 				local tonicT = keydata.escale.notenames[1]
 				local key = tonicT[1]..lilyalts[tonicT[2]+3] --notenumbers[tonic%12]
 				for ii,score in ipairs(scores) do
-					table.insert(score," \\key "..key.." \\"..keydata.escale.name.." ")
+					table.insert(score," \\key "..key.." \\"..(keydata.escale.name or "major") .." ")
 					--table.insert(score," \\key "..key.." \\"..getmode(keydata.escale).." ")
 				end
 			end
@@ -306,6 +306,7 @@ function LILY:SaveStr(file)
 
 		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 		table.insert(score,2,"\\clef \"".."treble".."\" ")
+		table.insert(score,3,"\\time "..self.args.time or "4/4")
 		score[#score+1] = "}"
 		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 		fich:write(table.concat(score))
@@ -313,6 +314,7 @@ function LILY:SaveStr(file)
 		score = scores[2]
 		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 		table.insert(score,2,"\\clef \"".."bass".."\" ")
+		table.insert(score,3,"\\time "..self.args.time or "4/4")
 		score[#score+1] = "}"
 		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 		fich:write(table.concat(score))
@@ -323,6 +325,7 @@ function LILY:SaveStr(file)
 			local score = scores[1]
 			table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 			table.insert(score,2,"\\clef \""..clef.."\" ")
+			table.insert(score,3,"\\time "..self.args.time or "4/4")
 			score[#score+1] = "}"
 			print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 			fich:write(table.concat(score))
@@ -336,8 +339,9 @@ function LILY:close()
 	self.file:close()
 	self.closed = true
 end
-function LILY:Gen(inippq,endppq,players)
+function LILY:Gen(inippq,endppq,players,args)
 	print"LILY:Gen"
+	self.args = args
 	self.inippq = inippq
 	self.endppq = endppq
 	self.score = {}
@@ -409,8 +413,10 @@ function LILY:Gen(inippq,endppq,players)
 		--print(lfs.currentdir())
 		--os.execute([[C:\Program Files\LilyPond\usr\bin\lilypond.exe -fpdf ]].. lilyfile)
 		os.remove(pdffile)
-		os.execute(string.format([["C:\Program Files\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s]],pathnoext(scriptname),lilyfile))
-		print"pdf done"
+		local exestr = string.format([[""C:\Program Files (x86)\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s"]],pathnoext(scriptname),lilyfile)
+		print(exestr)
+		local retcode = os.execute(exestr)
+		print(retcode,"pdf done")
 		--os.execute(pathnoext(scriptname)..".pdf")
 		io.popen(pdffile)
     --end)

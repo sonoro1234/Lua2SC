@@ -27,7 +27,7 @@ function getHostTime()
 end
 function theMetro:GOTO(beat)
 	self:play(nil,beat)
-	self.oldppqPos = beat - self.frame --for calling inside frame_callback
+	--self.oldppqPos = beat - self.frame --for calling inside frame_callback
 end
 function theMetro:play(bpm,beat,run,rate)
 	if rate then self.rate=rate end

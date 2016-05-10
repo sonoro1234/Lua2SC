@@ -1,7 +1,7 @@
 named_events = {events = {}}
 local checkpl = {}
 function named_events:subscribe(name, func, pl,...)
-	prerror("subscribe ev",name)
+	prerror("subscribe ev",name,pl.name,pl)
 
 	checkpl[pl] = checkpl[pl] or {}
 	if checkpl[pl][name] then error("already set") end
