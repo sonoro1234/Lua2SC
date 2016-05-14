@@ -6,6 +6,7 @@ onFrameCallbacks={}
 --table.insert(onFrameCallbacks,function()
 	--ppqVSTFrameLength=theMetro.frame
 --end)
+--prtable(ActionPlayers)
 table.insert(onFrameCallbacks,function()
 	for i,v in ipairs(ActionPlayers) do
 		--println("onframe player:",v.name)
@@ -604,7 +605,7 @@ function ActionEventPlayer:Pull()
 		
 	else
 	--]]
-	if curHostTime.playing > 0 then
+	--if curHostTime.playing > 0 then
 		while self.playing and curHostTime.oldppqPos >= self.ppqPos do
 			--print("Pull ",self.name)
 			if self.curlist then
@@ -622,13 +623,13 @@ function ActionEventPlayer:Pull()
 				break
 			end
 		end
-	end
+	--end
 end
 function ActionEventPlayer:Play()
 	self:Pull()
-	if curHostTime.playing == 0 then
-		return
-	end
+	--if curHostTime.playing == 0 then
+	--	return
+	--end
 	while curHostTime.oldppqPos < self.ppqPos and self.ppqPos <= curHostTime.ppqPos and self.playing do
 			self:playEvent(self.curlist,self.ppqPos)
 			local havenext =self:NextVals()
