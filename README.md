@@ -34,7 +34,7 @@ run: lua lua2sc.lua
 
 1- set Debug/settings
 2- Supercollider/BootSC (wait until booted)
-3- open lua/examples/example.lua
+3- open simple_theme in lua2SC\lua2scsamples\ 
 4- Debug/run  (F6)
 5- Debug/Cancel run (F5)
 
