@@ -955,13 +955,21 @@ function In.ar(bus,numChannels)
 	return In:MultiNew{2,numChannels,bus}
 end
 LocalIn=MultiOutUGen:new{name='LocalIn'}
-function LocalIn.kr(numChannels)
-	numChannels=numChannels or 1;
-	return LocalIn:MultiNew{1,numChannels}
+function LocalIn.kr(numChannels,default)
+	numChannels=numChannels or 1;default = default or 0;
+	local alldefaults = {}
+	for i=1,numChannels do
+		alldefaults[i] = WrapAtUG(default,i)
+	end
+	return LocalIn:MultiNew{1,numChannels,unpack(alldefaults)}
 end
-function LocalIn.ar(numChannels)
-	numChannels=numChannels or 1;
-	return LocalIn:MultiNew{2,numChannels}
+function LocalIn.ar(numChannels,default)
+	numChannels=numChannels or 1;default = default or 0;
+	local alldefaults = {}
+	for i=1,numChannels do
+		alldefaults[i] = WrapAtUG(default,i)
+	end
+	return LocalIn:MultiNew{2,numChannels,unpack(alldefaults)}
 end
 -----------Pan2
 Pan2=MultiOutUGen:new{name="Pan2"}
