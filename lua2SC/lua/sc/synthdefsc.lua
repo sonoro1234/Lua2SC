@@ -322,6 +322,7 @@ function SoundIn.ar(bus,mul,add)
 			return In.ar(NumOutputBuses.ir()+bus[1],#bus):madd(mul,add)
 		else
 			--multichannel expand not implemented TODO
+			error("soundin multichannel not implemented")
 			return In.ar(NumOutputBuses.ir()+bus):madd(mul,add)
 		end
 	end
@@ -894,6 +895,7 @@ function Control.names(names)
 	end
 	return Control
 end
+
 function Control:init(...)
 --println("control init args:")
 --prtable{...}
@@ -953,6 +955,15 @@ end
 function In.ar(bus,numChannels)
 	bus=bus or 0;numChannels=numChannels or 1;
 	return In:MultiNew{2,numChannels,bus}
+end
+function InFeedback.ar(...)
+	local   bus, numChannels   = assign({ 'bus', 'numChannels' },{ 0, 1 },...)
+	return InFeedback:MultiNew{2,numChannels,bus}
+end
+SoundOut = {}
+function SoundOut.ar(bus,numChannels)
+	assert(bus + numChannels <= _run_options.SC_NOUTS)
+	return Out.ar(bus, numChannels)
 end
 LocalIn=MultiOutUGen:new{name='LocalIn'}
 function LocalIn.kr(numChannels,default)
@@ -1349,8 +1360,8 @@ function BinaryOpUGen:init(selector,a,b)
 	self.specialIndex=operators[selector]
 	assert(operators[selector],"This selector does not exist")
 	self.inputs={a,b}
-	local ratea= (type(a)=="number") and 0 or a.calcrate
-	local rateb= (type(b)=="number") and 0 or b.calcrate
+	local ratea = (type(a)=="number") and 0 or a.calcrate
+	local rateb = (type(b)=="number") and 0 or b.calcrate
 	self.calcrate=math.max(ratea,rateb)
 	return self
 end
@@ -1757,6 +1768,7 @@ function SYNTHDef:guiplay(lista)
 	self.playnode = node
 	return self
 end
+
 function UGen:dumpInputs(tab,synthdef)
 	local ugens = synthdef.theUgens
 	tab = tab or ""

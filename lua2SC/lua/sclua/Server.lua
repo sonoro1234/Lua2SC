@@ -10,9 +10,12 @@ Server_metatable.__index = Server_metatable
 
 local BASE_NODE = 0
 function Server(IP, port)
+	assert(_run_options,"no _run_options")
+	assert(not IP and not port,"conecting server not implemented")
 	local s = setmetatable({
 		IP = IP or '127.0.0.1',
-		port = port or 57110,
+		port = port or _run_options.SC_UDP_PORT,
+		options = _run_options,
 		defaultGroup = { nodeID = 1 } -- assimilate the behaviour of SC-lang
 	}, Server_metatable)
 	s.oscout = osc.Send(s.IP, s.port)
@@ -54,6 +57,15 @@ function Server(IP, port)
 	end
 	smet.replace = function(aNode, defName, args)
 		return smet.__call(nil, defName, args, aNode, 4)
+	end
+	smet.wrapnode = function(node)
+		return  setmetatable({
+			type = "synth",
+			server = s,
+			nodeID = node,
+			--name = name,
+			--args = parseArgsX(args),
+		}, Synth_metatable)
 	end
 	smet.__index = smet
 	setmetatable(s.Synth,smet)

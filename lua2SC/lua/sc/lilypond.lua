@@ -325,7 +325,7 @@ function LILY:SaveStr(file)
 			local score = scores[1]
 			table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 			table.insert(score,2,"\\clef \""..clef.."\" ")
-			table.insert(score,3,"\\time "..self.args.time or "4/4")
+			table.insert(score,3,"\\time "..(self.args.time or "4/4"))
 			score[#score+1] = "}"
 			print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 			fich:write(table.concat(score))
@@ -341,7 +341,7 @@ function LILY:close()
 end
 function LILY:Gen(inippq,endppq,players,args)
 	print"LILY:Gen"
-	self.args = args
+	self.args = args or {}
 	self.inippq = inippq
 	self.endppq = endppq
 	self.score = {}

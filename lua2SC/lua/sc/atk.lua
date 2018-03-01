@@ -119,6 +119,20 @@ function AtkKernelConv.ar(inp,kernel,mul,add)
 	return Mix(convs):madd(mul or 1,add or 0)
 end 
 
+AtkKernelPartConvT = {}
+
+function AtkKernelPartConvT.ar(inp,kernel,mul,add)
+	if not isSimpleTable(inp) then
+	end
+	local convs = {}
+	for i=1,#kernel do
+		convs[#convs + 1] = {}
+		for j=1,#kernel[1] do
+			table.insert(convs[#convs],PartConvT.ar(inp[i],1024,kernel[i][j].buffnum,1))
+		end
+	end
+	return Mix(convs):madd(mul or 1,add or 0)
+end 
 
 FoaPanB=MultiOutUGen:new{name='FoaPanB'}
 function FoaPanB.ar(...)

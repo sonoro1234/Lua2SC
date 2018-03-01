@@ -88,6 +88,15 @@ function Settings:Create(parent)
 	grid_sizer:Add(useclockC,wx.wxGBPosition(row,1))
 	row = row + 1
 	
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"OutCh:"),wx.wxGBPosition(row,0))
+	local noutCH = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_NOUTS))
+	grid_sizer:Add(noutCH,wx.wxGBPosition(row,1))
+	row = row + 1
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"InCh:"),wx.wxGBPosition(row,0))
+	local ninCH = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_NINS))
+	grid_sizer:Add(ninCH,wx.wxGBPosition(row,1))
+	row = row + 1
+	
 	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Audio Device:"),wx.wxGBPosition(row,0))
 	local Au_Dev_TC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_AUDIO_DEVICE),wx.wxDefaultPosition)
 	grid_sizer:Add(Au_Dev_TC,wx.wxGBPosition(row,1), wx.wxGBSpan(1,1), wx.wxEXPAND)
@@ -249,6 +258,8 @@ function Settings:Create(parent)
 			self.options.SC_BUFFER_SIZE=bsizeTC:GetValue()
             self.options.SC_SYSTEM_CLOCK = useclockC:IsChecked() and 1 or 0
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
+			self.options.SC_NOUTS = tonumber(noutCH:GetValue())
+			self.options.SC_NINS = tonumber(ninCH:GetValue())
 			--prtable(self.MIDIdev)
 			self:ConfigSave(file_settings)
 			this:Close() 

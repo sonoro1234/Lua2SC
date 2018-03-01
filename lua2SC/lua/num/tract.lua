@@ -1,18 +1,33 @@
 
 local function MakeTractSynth(Tract,syname,args,excifunc,resamp)
-	local defargs = {out=0, gate=1,t_gate=1, freq=60,amp=0.6,pan=0,lossG=0.97,lossL=0.97,lossN=0.95,lossF=1,area1len=8*22/17.5,Gain=1,lmix=1,nmix=1,fA0=1,Ar=Ref(TA():Fill(#Tract.areas.A,1.5)),ArN=Ref(Tract.AreaNoseC),lenT = 17.5,df=Ref(TA():Fill(#Tract.areas.A,1)),noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,thlev=0,fexci=6000,fout=8000}
+	local defargs = {out=0, gate=1,t_gate=1, freq=60,amp=0.6,pan=0,lossG=0.97,lossL=0.97,lossN=0.95,lossF=1,area1len=8*22/17.5,Gain=1,lmix=1,nmix=1,fA0=1,Ar=Ref(TA():Fill(#Tract.areas.A,1.5)),ArN=Ref(Tract.AreaNoseC),lenT = 17.5,df=Ref(TA():Fill(#Tract.areas.A,1)),noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fAc2=1,thlev=0,fexci=6000,fout=8000}
 	local function deffunc(excifunc)
 		return function(newgt)
 		setfenv(excifunc,newgt)
+		if resamp then
+			fA = fA*2
+		end
 		local exci = excifunc()
 		exci = exci*amp*Gain
 		local env=EnvGen.ar(Env.asr(0.001, 1, 0.1), gate, nil,nil,nil,2);
 		local nsecs = math.floor(#Ar*0.5 + 0.5)
-		local pend = (1- fAc)/(nsecs - 2)
+		--local pend = (1- fAc)/(nsecs - 2)
+		local pend = (fAc2- fAc)/(nsecs - 2)
+		---[[
 		for ii=2,nsecs do
 			Ar[ii] = Ar[ii]*(fAc + (ii-2)*pend)
 			--df[ii] = df[ii]*(fAc + (ii-1)*pend)
 		end
+		local pend2 = (1- fAc2)/(#Ar - (nsecs+1))
+		for ii=nsecs+1,#Ar do
+			Ar[ii] = Ar[ii]*(fAc2 + (ii-(nsecs+1))*pend2)
+		end
+		--]]
+		--[[
+		for ii=2,#Ar do
+			Ar[ii] = Ar[ii]*df[ii]
+		end
+		--]]
 		Ar[1] = Ar[1]*fA0
 		local noise = WhiteNoise.ar()*0.1*amp --*EnvGen.ar(Env({0,0,1},{0,0.08}),t_gate)
 		noise = BBandPass.ar(noise,noisef,noisebw) --Resonz.ar(noise,noisef,0.08)
@@ -20,7 +35,8 @@ local function MakeTractSynth(Tract,syname,args,excifunc,resamp)
 		lossF = (17/#Tract.areas.A)*4e-3*lossF
 		--lenT  = EnvGen.kr(Env({lenT,lenT},{rate}),t_gate)
 		local lenf = SampleRate.ir()*lenT*fA/(35000*#Ar)
-		local dels = df*lenf
+		--local dels = df*lenf
+		local dels = TA():Fill(#Tract.areas.A,lenf)
 		local signal 
 		if resamp then
 			signal = HumanVNdelO2.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 
@@ -59,7 +75,7 @@ local function Rd2Times(Rd)
 	return Tp,Te,Ta,alpha,Ee
 end
 
-local function MakeCoralSynth(Tract,name,freqs)
+local function MakeCoralSynth(Tract,name,freqs,resamp)
 	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01},
 	function()
 	
@@ -79,7 +95,7 @@ local function MakeCoralSynth(Tract,name,freqs)
 	exci = LPF.ar(exci,fexci)
 	--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 	return exci
-	end)
+	end,resamp)
 end
 
 
@@ -88,8 +104,8 @@ local function InitSynths(Tract,doinit)
 	function Tract:MakeSynth(syname,args,excifunc,resamp)
 		return MakeTractSynth(self,syname,args,excifunc,resamp)
 	end
-	function Tract:MakeCoralSynth(name,freqs)
-		MakeCoralSynth(self,name,freqs)
+	function Tract:MakeCoralSynth(name,freqs,resamp)
+		MakeCoralSynth(self,name,freqs,resamp)
 	end
 
 	if doinit then
@@ -111,7 +127,7 @@ local function InitSynths(Tract,doinit)
 		return exci
 	end)
 	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.5},function()
-		fA = fA*2 --fA is get from defargs
+		--fA = fA*2 --fA is get from defargs --already done
 		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 		local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)
 		
@@ -177,7 +193,7 @@ Tract.glot.K = 0
 Tract.glot.G = 1
 Tract.glot.H = 0
 Tract.plosive = {}
-Tract.plosive.K = 1 --0.5 --db2amp(-15)
+Tract.plosive.K = 0.2 --.5 --1 --0.5 --db2amp(-15)
 Tract.plosive.G = 0
 Tract.plosive.P  = 0.5
 Tract.plosive.B = 0.25

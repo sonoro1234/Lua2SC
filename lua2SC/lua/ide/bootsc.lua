@@ -182,7 +182,7 @@ function BootSC(use_tcp)
     -- if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
     systemclock_option = " -C "..this_file_settings.SC_SYSTEM_CLOCK.." "
     -- end
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o 2 -i 2 -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
 	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)
