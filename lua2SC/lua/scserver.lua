@@ -169,14 +169,20 @@ function SCFFI:init(options,linda)
 	--local path = wx.wxFileName.SplitPath(options.SCpath)
 	local path = splitpath(options.SCpath)
 	if not self.libsc then
-		print("load from",path..[[liblibscsynth]])
+		print("load from",path..[[liblibscsynth.dll]])
 		require"lfs"
 		local succes,msg = lfs.chdir(path)
         if not succes then
             print("cant chdir "..path,msg)
         end
+		local succes,msg = lfs.attributes(path..[[liblibscsynth.dll]])
+        if not succes then
+            print("cant find "..path,msg)
+		else
+			print("found:",path..[[liblibscsynth.dll]])
+        end
 		--self.libsc = ffi.load(path..[[liblibscsynth]])
-        local succes,res = pcall(ffi.load,path..[[liblibscsynth]])
+        local succes,res = pcall(ffi.load,path..[[liblibscsynth.dll]])
         if succes then 
             self.libsc = res
         else
@@ -215,7 +221,6 @@ function SCFFI:init(options,linda)
 	print("self.theworld",self.theworld)
 
 	self.resp_lane = lanegen(lanebody,globals,"oscresponder")(true,linda)
-	--SCProcess = self.resp_lane
 	local key,respfunc = linda:receive("func")
 	self.respfunc = ffi.cast("ReplyFunc",respfunc)
 	self:send(toOSC({"/notify",{1}}))
@@ -233,7 +238,6 @@ function SCFFI:close()
 		local cancelled,reason = self.resp_lane:cancel(1)
 		if cancelled then
 			self.resp_lane = nil
-			--SCProcess = nil
 		else
 			print("Unable to cancel SCFFI.resp_lane",cancelled,reason)
 		end

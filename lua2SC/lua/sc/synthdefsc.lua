@@ -1937,10 +1937,17 @@ function KLJunction3.ar(input,lossarray,karray,delaylengtharray,mul,add)
 	return KLJunction3:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
 end
 HumanV=UGen:new{name='HumanV'}
-function HumanV.ar(input,loss,rg,rl,rn,areas,mul,add)
+function HumanV.ar(input,loss,rg,rl,areas,mul,add)
 	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
-	rg = rg or 1;rl = rl or -1;rn = rn or 1
-	return HumanV:MultiNew{2,input,loss,rg,rl,rn,unpack(areas)}:madd(mul,add)
+	rg = rg or 1;rl = rl or -1;
+	return HumanV:MultiNew{2,input,loss,rg,rl,unpack(areas)}:madd(mul,add)
+end
+HumanVdel=UGen:new{name='HumanVdel'}
+function HumanVdel.ar(input,loss,rg,rl,dels,areas,mul,add)
+	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
+	rg = rg or 1;rl = rl or -1;
+	local data = concatTables(#dels,dels,#areas,areas)
+	return HumanVdel:MultiNew{2,input,loss,rg,rl,unpack(data)}:madd(mul,add)
 end
 --(input, loss,rg,rl,rn,area1len,numtubes, areas,areasNlen,areasN );
 HumanVN=UGen:new{name='HumanVN'}
@@ -2018,7 +2025,31 @@ function DWGReverbC1C3.ar(inp,len,c1,c3,mix,coefs,perm,doprime)
 	return DWGReverbC1C3:MultiNew(concatTables({ 2,2,inp,len,c1,c3,mix,doprime},coefs,perm))
 end
 DWGReverb = DWGReverbC1C3
-
+DWGReverbC1C3_16 = MultiOutUGen:new{name="DWGReverbC1C3_16"}
+function DWGReverbC1C3_16.ar(inp,len,c1,c3,mix,coefs,perm,doprime)
+	inp = inp or 0;c1 = c1 or 1;c3 = c3 or 1;len = len or 32000;mix = mix or 1
+	coefs = coefs or {1, 0.97498666666667, 0.94997333333333, 0.917248, 0.88323733333333, 0.85901333333333, 0.838704, 0.82528, 0.81702, 0.7978, 0.76396666666667, 0.73362133333333, 0.711996, 0.689556, 0.662228, 0.6349}	
+	doprime = doprime or 1
+  --perm = perm or {0,1,2,3,4,5,6,7} 
+	perm = perm or {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0}
+	--perm = perm or {3,4,5,6,7,0,1,2}
+	--perm = perm or {7,0,1,2,3,4,5,6}
+	assert(#coefs==16)
+	assert(#perm==16)
+	return DWGReverbC1C3_16:MultiNew(concatTables({ 2,2,inp,len,c1,c3,mix,doprime},coefs,perm))
+end
+EarlyRefGen = UGen:new{name='EarlyRefGen'}
+function EarlyRefGen.kr(bufL,bufR,Ps,Pr,L,HW,B,N)
+	bufL = bufL or 0;bufR = bufR or 0
+	Ps = Ps or {0,0,0};Pr = Pr or {0,0,0};L = L or {1,1,1};HW = HW or 0.2;B= B or 0.97;N = N or 0
+	return EarlyRefGen:MultiNew(concatTables({1,bufL,bufR},Ps,Pr,L,{HW,B,N}))
+end
+PartConvT = UGen:new{name='PartConvT'}
+function PartConvT.ar(inp,fftsize,irbufnum,trig)
+	assert(inp)
+	trig = trig or 1
+	return PartConvT:MultiNew{2,inp,fftsize,irbufnum,trig}
+end
 LDelay = UGen:new{name="LDelay"}
 function LDelay.ar(inp, delay)
 	inp=inp or 0;delay = delay or 0;

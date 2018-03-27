@@ -4,7 +4,8 @@ local CachedFiles = {files = {}}
 function CachedFiles:open(name)
 	if self.files[name] then return end
 	self.files[name] = {}
-	local file = io.open(name)
+	if name:sub(1,1) ~= '@' then print("getkeywords dont open:",name," is not a file"); return end
+	local file = io.open(name:sub(2))
 	if not file then print("CachedFiles:Error opening "..tostring(name).."\n"); return  end
 	for i=1,math.huge do
 		local str = file:read()
@@ -18,6 +19,7 @@ function CachedFiles:read(name,line)
 	return self.files[name][line]
 end
 local function getSourceLine(source,line)
+	--print("getSourceLine",source)
 	return CachedFiles:read(source,line)
 end
 ----------------------------------------------------------- 
@@ -56,7 +58,7 @@ local function bodyKeyWords()
 				if type(value)=="function" then
 					table.insert(keyword_table, index.." ")
 					local info = debug.getinfo(value)
-					local src = getSourceLine(info.source:sub(2),info.linedefined)
+					local src = getSourceLine(info.source,info.linedefined)
 					local args 
 					if src then args = src:match(".-function.-(%(.+%))") end
 					sckeywordsSource[index] = {currentline = info.linedefined,source = info.source,def=src,args=args}
@@ -66,7 +68,7 @@ local function bodyKeyWords()
 						if type(v2)=="function" then
 							table.insert(keyword_table, index.."."..i2.." ")
 							local info = debug.getinfo(v2)
-							local src = getSourceLine(info.source:sub(2),info.linedefined)
+							local src = getSourceLine(info.source,info.linedefined)
 							local args 
 							if src then args = src:match(".-function.-(%(.+%))") end
 							sckeywordsSource[index.."."..i2] = {currentline = info.linedefined,source = info.source,def=src,args=args}

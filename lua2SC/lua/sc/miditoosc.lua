@@ -337,7 +337,7 @@ function iguiSendParam(self,parnam)
 		else
 			table.insert(msg[2],{"float",self.params[parnam]})
 		end
-		udp:send(toOSC(msg))
+		sendBundle(msg)
 	end
 end
 function iguinotify(self,control)
@@ -393,7 +393,7 @@ function MidiToOsc.Init(ch)
 		self.insertsgroup = GetNode()
 		--local msg={NEW_GROUP,{self.insertsgroup,1,self.group}}
 		local msg={"/g_new",{self.insertsgroup,3,self.instr_group}}
-		--udp:send(toOSC(msg))
+
 		sendBundle(msg) --,lanes.now_secs())
 	end
 	
@@ -515,9 +515,8 @@ function MidiToOsc.midi2osc(midiEvent)
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 			if nodo then
 				local off = {"/n_set",{nodo,"gate",{"float",0}}}
-				sendBundle(off) --,lanes.now_secs())
-				--local off = {"/n_free",{nodo}}
-				--udp:send(toOSC(off))
+				sendBundle(off)
+
 			else
 				print"off without on"
 			end

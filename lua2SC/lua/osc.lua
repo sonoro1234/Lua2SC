@@ -60,7 +60,6 @@ end
 
 local oscout = {}
 function oscout:send(...)
-	--udp:send(toOSC({select(1, ...),{select(2, ...)}}))
 	local addr = select(1, ...)
 	local msg = {select(2, ...)}
 
@@ -72,7 +71,6 @@ function oscout:send(...)
 			end
 		end
 	end
-	--udp:send(toOSC{addr,msg})
 	sendBundle({addr,msg})
 end
 local M = {}

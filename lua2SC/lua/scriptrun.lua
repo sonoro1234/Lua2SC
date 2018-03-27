@@ -170,20 +170,40 @@ function ScriptRun(pars)
 		if fs then 
 			fs() 
 		else 
-			error("loadfile error:"..tostring(err),2) 
+			for i=2,math.huge do
+				local debuginfo = debug.getinfo(i,"Snlf")
+				if not debuginfo then break end
+				io.stderr:write("aaa"..ToStr(debuginfo).."\n")
+			end
+			--error("loadfile error:"..tostring(err),2)
+			error("loadfile error:"..script..(err:match("(:%d*:)") or ":-1:")..err:match(":%d*:(.+)"),2) 
 		end
 		
 		_initCb()
+		
+		local profile,pr
 		if USE_PROFILE then
-		ProFi = require 'ProFi'
-		ProFi:start()
+		--ProFi = require 'ProFi'
+		--ProFi:start()
+			-- profile = require("jit.profile")
+			-- pr = {}
+			-- profile.start("f", function(th, samples, vmmode)
+				-- local d = profile.dumpstack(th, "f", 1)
+				-- pr[d] = (pr[d] or 0) + samples
+			-- end)
+			require("jit.p").start("3vfsi4m1")--,lua2scpath..'profReport.txt')
 		end
 
 		MsgLoop()
 		
 		if USE_PROFILE then
-		ProFi:stop()
-		ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+		--ProFi:stop()
+		--ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+			-- profile.stop()
+			-- print"luaJIT profiler:-----------------------"
+			-- for d,v in pairs(pr) do print(v, d) end
+			-- print"luaJIT profiler end:-----------------------"
+			require("jit.p").stop()
 		end
 
 		if _resetCb then
@@ -268,6 +288,7 @@ function ScriptRun(pars)
 			local stack,vars = Debugger:get_call_stack(3)
 			print("is require?",debuginfo.func == require)
 			print("is dofile?",debuginfo.func == dofile)
+			print("is loadfile?",debuginfo.func == loadfile)
 			local is_comp_err = debuginfo.func == require or debuginfo.func == dofile or debuginfo.func == loadfile
 			-- if there is a compile error add it to stack and vars
 			local info = compile_error(err,is_comp_err)

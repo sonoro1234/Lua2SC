@@ -77,7 +77,7 @@ SOSsnare=SynthDef("SOSsnare",
 	end)
 sintes[#sintes+1]=SOSsnare
 --]]
----[[
+--[[
 Clock=SynthDef("Clock",{rate=1,t_reset=0,id=0,frame=1,beat=0,run=1},function()
 	local trig =Impulse.ar(rate)
 	local pulsecount=PulseCount.ar(trig*run,t_reset)

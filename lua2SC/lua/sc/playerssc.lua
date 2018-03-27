@@ -38,22 +38,28 @@ function doOscSchedule(window)
            
 end
 function ValsToOsc(msg,lista)
+	local pos = #msg
 	for name,value in pairs(lista) do
-		--table.insert(msg,name)
-		msg[#msg + 1] = name
+		pos = pos + 1
+		--msg[#msg + 1] = name
+		msg[pos] = name
 		if type(value) ~= "table" then
-			--table.insert(msg,{"float",value})
-			msg[#msg + 1] = {"float",value}
+			--msg[#msg + 1] = {"float",value}
+			pos = pos + 1
+			msg[pos] = {"float",value}
 		else
-			--table.insert(msg,{"["})
-			msg[#msg + 1] = {"["}
+			--msg[#msg + 1] = {"["}
+			pos = pos + 1
+			msg[pos] = {"["}
 			for i,val in ipairs(value) do
 				--assert(type(val)=="number")
-				--table.insert(msg,{"float",val})
-				msg[#msg + 1] = {"float",val}
+				--msg[#msg + 1] = {"float",val}
+				pos = pos + 1
+				msg[pos] = {"float",val}
 			end
-			--table.insert(msg,{"]"})
-			msg[#msg + 1] = {"]"}
+			--msg[#msg + 1] = {"]"}
+			pos = pos + 1
+			msg[pos] = {"]"}
 		end
 	end
 	return msg
@@ -441,23 +447,26 @@ function OscEventPlayer:Init()
 	EventPlayer.Init(self)
 	print("OscEventPlayer:Initing",self.name)
 	--prtable(self)
-	if self.group ~= nil then return end
-	self.group = GetNode()
-	local msg={NEW_GROUP,{self.group,0,0}}
-	sendBundle(msg)
-	--sendBundle(msg,lanes.now_secs())
-	
-	self.instr_group = GetNode()
-	msg={"/p_new",{self.instr_group,0,self.group}}
-	sendBundle(msg)
+	if not self.group then --~= nil then return end
+		self.group = GetNode()
+		local msg={NEW_GROUP,{self.group,0,0}}
+		sendBundle(msg)
+	end
+	if not self.instr_group then	
+		self.instr_group = GetNode()
+		msg={"/p_new",{self.instr_group,0,self.group}}
+		sendBundle(msg)
+	end
 	--prtable(self.channel)
 	self.channel=CHN(self.channel or {},self)
 	-----inserts
 	if self.inserts then
-		self.insertsgroup = GetNode()
-		--local msg={NEW_GROUP,{self.insertsgroup,1,self.group}}
-		local msg={"/g_new",{self.insertsgroup,3,self.instr_group}}
-		sendBundle(msg)
+		if not self.insertsgroup then
+			self.insertsgroup = GetNode()
+			--local msg={NEW_GROUP,{self.insertsgroup,1,self.group}}
+			local msg={"/g_new",{self.insertsgroup,3,self.instr_group}}
+			sendBundle(msg)
+		end
 	end
 	self.inserts=self.inserts or {}
 	self._inserts={}
@@ -475,7 +484,7 @@ function OscEventPlayer:Send(fx,lev)
 	self.envios = self.envios or {}
 	local node=GetNode() --lo coloca en la tail
 	table.insert(self.envios,{node=node,level=lev})
-	msg ={"/s_new", {"envio", node, 1, self.group,"busin",{"int32",self.channel.busin},"busout",{"int32",fx.channel.busin},"level",{"float",lev}}}
+	local msg ={"/s_new", {"envio", node, 1, self.group,"busin",{"int32",self.channel.busin},"busout",{"int32",fx.channel.busin},"level",{"float",lev}}}
 	sendBundle(msg)--,lanes.now_secs())
 	return node
 end
@@ -504,8 +513,6 @@ function OscEventPlayer:SetSends()
 	end
 end
 function OscEventPlayer:FreeGroup()
-	--udp:send(toOSC({"/g_freeAll",{self.group}}))
-	--udp:send(toOSC({"/g_deepFree",{self.group}}))
 	sendBundle({"/g_freeAll",{self.group}}) --,lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.group}}) --,lanes.now_secs())
 end
@@ -919,11 +926,8 @@ function resetOSCplayers()
 	for i,v in ipairs(OSCPlayers) do
 		v:FreeGroup()
 	end
-	--CrearEnvios()
+
 	--TODO liberar uno a uno
-	--udp:send(toOSC({"/g_freeAll",{0}}))
-	--udp:send(toOSC({"/g_deepFree",{0}}))
-	--udp:send(toOSC({"/g_dumpTree",{0,1}}))
     sendBundle({"/g_dumpTree",{0,1}}) --,lanes.now_secs())
 	print("end_resetOSCplayers")
 end

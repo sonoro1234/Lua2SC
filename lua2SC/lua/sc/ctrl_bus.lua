@@ -121,7 +121,7 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
 	return bundle
 end
 table.insert(initCbCallbacks,function()
-	print("init ctrl_bus")
+	print("init ctrl_bus synths")
 
 	SynthDef("RAMP",{inip=0,endp=0,time=1,bus=0,t_gate=1},function()
 		--Out.kr(bus,Line.kr(inip,endp,time,t_gate,0,0))

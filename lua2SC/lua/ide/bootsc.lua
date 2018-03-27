@@ -5,7 +5,8 @@
 	local ID_BOOTSC_internal       = NewID()
 	local ID_QUITSC       = NewID()
 	local ID_AUTODETECTSC       = NewID()
-
+	
+local SCProcess
 function InitSCMenu()
 
 	local SCMenu = wx.wxMenu{
@@ -51,17 +52,20 @@ function InitSCMenu()
 		ClearLog(ScLog)
 		lanes.timer(idlelinda,"statusSC",1,0)
 	end)
+	
 	frame:Connect(ID_QUITSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function(event)
 				IDESCSERVER:quit()
 				IDESCSERVER:close()
 				if SCProcess then
-				local res,err = SCProcess:join(0.3)
-				if res == nil then
-					print("Error on SCProcess join:",err)
-				else
-					print("SCProcess.status",SCProcess.status)
-					SCProcess = nil
-				end
+					io.write("trying to join SCProcess\n")
+					local res,err = SCProcess:join(4)
+					if res == nil then
+						print("Error on SCProcess join:",err or "timeout")
+						SCProcess = nil
+					else
+						print("SCProcess.status",SCProcess.status)
+						SCProcess = nil
+					end
 				end
 				--[[
 				if SCProcess then
@@ -86,22 +90,16 @@ function InitSCMenu()
 	frame:Connect(ID_BOOTSC, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(IDESCSERVER.inited==nil)
-				--event:Enable(SCProcess==nil)
 			end)
     frame:Connect(ID_BOOTSC_tcp, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(IDESCSERVER.inited==nil)
-				--event:Enable(SCProcess==nil)
 			end)
 	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(jit and IDESCSERVER.inited==nil)
-				--event:Enable(jit and SCProcess==nil)
 			end)
-	-- frame:Connect(ID_QUITSC, wx.wxEVT_UPDATE_UI,
-			-- function (event)
-				-- event:Enable(SCProcess~=nil)
-			-- end)
+
 end
 function SCProcess_Loop(cmd,bootedlinda)
     local exe,err
@@ -160,6 +158,7 @@ function SCProcess_Loop(cmd,bootedlinda)
 		end
 		--exe:flush()
 	until false
+	return true
 end		
 require"lanesutils"
 function BootSC(use_tcp) 
@@ -178,11 +177,17 @@ function BootSC(use_tcp)
 			plugpath=plugpath..[[;"]]..v..[["]]
 		end
 	end
-	local systemclock_option = ""
-    -- if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
-    systemclock_option = " -C "..this_file_settings.SC_SYSTEM_CLOCK.." "
-    -- end
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" -U ]]..plugpath..[[ -m 65536]]..[[ 2>&1"]]
+	local numcores_option = ""
+    if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
+		numcores_option = " -T 4 "
+	end
+    local systemclock_option = " -C "..this_file_settings.SC_SYSTEM_CLOCK.." "
+	local audio_dev_option = " "
+	if this_file_settings.SC_AUDIO_DEVICE ~= "" then
+		audio_dev_option = [[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" ]]
+	end
+	
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..audio_dev_option..[[ -U ]]..plugpath..numcores_option..[[ -m 65536]]..[[ 2>&1"]]
 	--local cmd=[["]]..this_file_settings.options.SCpath..[["]]	
 	print(cmd)
 	local function sc_print(...)
@@ -222,7 +227,7 @@ function BootSC(use_tcp)
         IDESCSERVER:init(typeserver,file_settings:load_table("settings"),mainlinda)
 		ClearLog(ScLog)
 		udpsclinda:send("Detect",1)
-		lanes.timer(idlelinda,"statusSC",1,0)
+		--lanes.timer(idlelinda,"statusSC",1,0)
 	end
 	menuBar:Check(ID_DUMPOSC, false)
 	

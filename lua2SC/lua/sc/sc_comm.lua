@@ -1,5 +1,5 @@
---- udp comunication
-socket = require("socket")
+--- udp, tcp or internal comunication
+local socket = require("socket")
 require("osclua")
 require("sc.number2string")
 toOSC=osclua.toOSC

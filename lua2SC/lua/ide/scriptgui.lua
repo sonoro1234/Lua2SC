@@ -390,7 +390,7 @@ function wxFuncGraph3(parent,name,label,id,co)
                 if ok then
                     table.insert(vals[j],{i,ret})
                 else
-                    print("funcgraph3:",ret)
+                    print("funcgraph3:",j,x,ret)
                     return
                 end
 			end
@@ -448,12 +448,12 @@ function wxFuncGraph3(parent,name,label,id,co)
 			local str=string.format("%.2f",lab)
 			dc:DrawText(str,0,y1)
 		end
-		local pens = {wx.wxCYAN_PEN,wx.wxGREEN_PEN,wx.wxYELLOW_PEN,wx.wxRED_PEN} --wx.wxBLUE_PEN
-		local brushes = {wx.wxCYAN_BRUSH,wx.wxGREEN_BRUSH,wx.wxYELLOW_BRUSH,wx.wxRED_BRUSH} --wx.wxBLUE_BRUSH,
+		local pens = {wx.wxCYAN_PEN,wx.wxGREEN_PEN,wx.wxBLACK_PEN,wx.wxRED_PEN} --wx.wxBLUE_PEN
+		local brushes = {wx.wxCYAN_BRUSH,wx.wxGREEN_BRUSH,wx.wxBLUE_BRUSH,wx.wxRED_BRUSH} --wx.wxBLUE_BRUSH,
 		local maxbin=#GraphClass.values[1]
 		for npen,vals in ipairs(GraphClass.values) do
 		npen = npen%#pens
-		npen = npen==0 and #pens or npen
+		npen = (npen==0) and #pens or npen
 		dc:SetPen(pens[npen])
 		dc:SetBrush(brushes[npen])
 		if maxbin > 1 then

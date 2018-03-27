@@ -50,10 +50,10 @@ function Server(IP, port)
 		return smet.__call(nil, defName, args, aGroup, 0)
 	end
 	smet.after = function(aNode, defName, args)
-		return smet.__call(nil, defName, args, aNode, 2)
+		return smet.__call(nil, defName, args, aNode, 3)
 	end
 	smet.before = function(aNode, defName, args)
-		return smet.__call(nil, defName, args, aNode, 3)
+		return smet.__call(nil, defName, args, aNode, 2)
 	end
 	smet.replace = function(aNode, defName, args)
 		return smet.__call(nil, defName, args, aNode, 4)
@@ -93,7 +93,8 @@ function Server(IP, port)
 		return busTab
 	end
 	
-	s.Group = function(aGroup,paralel)
+	s.Group = function(aGroup,action,paralel)
+		action = action or 0 -- add to head by default
 		local target 
 		if aGroup == nil then
 			target = BASE_NODE --1 -- default SC server group 
@@ -106,9 +107,9 @@ function Server(IP, port)
 			server = s
 		}, Group_metatable)
         if paralel then
-            s:sendMsg('/p_new', groupTab.nodeID, 0, target) -- add to head by default
+            s:sendMsg('/p_new', groupTab.nodeID, action, target) 
         else
-            s:sendMsg('/g_new', groupTab.nodeID, 0, target) -- add to head by default
+            s:sendMsg('/g_new', groupTab.nodeID, action, target)
         end
 		return groupTab
 	end
@@ -178,6 +179,7 @@ end
 
 -- module:
 return {
-	Server = Server
+	Server = Server,
+	actions = {head=0,tail=1,before=2,after=3,replace=4}
 }
 

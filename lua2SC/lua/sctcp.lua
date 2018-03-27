@@ -1,7 +1,8 @@
-socket = require("socket")
+local socket = require("socket")
 
 local SCTCP={}
 local function ReceiveTCPLoop(host,port,host1,port1)
+	local listenudp
 	local lanes = require "lanes" --.configure()
     --[=[
     local file  = io.open([[C:\LUA\lua2sc\logsctcp.txt]],"w+")
@@ -53,7 +54,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 	set_error_reporting("extended")
 	set_debug_threadname("ReceiveUDPLoop")
 	
-	socket = require("socket")
+	local socket = require("socket")
 	require("osclua")
 	toOSC=osclua.toOSC
 	fromOSC=osclua.fromOSC
@@ -63,6 +64,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 	if not listenudp then print("TCPSC: could not open listenudp:",err) end
     require"sc.number2string"
     local function sendtcp(msg)
+		--io.write("sendtcp:"..msg.."\n")
         msg = int2str(#msg,4)..msg
         listenudp:send(msg)
     end
@@ -72,19 +74,22 @@ local function ReceiveTCPLoop(host,port,host1,port1)
         return listenudp:receive(str2int(len))
     end
 	local function Detect()
+		io.write("Detect\n")
         listenudp:settimeout(1)
 		while true do
 			print("Detect sending /status in loop")
             --sendtcp(toOSC({"/dumpOSC",{1}}))
 			sendtcp(toOSC({"/status",{1}}))
-			print("sended /status in loop")
+			--print("sended /status in loop")
 			local dgram,status = receivetcp()
 			if dgram then -- detected
 				local msg = fromOSC(dgram)
 				print("TCPSC: Detected "..prOSC(msg))
+				--io.write("TCPSC detected: "..prOSC(msg).."\n")
 				sendtcp(toOSC({"/notify",{1}}))
 				lanes.timer(udpsclinda, "wait", 0) --stop
 				udpsclinda:receive(0, "wait" ) --clear
+				lanes.timer(idlelinda,"statusSC",1,0)
 				detected=true
 				break
 			elseif status=="closed" then -- closed, lets wait.
@@ -115,7 +120,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 	local detected=false
 	local Filters = {}
 	while true do
-		--print("SCTCP LOOP...")
+		--io.write("SCTCP LOOP...\n")
 		local dgram,status = receivetcp()
 		-- if cancel_test() then
 			-- io.stderr:write("required to cancel\n")
@@ -137,6 +142,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 					end
 				end
             elseif key == "sendsc" then
+				--io.write("sendsc\n")
                 sendtcp(val)
 			elseif key == "Detect" then
 				Detect()
@@ -155,7 +161,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
             end
             --]]
            -- local msg = fromOSC(dgram)
-			--print("TCPSC: "..prOSC(msg))
+			--io.write("TCPSC: "..prOSC(msg).."\n")
 			--print("SCTCP receives",msg[1])
 			if msg[1]=="/metronom" then
 				--prtable(msg)
@@ -184,6 +190,7 @@ local function ReceiveTCPLoop(host,port,host1,port1)
 			end
 		elseif status == "closed" then --closed ?
 			print("TCPSC: error: "..status..". did you boot SC?")
+			--io.write("TCPSC: error: "..status..". did you boot SC?\n")
 			--try to detect
 			Detect()
 		elseif status == "timeout" then

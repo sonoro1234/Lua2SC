@@ -40,7 +40,6 @@ function ide_main()
 	require"sc.oscfunc"
 	
 	require"pmidi"
-	--require("socket")
 	require("osclua")
 	toOSC=osclua.toOSC
 	fromOSC=osclua.fromOSC
