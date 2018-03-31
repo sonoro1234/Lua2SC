@@ -31,12 +31,12 @@ function ctrl_buses:free_bus(n)
 	table.insert(self.holes,n)
 	--self.allocated[n] = nil
 end
-
+local NEW_CTRL_GROUP = "/p_new" --"/g_new"
 function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 	--prtable(lista)
 	if not player.ctrl_group then
 		player.ctrl_group = GetNode()
-		local msg={"/g_new",{player.ctrl_group,0,player.group}}
+		local msg={NEW_CTRL_GROUP,{player.ctrl_group,0,player.group}}
 		sendBundle(msg)
 	end
 	local bundle = {}
@@ -75,7 +75,7 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
 	--error("SendCtrlSynth_ar")
 	if not player.ctrl_group then
 		player.ctrl_group = GetNode()
-		msg={"/g_new",{player.ctrl_group,0,player.group}}
+		msg={NEW_CTRL_GROUP,{player.ctrl_group,0,player.group}}
 		sendBundle(msg)
 	end
 	local bundle = {}
@@ -533,6 +533,7 @@ function ENVdeg(levels,times,absolute)
 	local relative = not absolute
 	assert(#levels==#times + 1,"levels and times dont match")
 	--add zero initial time
+	-- envlev will repeat first level
 	local tim = deepcopy(times)
 	table.insert(tim,1,0)
 	local ctmap = ctrl_mapper:new{levels=levels}

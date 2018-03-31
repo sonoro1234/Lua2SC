@@ -2,6 +2,8 @@ require( "sc.playersppq")
 require"sc.sc_comm"
 
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
+ROOT_NODE = 0
+INST_ROOT_NODE = 0  --make it a pargroup for paralelizing all OscPlayers
 --------------------------------------------------------
 OsceventQueue = {}
 local OsceventQueueDirty = false
@@ -367,7 +369,7 @@ function MASTER_INIT1()
 	Master.inserts = Master.inserts or {}
 	Master._inserts = Master._inserts or {}
 	print("xxxxxxxxxxxxxxxxxxxxxxxmaster")
-	local msg={NEW_GROUP,{Master.group,1,0}}
+	local msg={NEW_GROUP,{Master.group,1,ROOT_NODE}}
 	sendBundle(msg)
 	--sendBundle(msg,lanes.now_secs())
 	Master:Init(true)
@@ -449,7 +451,7 @@ function OscEventPlayer:Init()
 	--prtable(self)
 	if not self.group then --~= nil then return end
 		self.group = GetNode()
-		local msg={NEW_GROUP,{self.group,0,0}}
+		local msg={NEW_GROUP,{self.group,0,INST_ROOT_NODE}}
 		sendBundle(msg)
 	end
 	if not self.instr_group then	
