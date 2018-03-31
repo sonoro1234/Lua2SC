@@ -626,6 +626,108 @@ function UGen:varlag(time, curvature, warp, start)
 	time = time or 0.1;curvature = curvature or 0; warp = warp or 5
 	return VarLag:MultiNew{self.calcrate,self, time, curvature, warp, start}
 end
+-----------------------------------
+function UGen:dumpInputs(tab,synthdef)
+	local ugens = synthdef.theUgens
+	tab = tab or ""
+	local ug = self
+	local inputs = 0
+	local name = ""
+	local actualugen = ug
+	--local indexout=1
+	
+	if ug.name == "OutputProxy" then
+		inputs = ug.source.inputs
+		name = ug.source.name.."["..ug.index.."]" --"OutputProxy-"..ug.source.name.."-"..ug.index
+		actualugen = ug.source
+		if actualugen.name=="Control" then 
+			name = name .."("..synthdef.paramnames[ug.index].name..")"
+			name = name.." special: "..actualugen.specialIndex 
+		end
+	elseif ug.name == "BinaryOpUGen" or ug.name=="UnaryOpUGen" then
+		inputs = ug.inputs
+		name = ug.selector --ug.name..ug.selector
+	else
+		inputs = ug.inputs
+		name = ug.name
+	end
+	--print("AAAA ES:"..type(actualugen).."\n")
+	if not ugens[actualugen] then ugens[actualugen]=true end 
+	
+	local inpstr = #inputs == 0 and "" or " #inputs:"..#inputs
+	print(tab..name.." rate:"..ug.calcrate..inpstr)
+	for i,v in ipairs(inputs) do
+		if type(v)=="number" then
+			print(tab.."\t"..string.format("%f",v))--"const:",v)
+		elseif v.isUGen then
+			v:dumpInputs(tab.."\t",synthdef)
+		elseif v.isUGenArr then
+			v:dumpInputs(tab.."\t",synthdef)
+		else
+			print("Error compilacion: ")
+			--io.write("name: ",v.name,"\n")
+			print("name: ",tostring(v),"\n")
+		end
+	end
+end
+function UGen:doInputs(syndef,sucesor)
+	--print("doInputs from ",self.name)
+	syndef.indugens = syndef.indugens or {}
+	syndef.ugens = syndef.ugens or {}
+	syndef.constants = syndef.constants or {}
+	local ug=self
+	local inputs=0
+	local actualugen=ug
+	if ug.name=="OutputProxy" then
+		inputs=ug.source.inputs
+		actualugen=ug.source
+	else
+		inputs=ug.inputs
+	end
+	actualugen.sucesors = actualugen.sucesors or {}
+	actualugen.sucesors[#actualugen.sucesors+1]=sucesor
+	--if not syndef.ugens[actualugen] then syndef.ugens[actualugen]=tablelength(syndef.ugens)+1 end
+	if not actualugen.visited then actualugen.visited=true else return end 	
+	actualugen.inputs_toposort=actualugen.inputs_toposort or {}
+	for i,v in ipairs(inputs) do
+		if type(v)=="number" then
+			if not syndef.constants[v] then syndef.constants[v]=tablelength(syndef.constants)+1 end 
+			actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v
+		else
+			--[[
+			--does not work metametod returns always boolean
+			if v.name=="ConstantUGen" then
+				if not syndef.constants[v.val] then syndef.constants[v.val]=tablelength(syndef.constants)+1 end 
+				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v.val
+			else
+			--]]
+			if v.name=="OutputProxy" then
+				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v.source
+			else
+				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v
+			end
+			if v.doInputs == nil then
+				print("dumping false ugen: this:",self.name)
+				print("dumping false ugen:")
+				prtable(v)
+				error("not ugen")
+			end
+			v:doInputs(syndef,actualugen)
+		end
+	end
+	syndef.ugens[actualugen]=#syndef.indugens+1
+	syndef.indugens[#syndef.indugens+1]=actualugen
+	
+end
+
+
+-- function rateNumber(t) {
+		-- if rate == \audio, { ^2 });
+		-- if rate == \control, { ^1 });
+		-- if rate == \demand, { ^3 });
+		-- ^0 // scalar
+-- end
+-------------------------------------------
 --for Mix and MultiNew():madd and table with * or +
 UGenArr={name="UGenArr",isUGenArr=true}
 function TAU(t)
@@ -1491,6 +1593,106 @@ MouseX.signalRange="unipolar"
 MouseY.signalRange="unipolar"
 MouseButton.signalRange="unipolar"
 ----------------------------------------------
+----------------------------------------
+function SynthDef(name,parametersDef,graphfunc)
+	--print("SynthDef: ",name)
+	--prtable(parametersDef)
+	_BUILDSYNTHDEF=SYNTHDef:new()
+	_BUILDSYNTHDEF.name=name
+	_BUILDSYNTHDEF.parameters = {}
+	_BUILDSYNTHDEF.paramnames = {}
+	local parameters={}
+	local paramnames={}
+	local t_parameters={}
+	local t_paramnames={}
+
+	
+	for k,v in pairs(parametersDef) do
+		if type(k)=="number" then
+			error("must suply default value for "..tostring(v))
+		elseif k:sub(1,2)=="t_" then
+			t_paramnames[#t_paramnames+1]=k
+			t_parameters[#t_parameters+1]=v
+		else
+			paramnames[#paramnames+1]=k
+			parameters[#parameters+1]=v
+		end
+	end
+ -- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	-- prtable(paramnames)
+	-- prtable(parameters)
+	-- prtable(t_paramnames)
+	-- prtable(t_parameters)
+	local controls,t_controls
+	if(#t_paramnames>0) then
+		t_controls=TrigControl.names(t_paramnames).kr(unpack(t_parameters))
+	end
+	if(#paramnames>0) then
+		controls=Control.names(paramnames).kr(unpack(parameters))
+	end
+	
+	
+	--prtable(_BUILDSYNTHDEF)
+	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcontrols")
+	-- prtable(controls)
+	-- prtable(t_controls)
+	local paramControl={}
+	local ind=1
+	for i,name in ipairs(t_paramnames) do
+		if type(t_parameters[i])=="table" then
+			local param={}
+			for i2,v2 in ipairs(t_parameters[i]) do
+				param[i2]=t_controls[ind]
+				ind=ind+1
+			end
+			paramControl[name]=param
+		else
+			paramControl[name]=t_controls[ind]
+			ind=ind+1
+		end
+	end
+	ind=1
+	for i,name in ipairs(paramnames) do
+		if type(parameters[i])=="table" then
+			local param=UGenArr:new()--{}
+			for i2,v2 in ipairs(parameters[i]) do
+				param[i2]=controls[ind]
+				ind=ind+1
+			end
+			paramControl[name]=param
+		else
+			paramControl[name]=controls[ind]
+			ind=ind+1
+		end
+	end
+	--prtable(paramControl)
+	--ind=1
+	-- for k,v in pairs(parametersDef) do
+		-- if type(v)=="table" then
+			-- local param={}
+			-- for i2,v2 in ipairs(v) do
+				-- param[i2]=controls[ind]
+				-- ind=ind+1
+			-- end
+			-- paramControl[k]=param
+		-- else
+			-- paramControl[k]=controls[ind]
+			-- ind=ind+1
+		-- end
+	-- end
+	
+	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxparamControl")
+	-- prtable(paramControl)
+	local newgt = paramControl -- create new environment
+	setmetatable(newgt, {__index = _G})
+    --setmetatable(newgt, {__index = getfenv(2)})
+	setfenv(graphfunc, newgt) -- set it
+	--print("amp es "..amp)
+	graphfunc(newgt)
+	local thissynthdef=_BUILDSYNTHDEF
+	_BUILDSYNTHDEF={} --erase global for new builds
+	return thissynthdef
+end
 SYNTHDef={isBuild=false}
 function SYNTHDef:new(o)
 	o = o or {}
@@ -1768,107 +1970,48 @@ function SYNTHDef:guiplay(lista)
 	self.playnode = node
 	return self
 end
+SynthDef("bufferwriter",{busin = 0, bufnum = 0,trig=0},function()
+	local signal = In.ar(busin,1)
+	RecordBuf.ar(signal,bufnum,nil,nil,nil,1,0,trig,2)
+end):store();
+function PlotSynth(synname,nsamples)
+	--nsamples = 100
+	local grafic = addControl{ typex="funcgraph2",width=300,height=300}
 
-function UGen:dumpInputs(tab,synthdef)
-	local ugens = synthdef.theUgens
-	tab = tab or ""
-	local ug = self
-	local inputs = 0
-	local name = ""
-	local actualugen = ug
-	--local indexout=1
-	
-	if ug.name == "OutputProxy" then
-		inputs = ug.source.inputs
-		name = ug.source.name.."["..ug.index.."]" --"OutputProxy-"..ug.source.name.."-"..ug.index
-		actualugen = ug.source
-		if actualugen.name=="Control" then 
-			name = name .."("..synthdef.paramnames[ug.index].name..")"
-			name = name.." special: "..actualugen.specialIndex 
-		end
-	elseif ug.name == "BinaryOpUGen" or ug.name=="UnaryOpUGen" then
-		inputs = ug.inputs
-		name = ug.selector --ug.name..ug.selector
-	else
-		inputs = ug.inputs
-		name = ug.name
-	end
-	--print("AAAA ES:"..type(actualugen).."\n")
-	if not ugens[actualugen] then ugens[actualugen]=true end 
-	
-	local inpstr = #inputs == 0 and "" or " #inputs:"..#inputs
-	print(tab..name.." rate:"..ug.calcrate..inpstr)
-	for i,v in ipairs(inputs) do
-		if type(v)=="number" then
-			print(tab.."\t"..string.format("%f",v))--"const:",v)
-		elseif v.isUGen then
-			v:dumpInputs(tab.."\t",synthdef)
-		elseif v.isUGenArr then
-			v:dumpInputs(tab.."\t",synthdef)
-		else
-			print("Error compilacion: ")
-			--io.write("name: ",v.name,"\n")
-			print("name: ",tostring(v),"\n")
-		end
-	end
+	local bus = GetBus()
+
+	local sclua = require"sclua.Server"
+	local s = sclua.Server()
+	local buff = s.Buffer()
+
+	buff:alloc(nsamples,1)
+	local msg = receiveBundle()
+	--prtable(msg)
+
+
+	local syn2 = s.Synth("bufferwriter",{busin=bus,bufnum=buff.bufnum})
+	local syn
+	OSCFunc.newfilter("/n_end",syn2.nodeID,function(msg) 
+		--prtable(msg)
+		buff:getn(0,nsamples,function(vals)
+			local t = {}
+			for i=1,#vals do
+				t[#t+1] = {(i-1)/44100,vals[i]}
+			end
+			grafic:val(t)
+			syn:free()
+			--prtable(t)
+		end)
+	end)
+
+	syn2:set{trig=1}
+	syn = s.Synth.before(syn2,synname,{out=bus,busout=bus})
 end
-function UGen:doInputs(syndef,sucesor)
-	--print("doInputs from ",self.name)
-	syndef.indugens = syndef.indugens or {}
-	syndef.ugens = syndef.ugens or {}
-	syndef.constants = syndef.constants or {}
-	local ug=self
-	local inputs=0
-	local actualugen=ug
-	if ug.name=="OutputProxy" then
-		inputs=ug.source.inputs
-		actualugen=ug.source
-	else
-		inputs=ug.inputs
-	end
-	actualugen.sucesors = actualugen.sucesors or {}
-	actualugen.sucesors[#actualugen.sucesors+1]=sucesor
-	--if not syndef.ugens[actualugen] then syndef.ugens[actualugen]=tablelength(syndef.ugens)+1 end
-	if not actualugen.visited then actualugen.visited=true else return end 	
-	actualugen.inputs_toposort=actualugen.inputs_toposort or {}
-	for i,v in ipairs(inputs) do
-		if type(v)=="number" then
-			if not syndef.constants[v] then syndef.constants[v]=tablelength(syndef.constants)+1 end 
-			actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v
-		else
-			--[[
-			--does not work metametod returns always boolean
-			if v.name=="ConstantUGen" then
-				if not syndef.constants[v.val] then syndef.constants[v.val]=tablelength(syndef.constants)+1 end 
-				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v.val
-			else
-			--]]
-			if v.name=="OutputProxy" then
-				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v.source
-			else
-				actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v
-			end
-			if v.doInputs == nil then
-				print("dumping false ugen: this:",self.name)
-				print("dumping false ugen:")
-				prtable(v)
-				error("not ugen")
-			end
-			v:doInputs(syndef,actualugen)
-		end
-	end
-	syndef.ugens[actualugen]=#syndef.indugens+1
-	syndef.indugens[#syndef.indugens+1]=actualugen
-	
+function SYNTHDef:plot(seg)
+	self:send()
+	PlotSynth(self.name,seg*44100)
 end
 
-
--- function rateNumber(t) {
-		-- if rate == \audio, { ^2 });
-		-- if rate == \control, { ^1 });
-		-- if rate == \demand, { ^3 });
-		-- ^0 // scalar
--- end
 ----------------------------------------------------
 ------------pseudo ugens
 Splay=UGen:new{name='Splay'}
@@ -2180,104 +2323,4 @@ IIRf = UGen:new{name="IIRf"}
 function IIRf.ar(inp, kB,kA)
 	inp = inp or 0;
 	return IIRf:MultiNew(concatTables({2,inp, #kB,#kA},kB,kA))
-end
-----------------------------------------
-function SynthDef(name,parametersDef,graphfunc)
-	--print("SynthDef: ",name)
-	--prtable(parametersDef)
-	_BUILDSYNTHDEF=SYNTHDef:new()
-	_BUILDSYNTHDEF.name=name
-	_BUILDSYNTHDEF.parameters = {}
-	_BUILDSYNTHDEF.paramnames = {}
-	local parameters={}
-	local paramnames={}
-	local t_parameters={}
-	local t_paramnames={}
-
-	
-	for k,v in pairs(parametersDef) do
-		if type(k)=="number" then
-			error("must suply default value for "..tostring(v))
-		elseif k:sub(1,2)=="t_" then
-			t_paramnames[#t_paramnames+1]=k
-			t_parameters[#t_parameters+1]=v
-		else
-			paramnames[#paramnames+1]=k
-			parameters[#parameters+1]=v
-		end
-	end
- -- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	-- prtable(paramnames)
-	-- prtable(parameters)
-	-- prtable(t_paramnames)
-	-- prtable(t_parameters)
-	local controls,t_controls
-	if(#t_paramnames>0) then
-		t_controls=TrigControl.names(t_paramnames).kr(unpack(t_parameters))
-	end
-	if(#paramnames>0) then
-		controls=Control.names(paramnames).kr(unpack(parameters))
-	end
-	
-	
-	--prtable(_BUILDSYNTHDEF)
-	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcontrols")
-	-- prtable(controls)
-	-- prtable(t_controls)
-	local paramControl={}
-	local ind=1
-	for i,name in ipairs(t_paramnames) do
-		if type(t_parameters[i])=="table" then
-			local param={}
-			for i2,v2 in ipairs(t_parameters[i]) do
-				param[i2]=t_controls[ind]
-				ind=ind+1
-			end
-			paramControl[name]=param
-		else
-			paramControl[name]=t_controls[ind]
-			ind=ind+1
-		end
-	end
-	ind=1
-	for i,name in ipairs(paramnames) do
-		if type(parameters[i])=="table" then
-			local param=UGenArr:new()--{}
-			for i2,v2 in ipairs(parameters[i]) do
-				param[i2]=controls[ind]
-				ind=ind+1
-			end
-			paramControl[name]=param
-		else
-			paramControl[name]=controls[ind]
-			ind=ind+1
-		end
-	end
-	--prtable(paramControl)
-	--ind=1
-	-- for k,v in pairs(parametersDef) do
-		-- if type(v)=="table" then
-			-- local param={}
-			-- for i2,v2 in ipairs(v) do
-				-- param[i2]=controls[ind]
-				-- ind=ind+1
-			-- end
-			-- paramControl[k]=param
-		-- else
-			-- paramControl[k]=controls[ind]
-			-- ind=ind+1
-		-- end
-	-- end
-	
-	-- println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxparamControl")
-	-- prtable(paramControl)
-	local newgt = paramControl -- create new environment
-	setmetatable(newgt, {__index = _G})
-    --setmetatable(newgt, {__index = getfenv(2)})
-	setfenv(graphfunc, newgt) -- set it
-	--print("amp es "..amp)
-	graphfunc(newgt)
-	local thissynthdef=_BUILDSYNTHDEF
-	_BUILDSYNTHDEF={} --erase global for new builds
-	return thissynthdef
 end

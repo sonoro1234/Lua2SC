@@ -48,8 +48,18 @@ function Buffer_metatable:get(index)
 	self.server:sendMsg('/b_get', self.bufnum, index)
 end
 
-function Buffer_metatable:getn(index, numsamples)
-	self.server:sendMsg('/b_get', self.bufnum, index, numsamples)
+function Buffer_metatable:getn(index, numsamples,action)
+	--self.server:sendMsg('/b_getn', self.bufnum, index, numsamples)
+	if action then
+		OSCFunc.newfilter("/b_setn",self.bufnum,function(msg2)
+			local t = {}
+			for i=4,#msg2[2] do
+				t[#t+1] = msg2[2][i]
+			end
+			action(t)
+		end)
+	end
+	ThreadServerSend(self.server:Msg('/b_getn', self.bufnum, index, numsamples))
 end
 
 function Buffer_metatable:__gc() 

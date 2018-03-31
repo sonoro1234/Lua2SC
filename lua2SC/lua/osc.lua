@@ -59,6 +59,20 @@ end
 
 
 local oscout = {}
+function oscout:Msg(...)
+	local addr = select(1, ...)
+	local msg = {select(2, ...)}
+
+	for i,v in ipairs(msg) do
+		if type(v)=="number" then
+			-- if not integer make it float osc
+			if math.floor(v) ~= v then
+				msg[i] = {"float",v}
+			end
+		end
+	end
+	return {addr,msg}
+end
 function oscout:send(...)
 	local addr = select(1, ...)
 	local msg = {select(2, ...)}
@@ -71,11 +85,10 @@ function oscout:send(...)
 			end
 		end
 	end
-	sendBundle({addr,msg})
+	sendBundle({addr,msg})--,lanes.now_secs())
 end
 local M = {}
 function M.Send()
-	--initudp()
 	return oscout
 end
 return M

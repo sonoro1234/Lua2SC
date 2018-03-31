@@ -9,7 +9,7 @@ local Server_metatable = {}
 Server_metatable.__index = Server_metatable
 
 local BASE_NODE = 0
-function Server(IP, port)
+local function Server(IP, port)
 	assert(_run_options,"no _run_options")
 	assert(not IP and not port,"conecting server not implemented")
 	local s = setmetatable({
@@ -145,6 +145,10 @@ end
 
 function Server_metatable:sendMsg(...)
 	self.oscout:send(...)
+end
+
+function Server_metatable:Msg(...)
+	return self.oscout:Msg(...)
 end
 
 function Server_metatable:notify(arg)

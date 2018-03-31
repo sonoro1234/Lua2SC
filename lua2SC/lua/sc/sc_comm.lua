@@ -52,6 +52,13 @@ function sendBlocked(msg)
 	if not dgram then print(err2,"Not receiving from SCSYNTH\n");error(err2) end
     return fromOSC(dgram)
 end
+
+--receiving in socket after sendBundle
+function receiveBundle()
+	local dgram,err2 = udp:receive()
+	if not dgram then print(err2,"Not receiving from SCSYNTH\n");error(err2) end
+    return fromOSC(dgram)
+end
 --------------------------------
 
 
@@ -311,6 +318,11 @@ function initinternal()
 end
 GetNode=IDGenerator(1001)
 GetBus=IDGenerator(16) --first after audio busses
+
+function ThreadServerSend(msg)
+	prtable(msg)
+	udpsclinda:send("sendsc",toOSC(msg))
+end
 --dumpOSC=0
 function InitSCCOMM()
 	print("InitSCCOMM")

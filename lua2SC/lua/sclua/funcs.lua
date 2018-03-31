@@ -33,7 +33,7 @@ function nextBufNum()
 	bufnum = bufnum + 1
 	return bufnum
 end
-
+nextBufNum = GetBuffNum or nextBufNum
 function nextNodeID()
 	nodeID = nodeID + 1
 	return nodeID
