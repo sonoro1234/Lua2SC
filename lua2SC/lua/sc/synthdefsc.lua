@@ -1970,10 +1970,12 @@ function SYNTHDef:guiplay(lista)
 	self.playnode = node
 	return self
 end
-SynthDef("bufferwriter",{busin = 0, bufnum = 0,trig=0},function()
-	local signal = In.ar(busin,1)
-	RecordBuf.ar(signal,bufnum,nil,nil,nil,1,0,trig,2)
-end):store();
+table.insert(initCbCallbacks,function()
+	SynthDef("bufferwriter",{busin = 0, bufnum = 0,trig=0},function()
+		local signal = In.ar(busin,1)
+		RecordBuf.ar(signal,bufnum,nil,nil,nil,1,0,trig,2)
+	end):store();
+end)
 function PlotSynth(synname,nsamples)
 	--nsamples = 100
 	local grafic = addControl{ typex="funcgraph2",width=300,height=300}
