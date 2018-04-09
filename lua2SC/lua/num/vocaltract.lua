@@ -97,7 +97,7 @@ local function Rd2Times(Rd)
 end
 
 local function MakeCoralSynth(Tract,name,freqs,resamp)
-	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.05,jitter=0.01},
+	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.05,jitter=0.01,vibampfac=20},
 	function()
 	
 	--local freqs = TA():series(10,1 - 0.002*5,0.002)
@@ -138,7 +138,7 @@ local function LFexci()
 		--local exci = VeldhuisGlot.ar(vibratoF,Tp,Te,Ta,namp,nwidth)*glot*3*Ee
 		exci =  WhiteNoise.ar()*plosive*Ee + exci
 		exci = Mix(exci)
-		exci = LPF.ar(exci,fexci)*jitfac2
+		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,vibdeph*vibampfac,1)
 		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 		return exci
 	end
@@ -158,8 +158,8 @@ local function InitSynths(Tract)
 	Tract:MakeCoralSynth("coralO2",freqs,true)
 
 
-	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01},LFexci)
-	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01},LFexci,true)
+	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci)
+	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci,true)
 	Tract:MakeSynth("sinte_chen",{OQ=0.8,asym=0.6,Sop=0.4,Scp=0.12,vibrate=5,vibdeph=0.01,rv=0.1},function()
 		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 		local exci = ChenglottalU.ar(vibratoF,OQ,asym,Sop,Scp)*glot*3
