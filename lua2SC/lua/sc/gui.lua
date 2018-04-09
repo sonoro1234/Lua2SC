@@ -2,7 +2,7 @@
 --gui types
 GUITypes = {onOffButton=0, kickButton=1, transientLed=2, stickLed=3, knob=4, hSlider=5, vSlider=6, label=7, menu=8, xypad=9, text=10, vuMeter=11}
 
-wxGUITypes = {[0]="toggle","button","none", "none","knob","hslider", "vslider", "label", "combo", "none", "text", "vumeter","funcgraph","funcgraph2"}
+wxGUITypes = {[0]="toggle","button","none", "none","knob","hslider", "vslider", "label", "combo", "none", "text", "vumeter","funcgraph","funcgraph2","funcgraph3"}
 
 --list of all controls by tag
 local guiControlTable = {}
@@ -289,6 +289,37 @@ function Toggle(name,func)
 					func(value)
 	end}
 	return addControl(newcontrol)
+end
+
+function PlotBus(bus,secs)
+	local nsamples = math.floor(secs*44100)
+	local window = addWindow{w=350,h=370}
+	--local panel = addPanel{}
+	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
+
+	local sclua = require"sclua.Server"
+	local s = sclua.Server()
+	local buff = s.Buffer()
+
+	buff:alloc(nsamples,1)
+	local msg = receiveBundle()
+	--prtable(msg)
+
+	local syn2 = s.Synth("bufferwriter",{busin=bus,bufnum=buff.bufnum},nil,1)--tail
+
+	OSCFunc.newfilter("/n_end",syn2.nodeID,function(msg) 
+
+		buff:getn(0,nsamples,function(vals)
+			local t = {}
+			for i=1,#vals do
+				t[#t+1] = {(i-1)/44100,vals[i]}
+			end
+			grafic:val(t)
+			guiUpdate()
+		end)
+	end)
+
+	syn2:set{trig=1}
 end
 
 gui = {default_control = "knob"}

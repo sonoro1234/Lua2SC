@@ -320,7 +320,7 @@ GetNode=IDGenerator(1001)
 GetBus=IDGenerator(16) --first after audio busses
 
 function ThreadServerSend(msg)
-	prtable(msg)
+	--prtable(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
 end
 --dumpOSC=0

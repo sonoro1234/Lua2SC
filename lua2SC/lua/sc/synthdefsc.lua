@@ -888,9 +888,9 @@ function Out:donew(rate,...)
 	--get last in ...
 	--print(select('#',...))
 	--prtable{...}
-	local channels=select(select('#',...),...)
 	--get everything but last in ... which is channels(Must take care about nils)
 	local args={...}
+	local channels=select(select('#',...),...)
 	args[#args]=nil
 	--append channels to arg
 	if channels.isUGen then
@@ -1923,7 +1923,9 @@ function SYNTHDef:send(block)
 	if block==nil then block=true end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}
 	if block then
-		local res = sendBlocked(msg)
+		sendBundle(msg)
+		local res = receiveBundle()
+		--local res = sendBlocked(msg)
 		print(prOSC(res))
 		--assert(res[2][1]=="/d_recv")
 		assert(res[1]=="/done")
@@ -1978,7 +1980,8 @@ table.insert(initCbCallbacks,function()
 end)
 function PlotSynth(synname,nsamples)
 	--nsamples = 100
-	local grafic = addControl{ typex="funcgraph2",width=300,height=300}
+	local window = addWindow{w=350,h=370}
+	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
 
 	local bus = GetBus()
 
@@ -1995,12 +1998,14 @@ function PlotSynth(synname,nsamples)
 	local syn
 	OSCFunc.newfilter("/n_end",syn2.nodeID,function(msg) 
 		--prtable(msg)
+		--print"n_ended"
 		buff:getn(0,nsamples,function(vals)
 			local t = {}
 			for i=1,#vals do
 				t[#t+1] = {(i-1)/44100,vals[i]}
 			end
 			grafic:val(t)
+			guiUpdate()
 			syn:free()
 			--prtable(t)
 		end)
@@ -2008,10 +2013,12 @@ function PlotSynth(synname,nsamples)
 
 	syn2:set{trig=1}
 	syn = s.Synth.before(syn2,synname,{out=bus,busout=bus})
+
 end
 function SYNTHDef:plot(seg)
 	self:send()
 	PlotSynth(self.name,seg*44100)
+	return self
 end
 
 ----------------------------------------------------

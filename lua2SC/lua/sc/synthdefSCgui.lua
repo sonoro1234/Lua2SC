@@ -195,7 +195,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 			end
 		end
 	end
-	guiUpdate()
+	--guiUpdate()
 	return parameterCtl
 end
 
