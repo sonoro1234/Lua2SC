@@ -7,7 +7,10 @@ function _initCb()
 	print("_initCb\n")
 	
 	--guiSizesDelayed=guiGetSize()
-	for i,v in ipairs(initCbCallbacks) do v() end
+	for i,v in ipairs(initCbCallbacks) do 
+		--print(debug.getinfo(v).short_src)
+		v() 
+	end
     if initCb then
         initCb()
     end	
@@ -19,15 +22,13 @@ end
 resetCbCallbacks = resetCbCallbacks or {}
 function _resetCb()
 	print("_resetCb\n")
-  
+	if resetCb then
+        resetCb()
+    end
 	for i=#resetCbCallbacks,1,-1 do
 		print("resetcallback: ",i)
 		resetCbCallbacks[i]()
 	end
-    if resetCb then
-        resetCb()
-    end
-
 end
 
 function _onFrameCb() end
