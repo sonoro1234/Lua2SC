@@ -40,20 +40,28 @@ function SendCtrlSynth(synname,lista,paramname,player,beatTime)
 		sendBundle(msg)
 	end
 	local bundle = {}
-	player.ctrl_buses = player.ctrl_buses or {buses = {},nodes = {}}
+	player.ctrl_buses = player.ctrl_buses or {buses = {},nodes = {},synnames = {}}
 	if player.ctrl_buses.buses[paramname] then
-		local on = {"/n_set", {player.ctrl_buses.nodes[paramname],"t_gate",1}}
-		getMsgLista(on,lista)
-		--sendBundle(on,theMetro:ppq2time(beatTime))
-		--table.insert(bundle,on)
-        bundle[#bundle+1] = on
-		--local mapmsg = {"/n_map",{player.node,paramname,{"int32",player.ctrl_buses.buses[paramname]}}}
-		--sendBundle(mapmsg,theMetro:ppq2time(beatTime))
+		if player.ctrl_buses.synnames[paramname] == synname then
+			local on = {"/n_set", {player.ctrl_buses.nodes[paramname],"t_gate",1}}
+			getMsgLista(on,lista)
+			bundle[#bundle+1] = on
+		else
+			player.ctrl_buses.synnames[paramname] = synname
+			--free old
+			bundle[#bundle+1] = {"/n_free",{player.ctrl_buses.nodes[paramname]}}
+			local node = player.ctrl_buses.nodes[paramname]
+			local bus = player.ctrl_buses.buses[paramname]
+			local on = {"/s_new", {synname, node, 0, player.ctrl_group, "bus", {"int32",bus},"t_gate",1}}
+			getMsgLista(on,lista)
+			bundle[#bundle+1] = on
+		end
 	else
 		local node = GetNode()
 		local bus = ctrl_buses:new_bus()
 		player.ctrl_buses.buses[paramname] = bus
 		player.ctrl_buses.nodes[paramname] = node
+		player.ctrl_buses.synnames[paramname] = synname
 		local on = {"/s_new", {synname, node, 0, player.ctrl_group, "bus", {"int32",bus},"t_gate",1}}
 		getMsgLista(on,lista)
 		--sendBundle(on,theMetro:ppq2time(beatTime))
@@ -79,9 +87,10 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
 		sendBundle(msg)
 	end
 	local bundle = {}
-    player.ctrl_buses = player.ctrl_buses or {buses = {},nodes = {}}
+    player.ctrl_buses = player.ctrl_buses or {buses = {},nodes = {},synnames = {}}
     local firstbus
     if player.ctrl_buses.buses[paramname] then
+		assert(player.ctrl_buses.synnames[paramname] == synname,"change not implemented")
         firstbus = player.ctrl_buses.buses[paramname]
 		local nodes = player.ctrl_buses.nodes[paramname]
 		for i=1,#envel_ar do
@@ -100,6 +109,7 @@ function SendCtrlSynth_ar(synname,envel_ar,paramname,player,beatTime)
         player.ctrl_buses.buses[paramname] = firstbus
 		player.ctrl_buses.nodes[paramname] = {}
 		local nodes = player.ctrl_buses.nodes[paramname]
+		player.ctrl_buses.synnames[paramname] = synname
 		for i=1,#envel_ar do
 			local node = GetNode()
 			--table.insert(nodes,node)
@@ -203,13 +213,18 @@ ctrl_mapper.__div = function (a,b)
 end
 --------------------------
 
-function RAMP(inip,endp,time)
+function RAMP(inip,endp,time,relative)
 	local ctmap = ctrl_mapper:new{inip=inip,endp=endp,time=time}
 	function ctmap:verb(paramname,player,beatTime,beatLen)
 		local time = self.time or beatLen
+		time = relative and beatLen*time or time
+		--print("RAMP time",time,beats2Time(time))
 		return SendCtrlSynth("RAMP",{inip=self.inip ,endp=self.endp ,time=beats2Time(time)},paramname,player,beatTime)
 	end
 	return ctmap
+end
+function RAMPr(inip,endp,time)
+	return RAMP(inip,endp,time,true)
 end
 function SINE(freq,phase,amp,add)
 	local ctmap = ctrl_mapper:new{}
@@ -290,6 +305,7 @@ local function E2ppq(levels,timesppq,curves,beatLen,istime,loopnode)
 	--print(prOSC(times))
 	levels = LastPad(levels,MAX_ENVEL_STEPS + 1)
 	times = ZeroPad(times,MAX_ENVEL_STEPS)
+	--prtable(levels,times)--,curves,nil,loopnode)
 	return Env(levels,times,curves,nil,loopnode):prAsArray()
 end
 
@@ -360,7 +376,9 @@ function ENV(levels,times,curves,relative,istime,loopnode)
 		end
 		--print(prOSC(tim))
 		local envel = E2ppq(lev,tim,cur,relative and beatLen or 1,istime,loopnode)
+	--prtable(envel)
 		local envel_ar = make_multienvel(envel)
+	--prtable(envel_ar)
 		if #envel_ar == 1 then
 			return SendCtrlSynth("ENVEL",envel_ar[1],paramname,player,beatTime)
 		else
