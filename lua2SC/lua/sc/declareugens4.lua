@@ -2046,7 +2046,8 @@ function SharedOut.kr(...)
 end
 OffsetOut=Out:new{name='OffsetOut'}
 function OffsetOut.kr(...)
-		return OffsetOut:donew(1)
+	local   bus, channelsArray   = assign({ 'bus', 'channelsArray' },{ nil, nil },...)
+		return OffsetOut:donew(1,bus,channelsArray)
 end
 function OffsetOut.ar(...)
 	local   bus, channelsArray   = assign({ 'bus', 'channelsArray' },{ nil, nil },...)
@@ -3319,8 +3320,8 @@ function LinExp.ar(...)
 	return LinExp:MultiNew{2,inp,srclo,srchi,dstlo,dsthi}
 end
 K2A=UGen:new{name='K2A'}
-function K2A.ar(...)
-	local   inp   = assign({ 'inp' },{ 0.0 },...)
+function K2A.ar(inp)
+	--local   inp   = assign({ 'inp' },{ 0.0 },...)
 	return K2A:MultiNew{2,inp}
 end
 DegreeToKey=UGen:new{name='DegreeToKey'}

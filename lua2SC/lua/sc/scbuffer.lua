@@ -19,7 +19,7 @@ function Buffer(channels,samples)
 end
 function FileBuffer(filename,chan,samples,inisample)
 	chan = chan or -1
-	samples=samples or 0
+	samples=samples or -1
 	inisample=inisample or 0
 	local buf=SCBuffer:new({filename = filename,channels=-1,samples=samples,inisample=inisample,isFileBuffer=true,chan=chan})
 	table.insert(Buffers,buf)
@@ -113,7 +113,14 @@ function SCBuffer:allocRead(block)
 end
 function SCBuffer:allocReadChannel(block)
 	assert(self.filename)
-	local msg = {"/b_allocReadChannel",{{"int32",self.buffnum},{"string",self.filename},{"int32",self.inisample},{"int32",self.samples},{"int32",self.chan}}}
+	local channels
+	if type(self.chan)=="number" then
+		channels = {self.chan}
+	else
+		channels = deepcopy(self.chan)
+	end
+	channels[#channels+1] = {"blob",""} --supernova needs that
+	local msg = {"/b_allocReadChannel",{{"int32",self.buffnum},{"string",self.filename},{"int32",self.inisample},{"int32",self.samples},unpack(channels)}}
 	if block==nil then block=false end
 	if block then
 		local res = sendBlocked(msg)

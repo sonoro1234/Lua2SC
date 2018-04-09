@@ -78,7 +78,8 @@ local function Server(IP, port)
    			server = s
    		}, Buffer_metatable)
    		if path ~= nil then -- if user provides a filepath (else s/he might want to allocate an empty buf)
-		   s:sendMsg('/b_allocRead', bufferTab.bufnum, path)
+			s:sendMsg('/b_allocRead', bufferTab.bufnum, path)
+			receiveBundle()
    		end
    		return bufferTab
 	end
@@ -113,7 +114,9 @@ local function Server(IP, port)
         end
 		return groupTab
 	end
-	
+	s.ParGroup = function(aGroup,action)
+		return s.Group(aGroup,action,true)
+	end
    return s
 end
 
