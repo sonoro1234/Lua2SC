@@ -54,7 +54,8 @@ function FoaDecoderKernel:initPath()
 	elseif lfs.attributes(Atk.portabKernelDir) and lfs.attributes(Atk.portabKernelDir).mode == "directory" then
 		kernelLibPath = Atk.portabKernelDir
 	else
-		error("is Atk instaled?")
+		prtable(Platform)
+		error("is Atk instaled in above directories?")
 	end
 	return kernelLibPath .. "/FOA/decoders/" .. self.kind
 end
@@ -142,10 +143,11 @@ end
 
 --[[
 dec = FoaDecoderKernel.newCIPIC()
+--dec = FoaDecoderKernel.newUHJ()
 --prtable(dec)
 
 SynthDef("test",{},function() 
-	local sig =  EnvGen.kr(Env.adsr(), Impulse.kr(3)) * PinkNoise.ar(0.8);
+	local sig =  EnvGen.ar(Env.adsr(), Impulse.ar(3)) * PinkNoise.ar(0.8)*10;
 	sig = FoaPanB.ar(sig,MouseX.kr(math.pi,-math.pi),MouseY.kr(math.pi,-math.pi))
 	prtable(sig)
 	sig = AtkKernelConv.ar(sig,dec.kernel)
