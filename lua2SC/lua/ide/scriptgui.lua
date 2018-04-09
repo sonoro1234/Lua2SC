@@ -399,7 +399,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 		GraphClass.valf=valf
 		GraphClass.values = vals or GraphClass.values
         if autorange then
-            print(autorange)
+           -- print(autorange)
             miny=math.huge
             maxy=-math.huge
             for j,val in ipairs(vals) do
@@ -1251,7 +1251,7 @@ function CreateScriptGUI()
 		--manager:Update()
 	end
 	--control tipex ,control (and control.window) label insobj
-	--co tipex tag label name menu
+	--co tipex tag label name menu    panel
 	local function CreateControl(co)
 		local control={}
 		control.typex=co.typex
@@ -1429,13 +1429,18 @@ function CreateScriptGUI()
 	local function AddControl(const)
 		--print("xxxxxxxxxxxxxxxxAddControl control N:",const.tag)
 		--prtable(const)
-		
-		const.panel = const.panel or "main"
+
+		if const.window then
+			const.panel = const.panel or ScriptWindows[const.window]
+		else
+			const.panel = const.panel or "main"
+		end	
 		local container=Sizers[const.panel]
 		assert(container.sizer,"Sizer doesnot exist")
+
 		local control=CreateControl(const)
 		--DisplayOutput("xxxxxxxxxxxxxxxxAddControl control N:",const.tag)
-		--print(control)
+		--print(control) window
 		--prtable(control)
 		if control then
 			local prop=0
@@ -1589,6 +1594,10 @@ function CreateScriptGUI()
 		ConnectComands(ScriptWindows[win.tag])
 		ScriptWindows[win.tag]:Show()
 		
+		local mainsizer = wx.wxBoxSizer(wx.wxHORIZONTAL)
+		Sizers[ScriptWindows[win.tag]] = {sizer=mainsizer,type="hbox"}
+		ScriptWindows[win.tag]:SetSizer(mainsizer)
+		mainsizer:SetSizeHints(ScriptWindows[win.tag])
 		--[[
 		local ScriptGUI = ScriptWindows[win.tag]
 		local ScriptGUImainSizer=wx.wxBoxSizer(wx.wxHORIZONTAL)
@@ -1655,7 +1664,7 @@ function CreateScriptGUI()
 	--{type,parent,cols,rows,tag(auto),name}
 	function AddPanel(pan)
 		local ScriptGUI = ScriptWindows[pan.window] or ScriptGUI
-		pan.parent=pan.parent or "main"
+		pan.parent = pan.parent or (pan.window and Sizers[ScriptWindows[pan.window]]) or "main"
 		local panel
 		if pan.type=="vbox" then
 			if pan.name then
@@ -1720,7 +1729,7 @@ function CreateScriptGUI()
 	
 
 	ScriptGUImainSizer=wx.wxBoxSizer(wx.wxHORIZONTAL)
-	Sizers["main"]={sizer=ScriptGUImainSizer}
+	Sizers["main"]={sizer=ScriptGUImainSizer,type="hbox"}
 	ScriptGUI:SetAutoLayout(true)
 	ScriptGUI:SetSizer( ScriptGUImainSizer )	
 	ScriptGUImainSizer:SetSizeHints(ScriptGUI)
@@ -1739,7 +1748,7 @@ function CreateScriptGUI()
         function(event)
 			local requestmore = true
 			for mes=1,1000 do
-				local key,val=scriptguilinda:receive(0,"guiModify","guiUpdate","guiSetValue","guiGetValue","guiSetLabel","/vumeter" )
+				local key,val=scriptguilinda:receive(0,"guiModify","guiSetValue","guiUpdate","guiGetValue","guiSetLabel","/vumeter" )
 				if val then
 					--only one linda key, order in creation is important for layout
 					if key=="guiModify" then
@@ -1761,6 +1770,8 @@ function CreateScriptGUI()
 						else
 							assert(false)
 						end
+					elseif key=="guiSetValue" then
+						SetValueControl(val[1],val[2])
 					elseif key=="guiUpdate" then
 						--ScriptGUI:SetSizer(ScriptGUImainSizer)
 						-- hide collapsibles
@@ -1774,8 +1785,12 @@ function CreateScriptGUI()
 						ScriptGUImainSizer:SetSizeHints(ScriptGUI)
 						manager:GetPane(ScriptGUI):FloatingSize(ScriptGUI:GetSize()):BestSize(ScriptGUI:GetSize()):MinSize(wx.wxSize(100,100))
 						manager:Update()
-					elseif key=="guiSetValue" then
-						SetValueControl(val[1],val[2])
+						for k,win in pairs(ScriptWindows) do
+							local siz = Sizers[win]
+							siz.sizer:Layout()
+							siz.sizer:SetSizeHints(win)
+							-- win:Refresh()
+						end
 					elseif key=="guiGetValue" then
 						GetValueControl(val)
 					elseif key=="guiSetLabel" then

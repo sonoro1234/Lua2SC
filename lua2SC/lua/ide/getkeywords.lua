@@ -52,7 +52,7 @@ local function bodyKeyWords()
 			require("sc.oscfunc")
             require("sc.named_events")
 			require("sc.MetronomLanes")
-			require("sclua.Server")
+			sclua = require("sclua.Server")
 			local keyword_table = {}
             for index, value in pairs(_G) do
 				if type(value)=="function" then
