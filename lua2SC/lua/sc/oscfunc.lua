@@ -17,7 +17,7 @@ end
 function OSCFunc.clearfilters(path,template,alt_linda)
 	local handleOSCFuncLinda = alt_linda or OSCFuncLinda
 	--print("OSCFunc.clearfilters ",path," ",template)
-	udpsclinda:send("clearFilter",{path,handleOSCFuncLinda})
+	
 	if OSCFunc.filters[path] then
 		for i,filter in pairs(OSCFunc.filters[path]) do
 			if (template==nil) or (template==filter.template) then
@@ -26,8 +26,19 @@ function OSCFunc.clearfilters(path,template,alt_linda)
 			end
 		end
 	end
+	if #OSCFunc.filters[path] == 0 then
+		udpsclinda:send("clearFilter",{path,handleOSCFuncLinda})
+		OSCFunc.filters[path] = nil
+	end
+end
+function OSCFunc.clearall(alt_linda)
+	local handleOSCFuncLinda = alt_linda or OSCFuncLinda
+	for path,v in pairs(OSCFunc.filters) do
+		OSCFunc.clearfilters(path)
+	end
 end
 function OSCFunc.handleOSCReceive(msg)
+	--print("OSCFunc.handleOSCReceive",msg[1])
 	if msg[1]=="/fail" then
 		print(tb2st(msg))
 	end
@@ -43,5 +54,14 @@ function OSCFunc.handleOSCReceive(msg)
 	end
 end
 
-return function(linda) OSCFuncLinda = linda end
+--this is called from scriptrun
+--but not from ide
+return function(linda) 
+	OSCFuncLinda = linda 
+	table.insert(resetCbCallbacks,
+		function()
+			print"clear OSCFunc"
+			OSCFunc.clearall() 
+		end)
+end
 ------------------------------------------

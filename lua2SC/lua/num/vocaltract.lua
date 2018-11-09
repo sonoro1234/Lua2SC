@@ -124,8 +124,8 @@ end
 local function LFexci()
 		--freq = freq + freq*WhiteNoise.kr(0.01)
 		--freq = freq + freq * LFDNoise3.kr(50,jitter)
-		local jitfac = LFDNoise3.kr(10,jitter,1)
-		local jitfac2 = LFDNoise3.kr(10,jitter*6,1)
+		local jitfac = LFDNoise3.kr(2*10,jitter,1)
+		local jitfac2 = LFDNoise3.kr(2*10,jitter*6,1)
 		
 		--local jsig = LFDNoise3.kr(4)+LFDNoise3.kr(10) +LFDNoise3.kr(20)*0.5
 		--local jitfac = 1 + jsig*0.5*jitter

@@ -205,8 +205,14 @@ function noteToNumber(noteSpec)
 end
 function notesToNumbers(noteSt)
 	local res=TA{}
+	if type(noteSt)=="string" then
 	for w in noteSt:gmatch("([^,]+),?") do
        res[#res + 1]=noteToNumber(w)
+	end
+	else --table
+	for i,w in ipairs(noteSt) do
+		res[#res + 1]=noteToNumber(w)
+	end
 	end
 	return res
 end

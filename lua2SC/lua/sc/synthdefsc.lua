@@ -1282,6 +1282,7 @@ function GVerb.ar(in_a,roomsize,revtime,damping,inputbw,spread,drylevel,earlyref
 	roomsize=roomsize or 10;revtime=revtime or 3;damping=damping or 0.5;inputbw=inputbw or 0.5;spread=spread or 15;drylevel=drylevel or 1;earlyreflevel=earlyreflevel or 0.7;taillevel=taillevel or 0.5;maxroomsize=maxroomsize or 300;
 	return GVerb:MultiNew{2,2,in_a,roomsize,revtime,damping,inputbw,spread,drylevel,earlyreflevel,taillevel,maxroomsize}
 end
+FreeVerb2=MultiOutUGen:new{name='FreeVerb2'}
 function FreeVerb2.ar(...)
 	local   inp, in2, mix, room, damp, mul, add   = assign({ 'inp', 'in2', 'mix', 'room', 'damp', 'mul', 'add' },{ nil, nil, 0.33, 0.5, 0.5, 1.0, 0.0 },...)
 	return FreeVerb2:MultiNew{2,2,inp,in2,mix,room,damp}:madd(mul,add)
@@ -1920,7 +1921,7 @@ end
 function SYNTHDef:send(block)
 	print(self.name,"sent to server")
 	if not self.compiledStr then self:makeDefStr() end
-	if block==nil then block=true end
+	if block==nil then block=false end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}
 	if block then
 		sendBundle(msg)
@@ -1934,14 +1935,14 @@ function SYNTHDef:send(block)
     end
 	return self
 end
-function SYNTHDef:store()
+function SYNTHDef:store(block)
 	self:writeDefFile()
-	self:send()
+	self:send(block)
 	return self
 end
 function SYNTHDef:play(lista,tail)
 	lista = lista or {}
-	self:send()
+	self:send(true)
 	self.playnode = GetNode()
 	local on = {"/s_new", {self.name, self.playnode, tail and 1 or 0, 0}}
 	
@@ -1958,7 +1959,7 @@ function SYNTHDef:stop()
 end
 function SYNTHDef:guiplay(lista)
 	lista = lista or {}
-	self:store()
+	self:store(true)
 	local node = GetNode()
 	local on = getMsgLista({"/s_new", {self.name, node, 0, 0}},lista)
 	sendBundle(on)
@@ -1973,17 +1974,28 @@ function SYNTHDef:guiplay(lista)
 	return self
 end
 table.insert(initCbCallbacks,function()
-	SynthDef("bufferwriter",{busin = 0, bufnum = 0,trig=0},function()
+	SynthDef("bufferwriter",{busin = 0, bufnum = 0,trig=0,run=0},function()
 		local signal = In.ar(busin,1)
-		RecordBuf.ar(signal,bufnum,nil,nil,nil,1,0,trig,2)
+		RecordBuf.ar(signal,bufnum,nil,nil,nil,run,0,trig,2)
 	end):store();
 end)
-function PlotSynth(synname,nsamples)
-	--nsamples = 100
+table.insert(initCbCallbacks,function()
+	SynthDef("bufferwriter_k",{busin = 0, bufnum = 0,trig=0,run=0},function()
+		local signal = In.kr(busin,1)
+		RecordBuf.kr(signal,bufnum,nil,nil,nil,run,0,trig,2)
+	end):store();
+end)
+
+function PlotSynth(synname,secs,outrate)
+	print("outrate",outrate)
+	outrate = outrate or 2
 	local window = addWindow{w=350,h=370}
 	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
 
-	local bus = GetBus()
+	local bus = outrate==2 and GetBus() or GetCtrlBus(1)
+	local nsamples = outrate==2 and 44100*secs or 44100*secs/64
+	nsamples = math.floor(nsamples)
+	local smp2sec = outrate==2 and 1/44100 or 64/44100
 
 	local sclua = require"sclua.Server"
 	local s = sclua.Server()
@@ -1992,18 +2004,31 @@ function PlotSynth(synname,nsamples)
 	buff:alloc(nsamples,1)
 	local msg = receiveBundle()
 	--prtable(msg)
+	local bufwr
+	if outrate == 1 then
+		bufwr = "bufferwriter_k"
+	else
+		bufwr = "bufferwriter"
+	end
 
-
-	local syn2 = s.Synth("bufferwriter",{busin=bus,bufnum=buff.bufnum})
+	local syn2 = s.Synth(bufwr,{busin=bus,bufnum=buff.bufnum,run=0})
 	local syn
 	OSCFunc.newfilter("/n_end",syn2.nodeID,function(msg) 
 		--prtable(msg)
 		--print"n_ended"
 		buff:getn(0,nsamples,function(vals)
 			local t = {}
+--[[
 			for i=1,#vals do
-				t[#t+1] = {(i-1)/44100,vals[i]}
+				t[#t+1] = {(i-1)*smp2sec,vals[i]}
 			end
+--]]
+---[[
+			for i=1,#vals do
+				t[#t+1] = {(i-1)*smp2sec,vals[i]}
+				t[#t+1] = {(i)*smp2sec,vals[i]}
+			end
+--]]
 			grafic:val(t)
 			guiUpdate()
 			syn:free()
@@ -2011,13 +2036,14 @@ function PlotSynth(synname,nsamples)
 		end)
 	end)
 
-	syn2:set{trig=1}
+	syn2:set{run=1,trig=1}
 	syn = s.Synth.before(syn2,synname,{out=bus,busout=bus})
 
 end
 function SYNTHDef:plot(seg)
 	self:send()
-	PlotSynth(self.name,seg*44100)
+	local outrate = self.outputugens[1].calcrate
+	PlotSynth(self.name,seg,outrate)
 	return self
 end
 

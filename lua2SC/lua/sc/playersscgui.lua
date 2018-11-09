@@ -35,20 +35,24 @@ function vumet(parent)
 	end
 end
 
-function _FreqScope(panel,scopesynth,busin)
-	local scopesynth = scopesynth or "freqScopeLstLocal" 
-	local panel=panel or panelMasterV
-	local busin=busin or 0
-	addControl{value={0,0}, typex="freqscope",width=512,height=400,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=512,rate=4,panel=panel}
+function _FreqScope(panel,scopesynth,busin,maxfreq)
+	scopesynth = scopesynth or "freqScopeLstLocal" 
+	panel=panel or panelMasterV
+	busin=busin or 0
+	maxfreq = maxfreq or 22050
+	return addControl{value={0,0}, typex="freqscope",width=512,height=400,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=512,rate=4,panel=panel,maxfreq=maxfreq}
 end
-function FreqScopeSt(...)
-	local args = {...}
-	table.insert(initCbCallbacks,function()_FreqScope(nil,"freqScopeLmnLocal",0)end)
-	table.insert(initCbCallbacks,function()_FreqScope(nil,"freqScopeLmnLocal",1)end)
+function FreqScopeSt(panel,scopesynth,busin,maxfreq)
+	busin = busin or 0
+	table.insert(initCbCallbacks,function()_FreqScope(panel,scopesynth,busin,maxfreq)end)
+	table.insert(initCbCallbacks,function()_FreqScope(panel,scopesynth,busin+1,maxfreq)end)
 end
-function FreqScope(...)
-	local args = {...}
-	table.insert(initCbCallbacks,function()_FreqScope(unpack(args))end)
+function FreqScope(panel,scopesynth,busin,maxfreq)
+	--local args = {...}
+	--table.insert(initCbCallbacks,function()_FreqScope(unpack(args))end)
+	table.insert(initCbCallbacks,function() _FreqScope(panel,scopesynth,busin,maxfreq)end)
+	--return _FreqScope(unpack(args))
+	--return _FreqScope(panel,scopesynth,busin,maxfreq)
 end
 
 function _Scope(panel,scopesynth,busin)

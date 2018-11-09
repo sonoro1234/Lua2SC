@@ -25,6 +25,8 @@ function _resetCb()
 	if resetCb then
         resetCb()
     end
+	sendBundle{"/g_freeAll",{0}}
+	sendBundle({"/g_deepFree",{0}})
 	for i=#resetCbCallbacks,1,-1 do
 		print("resetcallback: ",i)
 		resetCbCallbacks[i]()

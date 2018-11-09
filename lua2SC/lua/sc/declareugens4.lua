@@ -3411,7 +3411,7 @@ function Vibrato.kr(...)
 	return Vibrato:MultiNew{1,freq,rate,depth,delay,onset,rateVariation,depthVariation,iphase,trig}
 end
 function Vibrato.ar(...)
-	local   freq, rate, depth, delay, onset, rateVariation, depthVariation, iphase   = assign({ 'freq', 'rate', 'depth', 'delay', 'onset', 'rateVariation', 'depthVariation', 'iphase' },{ 440.0, 6, 0.02, 0.0, 0.0, 0.04, 0.1, 0.0 },...)
+	local   freq, rate, depth, delay, onset, rateVariation, depthVariation, iphase,trig   = assign({ 'freq', 'rate', 'depth', 'delay', 'onset', 'rateVariation', 'depthVariation', 'iphase',"trig" },{ 440.0, 6, 0.02, 0.0, 0.0, 0.04, 0.1, 0.0,1 },...)
 	return Vibrato:MultiNew{2,freq,rate,depth,delay,onset,rateVariation,depthVariation,iphase}
 end
 Formant=UGen:new{name='Formant'}
@@ -4468,7 +4468,7 @@ end
 StereoConvolution2L=MultiOutUGen:new{name='StereoConvolution2L'}
 function StereoConvolution2L.ar(...)
 	local   inp, kernelL, kernelR, trigger, framesize, crossfade, mul, add   = assign({ 'inp', 'kernelL', 'kernelR', 'trigger', 'framesize', 'crossfade', 'mul', 'add' },{ nil, nil, nil, 0, 2048, 1, 1.0, 0.0 },...)
-	return StereoConvolution2L:MultiNew{2,inp,kernelL,kernelR,trigger,framesize,crossfade}:madd(mul,add)
+	return StereoConvolution2L:MultiNew{2,2,inp,kernelL,kernelR,trigger,framesize,crossfade}:madd(mul,add)
 end
 FincoSprottM=MultiOutUGen:new{name='FincoSprottM'}
 function FincoSprottM.ar(...)

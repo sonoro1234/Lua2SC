@@ -1,7 +1,7 @@
 --- miditoosc
 require"sc.midi"
 --require"sc.playerssc"
-require"sc.synthdefsc"
+--require"sc.synthdefsc"
 table.insert(initCbCallbacks,function() SynthDef("ClickSynth",{out=0,freq=200,gate=1},function()
 	local env = EnvGen.kr{Env.asr(0,1,0),gate,doneAction=2}
 	local sig = env*SinOsc.ar(freq)
@@ -488,9 +488,11 @@ function MidiToOsc.midi2osc(midiEvent)
 		--end
 
     elseif midiEvent.type==midi.noteOff then
-
+		
 		if mono then
-			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			--local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			local nodo = thisMidiOsc.node
+			assert(nodo)
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 			for i,v in ipairs(thisMidiOsc.keylist) do
 				if v == midiEvent.byte2 then

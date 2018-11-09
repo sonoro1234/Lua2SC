@@ -334,7 +334,7 @@ function InitSCCOMM()
 		udp ,udpB = initinternal()
 		print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY)
 	elseif sc_comm_type == "tcp" then
-		SERVER_CLOCK_LATENCY = 0.4
+		SERVER_CLOCK_LATENCY = 0.2
 		udp ,udpB = inittcp()
 	else
 		udp ,udpB = {}, {}
@@ -355,7 +355,8 @@ end
 --table.insert(resetCbCallbacks,ResetUDP)
 function ResetUDP()
 	print("reset udps")
-	sendBundle{"/clearSched",{}}
+	sendBlocked{"/sync",{1}}
+	--sendBundle{"/clearSched",{}}
 	--local ret,err=udp:send(toOSC({"/dumpOSC",{dumpOSC}}))
 	--if not ret then print(err) end
 	sendBundle{"/g_freeAll",{0}}

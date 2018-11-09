@@ -635,7 +635,126 @@ function wxFuncGraph3BAK(parent,name,label,id,co)
 	GraphClass.window=wxwindow
 	return GraphClass 
 end
----------------------------wxFuncGraph
+---------------------------wxTimePlot
+function wxTimePlot(parent,name,label,id,co)
+	id = id or wx.wxID_ANY
+	local miny = co.miny or 0
+	local maxy = co.maxy or 1
+	local height=co.height or 150
+	local width= co.width or 200
+	local label_height=0
+	local name_height=0
+	local extra_w=0
+	local data_table = {}
+	for i=0,width-1 do
+		data_table[i+1]=0
+	end
+	
+	local penwidth=1
+	
+	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
+	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
+	wxwindow:SetLabel(label)
+	
+	local GraphClass={value={0,0},window=wx.wxNULL,customclass="GraphClass"}
+	
+	function GraphClass.SetValue(_,val)
+		table.insert(data_table,1,val)
+		table.remove(data_table)
+		GraphClass.value=val
+		wxwindow:Refresh()
+	end
+	function GraphClass.SetLabel(_,val)
+		wxwindow:SetLabel(val)
+		wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
+		--wxwindow:RefreshRect()
+	end
+	
+
+	local function Draw(dc)
+		--local pen = TableToPen({ colour = { 0, 0, 0 }, width = penwidth, style = wx.wxSOLID })
+		--dc:SetPen(pen)
+		--pen:delete()
+		
+		--dc:DrawRectangle(0, name_height, width+extra_w*2,height);
+		dc:SetPen(wx.wxBLACK_PEN)
+		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:DrawRectangle(extra_w, name_height, width ,height);
+		local parts = 10
+		local widthf=width/parts
+		for i=0,parts do
+			local x1=widthf*i + extra_w
+			dc:DrawLine(x1, name_height, x1,name_height + height);
+			local lab = i*widthf
+			local str = string.format("%.2f",lab)
+			dc:DrawText(str,x1,0)
+		end
+		local heightf=height/parts
+		local heightyf = (maxy - miny)/parts
+		for i=0,parts do
+			local y1=height + name_height - heightf*i
+			dc:DrawLine(extra_w, y1, width+extra_w,y1);
+			local lab = miny + heightyf*i
+			local str=string.format("%.2f",lab)
+			dc:DrawText(str,0,y1)
+		end
+		
+		dc:SetPen(wx.wxGREEN_PEN)
+		dc:SetBrush(wx.wxGREEN_BRUSH)
+		local maxbin=width
+		if maxbin > 1 then
+			--local facX=width/(maxbin-1)
+			local facY=height/(maxy-miny)
+			--[[
+			local x1=0
+			local y1=height-(GraphClass.value[1]-miny)*facY
+			for i=2,maxbin do
+				local x2=(i-1)*facX
+				local y2=height-(GraphClass.value[i]-miny)*facY
+				dc:DrawLine(x1, y1, x2,y2);
+				x1=x2
+				y1=y2
+			end
+			--]]
+			---[[
+			local x
+			local y
+			local points = {}
+			for i=0,maxbin-1 do
+				x=i
+				y=-(data_table[i+1]-miny)*facY
+				points[#points +1]={x,y}
+			end
+			dc:DrawLines(points,0,height)
+			--]]
+		end
+		
+		
+		--dc:SetFont(wx.wxNORMAL_FONT)
+		--dc:DrawLabel(wxwindow:GetLabel(),wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
+		--dc:DrawText(name,0,0)
+		dc:SetPen(wx.wxNullPen)
+		dc:SetBrush(wx.wxNullBrush)
+
+	end
+	
+	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
+			local dc = wx.wxPaintDC(wxwindow)
+			Draw(dc)
+			dc:delete() 
+		end)
+    wxwindow:Connect(wx.wxEVT_ERASE_BACKGROUND, function(event) 
+			event:Skip() 
+		end) 
+    
+	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+			wxwindow:Refresh();
+		end)
+	GraphClass.window=wxwindow
+	return GraphClass 
+end
 ---------------------------wxFuncGraph
 function wxFuncGraph(parent,name,label,id,co)
 	id = id or wx.wxID_ANY
@@ -746,10 +865,11 @@ function wxFreqScope(parent,name,label,id,co)
 	co.bins = co.bins or 512
 	co.rate = co.rate or 4
 	co.scopebufnum = co.scopebufnum or 0
+	co.maxfreq = co.maxfreq or 22050
 	local fftsize=co.rate * co.bins
 
 
-	local msg ={"/s_new", {co.scope, co.node, 1, 0, "in",{"int32",co.busin}, "busin",{"int32",co.busin},"rate",{"int32",co.rate},"phase",{"float",co.phase}, "scopebufnum", {"int32",co.scopebufnum},"fftsize", {"int32",fftsize}}}
+	local msg ={"/s_new", {co.scope, co.node, 1, 0, "in",{"int32",co.busin}, "busin",{"int32",co.busin},"rate",{"int32",co.rate},"phase",{"float",co.phase}, "scopebufnum", {"int32",co.scopebufnum},"fftsize", {"int32",fftsize},"maxfreq",{"float",co.maxfreq}}}
 
 	
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
@@ -801,9 +921,10 @@ function wxFreqScope(parent,name,label,id,co)
 			--local str=string.format("%.0f",(i*22050/10))
 			local str
 			if co.scope == "freqScopeLocal" then --linear
-				str=string.format("%.0f",22050*i/10)
+				str=string.format("%.0f",co.maxfreq*i/10)
 			else	--logarithmic
-				str=string.format("%.0f",22050*((fftsize*0.5)^(i/10 -1)))
+				--str=string.format("%.0f",co.maxfreq*((fftsize*0.5)^(i/10 -1)))
+				str=string.format("%.0f",((fftsize/44100)^(i/10-1))*(co.maxfreq^(i/10)))
 			end
 			dc:DrawText(str,x1,0)
 		end
@@ -1302,6 +1423,9 @@ function CreateScriptGUI()
 		elseif co.typex=="funcgraph3" then
 			control.control=wxFuncGraph3(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
 			control.customclass=true
+		elseif co.typex=="timeplot" then
+			control.control=wxTimePlot(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
+			control.customclass=true
 		elseif co.typex=="freqscope" then
 			control.control=wxFreqScope(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
 			control.customclass=true
@@ -1402,6 +1526,8 @@ function CreateScriptGUI()
 				elseif co.typex=="funcgraph2" then
 					co.control:SetValue(val)
 				elseif co.typex=="funcgraph3" then
+					co.control:SetValue(val)
+				elseif co.typex=="timeplot" then
 					co.control:SetValue(val)
 				elseif co.typex=="freqscope" then
 					co.control:SetValue(val)
@@ -1590,7 +1716,7 @@ function CreateScriptGUI()
 		win.h = win.h or 200
 		win.x = win.x or 200
 		win.y = win.y or 200
-		ScriptWindows[win.tag] = wx.wxFrame(frame,wx.wxID_ANY,"window script",wx.wxPoint(win.x,win.y),wx.wxSize(win.w,win.h),wx.wxMINIMIZE_BOX + wx.wxMAXIMIZE_BOX + wx.wxRESIZE_BORDER + wx.wxSYSTEM_MENU + wx.wxCAPTION + wx.wxCLIP_CHILDREN + wx.wxFRAME_FLOAT_ON_PARENT)
+		ScriptWindows[win.tag] = wx.wxFrame(frame,wx.wxID_ANY,win.label or "window script",wx.wxPoint(win.x,win.y),wx.wxSize(win.w,win.h),wx.wxMINIMIZE_BOX + wx.wxMAXIMIZE_BOX + wx.wxRESIZE_BORDER + wx.wxSYSTEM_MENU + wx.wxCAPTION + wx.wxCLIP_CHILDREN + wx.wxFRAME_FLOAT_ON_PARENT)
 		ConnectComands(ScriptWindows[win.tag])
 		ScriptWindows[win.tag]:Show()
 		

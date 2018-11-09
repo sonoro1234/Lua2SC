@@ -12,14 +12,8 @@ function Synth_metatable:set(args)
 	self.server:sendMsg('/n_set', self.nodeID, unpack(parseArgsX(args)) )
 end
 
-function Synth_metatable:setn(controlNameNum, args)
-	local nn = funcs.parseArgsX(controlNameNum)
-	local args = funcs.parseArgsX(controlNameNum)
-	for arg, val in pairs(args) do 
-		table.insert(nn, arg)
-		table.insert(nn, val)
-	end
-	self.server:sendMsg('/n_setn', self.nodeID, unpack(nn))
+function Synth_metatable:setn(args)
+	self.server:sendMsg('/n_setn', self.nodeID, unpack(args))
 end
 
 function Synth_metatable:above(aSynth)
@@ -50,16 +44,21 @@ function Synth_metatable:getNodeID()
 	return self.nodeID
 end
 
-function Synth_metatable:map(name, aBus)
-	self.server:sendMsg('/n_map', self.nodeID, name, aBus.busIndex )
+function Synth_metatable:map(args)
+	self.server:sendMsg('/n_map', self.nodeID, unpack(parseArgsX(args,true)) )
 end
 
 function Synth_metatable:mapn(args) -- mapping from control bus
 	self.server:sendMsg('/n_mapn', self.nodeID, unpack(args) )
 end
 
-function Synth_metatable:mapa(args) -- mapping from control bus
-	self.server:sendMsg('/n_mapa', self.nodeID, unpack(args) )
+function Synth_metatable:mapa(args) -- mapping from audio bus
+	local msg = {}
+	for k,v in pairs(args) do
+		msg[#msg+1] = k
+		msg[#msg+1] = {"int32",v}
+	end
+	self.server:sendMsg('/n_mapa', self.nodeID, unpack(msg) )
 end
 
 -- support garbage collection:

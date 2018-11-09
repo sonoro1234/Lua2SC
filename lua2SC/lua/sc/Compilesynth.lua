@@ -1,5 +1,5 @@
 --require"init.init"
-require "sc.synthdefsc"
+--require "sc.synthdefsc"
 sintes={}
 --require "synthdefSCGUI"
 ---------------------------------------------------------------------------------------------
@@ -141,12 +141,13 @@ sintes[#sintes+1]=checkbadval
 
 ---[[
 --Logarithmic stereomix localbuffer
-freqScopeLstLocal=SynthDef("freqScopeLstLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02, },function ()
+freqScopeLstLocal=SynthDef("freqScopeLstLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02,maxfreq=22050  },function ()
 	local signal=Mix(In.ar(busin,2))*0.5
 	--dumpObj(LocalBuf)
 	local buf=LocalBuf(fftsize,1)
 	PV_MagSmear(FFT(buf,signal),1)
-	local pos=fftsize*0.5
+	local posfac = maxfreq/SampleRate.ir()
+	local pos=fftsize*posfac
 	pos=pos:pow(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=(pos*2):round(2)
 	local read=BufRd.ar(1,buf,pos,1,1)*0.00285
@@ -157,12 +158,13 @@ freqScopeLstLocal=SynthDef("freqScopeLstLocal", {busin = 0, fftsize = 2048,scope
 end);
 sintes[#sintes+1]=freqScopeLstLocal
 
-freqScopeLmnLocal=SynthDef("freqScopeLmnLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02, },function ()
+freqScopeLmnLocal=SynthDef("freqScopeLmnLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02,maxfreq=22050 },function ()
 	local signal=Mix(In.ar(busin,1)) --*0.5
 	--dumpObj(LocalBuf)
 	local buf=LocalBuf(fftsize,1)
 	PV_MagSmear(FFT(buf,signal),1)
-	local pos=fftsize*0.5
+	local posfac = maxfreq/SampleRate.ir()
+	local pos=fftsize*posfac
 	pos=pos:pow(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=(pos*2):round(2)
 	local read=BufRd.ar(1,buf,pos,1,1) *0.00285
@@ -174,12 +176,13 @@ end);
 sintes[#sintes+1]=freqScopeLmnLocal
 
 --linear stereomix localbuffer
-freqScopeLocal=SynthDef("freqScopeLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02, },function ()
+freqScopeLocal=SynthDef("freqScopeLocal", {busin = 0, fftsize = 2048,scopebufnum=1, phase = 1,rate = 4, dbFactor=0.02,maxfreq=22050 },function ()
 	local signal=Mix(In.ar(busin,2))*0.5
 	--dumpObj(LocalBuf)
 	local buf=LocalBuf(fftsize,1)
 	PV_MagSmear(FFT(buf,signal),1)
-	local pos=fftsize*0.5
+	local posfac = maxfreq/SampleRate.ir()
+	local pos=fftsize*posfac
 	--pos=pos:pow(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=pos*(LFSaw.ar(rate*SampleRate.ir()/fftsize,phase,0.5,0.5))
 	pos=(pos*2):round(2)

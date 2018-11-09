@@ -57,6 +57,7 @@ function _onFrameCb()
 
     curHostTime = getHostTime()
 	ppqVSTFrameLength=theMetro.frame
+	--doSchedule(curHostTime.ppqPos)
 	for i,v in ipairs(onFrameCallbacks) do
 		v()
 	end
@@ -336,7 +337,7 @@ function EventPlayer:playEvent(lista,beatTime, beatLen,delta)
 		--local beatTime1 = beatTime - strum1*(maxlen - i)
 		local beatTime1 = beatTime + strum1*(i - 1)
 		--print("keydata.note",self.name,keydata.note,beatTime1)
-		self:playOneEvent(keydata,beatTime1, beatLen,delta)
+		self:playOneEvent(keydata,beatTime1, beatLen,delta,i)
 	end
 
 end

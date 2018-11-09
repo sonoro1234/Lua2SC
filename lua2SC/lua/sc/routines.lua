@@ -27,8 +27,8 @@ function routine:Reset()
 	--	self.thread = coroutine.create(self.body)
 	--end
 
-	self.co = function() 
-		local code,res = coroutine.resume(self.thread)
+	self.co = function(...) 
+		local code,res = coroutine.resume(self.thread,...)
 		if code then
 			return res
 		else
@@ -51,7 +51,7 @@ function routine:Pull()
 		while self.playing and theMetro.oldppqPos >= self.ppqPos do
 			--local good,dur=coroutine.resume(self.co)
 			-- if not good then print("error en co ",dur) end
-			local dur=self.co()
+			local dur=self.co(self)
 			
 			if not dur then --coroutine.status(self.co) == "dead"  then
 				if  self.playing then
@@ -78,7 +78,7 @@ function routine:Play()
 	while theMetro.oldppqPos < self.ppqPos and self.ppqPos <= theMetro.ppqPos and self.playing do
 		--local good,dur=coroutine.resume(self.co)
 		--if not good then print("error en co ",dur) end
-		local dur=self.co()		
+		local dur=self.co(self)		
 		if not dur then --coroutine.status(self.co) == "dead"  then
 			if  self.playing then
 				if self.doneAction then

@@ -51,6 +51,8 @@ end
 function SCBuffer:setn(data,ini)
 	ini = ini or 0
 	self.data = data or self.data
+	local size = #self.data
+	if size < 16000 then
 	assert(#self.data <= self.samples)
 	local dd = {{"int32",self.buffnum},{"int32",ini},{"int32",#self.data}}
 	--dd = concatTables(dd,self.data)
@@ -58,6 +60,23 @@ function SCBuffer:setn(data,ini)
 		dd[#dd + 1] = {"float",v}
 	end
     sendBundle({"/b_setn",dd})
+	else
+		--send in chunks
+		local dataleft = size
+		local chunksize = 10000
+		local thischunkini = ini
+		repeat
+		local thischunksize = math.min(dataleft,chunksize)
+
+		local dd = {{"int32",self.buffnum},{"int32",thischunkini},{"int32",thischunksize}}
+		for i=1,thischunksize do
+			dd[#dd + 1] = {"float",self.data[thischunkini + i]}
+		end
+		sendBundle({"/b_setn",dd})
+		dataleft = dataleft - thischunksize
+		thischunkini = thischunkini + thischunksize
+		until(dataleft==0)
+	end
 end
 function SCBuffer:alloc(block)
 
@@ -201,6 +220,7 @@ function SCBuffer:Init(block)
 		self:queryinfo(true)
 	else
 		self:alloc(true)
+		self:queryinfo(true)
 	end
 end
 

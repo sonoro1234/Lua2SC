@@ -29,10 +29,20 @@ function theMetro:GOTO(beat)
 	self:play(nil,beat)
 	--self.oldppqPos = beat - self.frame --for calling inside frame_callback
 end
+
+function theMetro:init()
+	self:play(120,-4,0,30)
+	self.oldppqPos = -4 ---self.frame
+	self.oldtimestamp = lanes.now_secs() --- self.period
+	self:start()
+end
 function theMetro:play(bpm,beat,run,rate)
 	if rate then self.rate=rate end
 	if bpm then self:tempo(bpm) end
-	if beat then self.ppqPos=beat; theMetro.oldtimestamp = lanes.now_secs() end
+	if beat then 
+		self.ppqPos=beat;
+		--self.oldppqPos=beat; theMetro.oldtimestamp = lanes.now_secs() 
+	end
 	--self.beat=self.ppqPos
 	
 
@@ -78,7 +88,7 @@ function theMetro:start()
 	theMetro.oldtimestamp = lanes.now_secs()
 	--lanes.timer(scriptlinda,"metronomLanes",self.period,0)
 	lanes.timer(scriptlinda,"metronomLanes",self.period,self.period)
-	self.initial_time = lanes.now_secs()
+	--self.initial_time = lanes.now_secs()
 end
 function theMetro:stop()
 	--print("paro reloj")
@@ -105,6 +115,20 @@ function theMetro.backwards(ppq)
 	end
 	for i,v in ipairs(OSCPlayers) do
 		v:Reset(true)
+		--[[
+		if v.ctrl_buses then
+			for k,nodes in pairs(v.ctrl_buses.nodes) do
+				if type(nodes)=="number" then
+					sendBundle({"/n_free",{nodes}})
+				else
+					assert(type(nodes)=="table")
+					for j,node in ipairs(nodes) do
+						sendBundle({"/n_free",{node}})
+					end
+				end
+			end
+		end
+		--]]
 	end
 	if Routines then
 		for i,v in ipairs(Routines) do
@@ -176,7 +200,10 @@ function setMetronomLanes(timestamp)
 end
 
 
-table.insert(initCbCallbacks,function() print("init metronom");theMetro:start() end)
+table.insert(initCbCallbacks,function() 
+	print("init metronom");
+	--theMetro:start() 
+end)
 resetCbCallbacks = resetCbCallbacks or {}
 table.insert(resetCbCallbacks,function() 
 	theMetro:stop() 

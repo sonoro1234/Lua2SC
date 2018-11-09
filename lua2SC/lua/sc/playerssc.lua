@@ -31,8 +31,16 @@ function doOscSchedule(window)
 			if printOSC then
 				print(tb2st(OsceventQueue[1]))
 			end
+			
+			local time
+			if OsceventQueue[1].time < theMetro.oldppqPos then
+			-- not scheduled when due, should be transport skipping...
+				time = lanes.now_secs()
+			else
+				time = theMetro:ppq2time(OsceventQueue[1].time)
+			end
 
-			sendBundle(OsceventQueue[1].event, theMetro:ppq2time(OsceventQueue[1].time))
+			sendBundle(OsceventQueue[1].event,time )
             table.remove(OsceventQueue, 1)  
             continue = 1
         end              
@@ -110,9 +118,12 @@ function scEventPlayer:FreeNode(now)
 	
 	if self.poly and self.NodeQueue then
 		for i,v in ipairs(self.NodeQueue) do
-			local msg = {"/n_set",{v,"gate",{"float",0}}}
-			sendBundle(msg) --,lanes.now_secs())
+			--local msg = {"/n_set",{v,"gate",{"float",0}}}
+			local msg = {"/n_free",{v}}
+			print("freenode",v)
+			sendBundle(msg,theMetro:ppq2time(self.ppqPos))
 		end
+		self.NodeQueue = {}
 		return
 	end
 	if self.node == nil then print("Freenode without node",self.name);return end
@@ -121,7 +132,8 @@ function scEventPlayer:FreeNode(now)
 --		OSCFunc.newfilter("/n_info",self.node,function(v) prtable(v) end,true)
 --		sendBundle({"/n_query",{self.node}},theMetro:ppq2time(self.ppqPos))
 --	end
-	local msg = {"/n_set",{self.node,"gate",{"float",0}}}
+	--local msg = {"/n_set",{self.node,"gate",{"float",0}}}
+	local msg = {"/n_free",{self.node}}
 	if now then sendBundle(msg)
 	else
 		sendBundle(msg,theMetro:ppq2time(self.ppqPos)) --,lanes.now_secs())
@@ -445,6 +457,20 @@ function CHN(channel,oscplayer,busout)
 	chn:Init(true)
 	return chn
 end
+-------------------------------------------------
+function OscEventPlayer:plot(secs,when)
+	if self.init_done then
+		print("when1",when,theMetro:ppq2time(when))
+		PlotBus(self.channel.busin,secs,when and theMetro:ppq2time(when))
+	else
+		self.initTasks = self.initTasks or {}
+		table.insert(self.initTasks,
+			function() 
+				print("when2",when,theMetro:ppq2time(when))
+				PlotBus(self.channel.busin,secs,when and theMetro:ppq2time(when)) 
+			end)
+	end
+end
 function OscEventPlayer:Init()
 	EventPlayer.Init(self)
 	print("OscEventPlayer:Initing",self.name)
@@ -476,6 +502,13 @@ function OscEventPlayer:Init()
 		self._inserts[i]=INS(insert,self)
 	end
 	self:MakeSends()
+	
+	if self.initTasks then
+		for i,t in ipairs(self.initTasks) do
+			t()
+		end
+	end
+	self.init_done = true
 	---------------
 	--EventPlayer.Init(self)
 	--print("OscEventPlayer:Inited",self.name)
@@ -514,6 +547,10 @@ function OscEventPlayer:SetSends()
 		end 
 	end
 end
+function OscEventPlayer:FreeInstrGroup()
+	sendBundle({"/g_freeAll",{self.instr_group}}) --,lanes.now_secs())
+	sendBundle({"/g_deepFree",{self.instr_group}}) --,lanes.now_secs())
+end
 function OscEventPlayer:FreeGroup()
 	sendBundle({"/g_freeAll",{self.group}}) --,lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.group}}) --,lanes.now_secs())
@@ -526,6 +563,7 @@ function OscEventPlayer:Reset(all)
 		end
 	end
 	self:FreeNode(true)
+	self:FreeInstrGroup()
 	EventPlayer.Reset(self)
 end
 
@@ -635,8 +673,8 @@ function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		if self.havenode then
 			lista.type = "n_set"
 		end
-		if legato and legato < 1 then
-		--if beatLen < delta then
+		--if legato and legato < 1 then
+		if beatLen < delta then
 			dontfree = false
 		else
 			dontfree = true

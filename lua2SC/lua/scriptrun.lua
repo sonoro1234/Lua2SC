@@ -32,7 +32,6 @@ local function MsgLoop()
 					theMetro:stop()
 				end
 			elseif key=="OSCReceive" then 
-				--print("OSCReceive in scriptlinda",tb2st(val))
 				OSCFunc.handleOSCReceive(val)
 			elseif key=="execstr" then 
 				local chunk,err = loadstring(val)
@@ -183,27 +182,31 @@ function ScriptRun(pars)
 		
 		local profile,pr
 		if USE_PROFILE then
-		--ProFi = require 'ProFi'
-		--ProFi:start()
+			ProFi = require 'ProFi'
+			ProFi:start()
+			
 			-- profile = require("jit.profile")
 			-- pr = {}
 			-- profile.start("f", function(th, samples, vmmode)
 				-- local d = profile.dumpstack(th, "f", 1)
 				-- pr[d] = (pr[d] or 0) + samples
 			-- end)
-			require("jit.p").start("3vfsi4m1")--,lua2scpath..'profReport.txt')
+			
+			--require("jit.p").start("3vfsi4m1")--,lua2scpath..'profReport.txt')
 		end
 
 		MsgLoop()
 		
 		if USE_PROFILE then
-		--ProFi:stop()
-		--ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+			ProFi:stop()
+			ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+			
 			-- profile.stop()
 			-- print"luaJIT profiler:-----------------------"
 			-- for d,v in pairs(pr) do print(v, d) end
 			-- print"luaJIT profiler end:-----------------------"
-			require("jit.p").stop()
+			
+			--require("jit.p").stop()
 		end
 
 		if _resetCb then
@@ -245,12 +248,14 @@ function ScriptRun(pars)
 	end
 	
 	local function xpcallerror(err) 
-			io.stderr:write("from xpcall error required to cancel: "..tostring(err).."\n")
+			io.stderr:write("xpcallerror: "..tostring(err).."\n")
+			io.stderr:write(debug.traceback())
 			--detect recursive error
+			io.stderr:write("\ndebug.getinfo:\n")
 			for i=2,math.huge do
 				local debuginfo = debug.getinfo(i,"Snlf")
 				if not debuginfo then break end
-				--io.stderr:write(ToStr(debuginfo).."\n")
+				io.stderr:write(ToStr(debuginfo).."\n")
 				if debuginfo.func == xpcallerror then
 					io.stderr:write("recursive error\n")
 					return

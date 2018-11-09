@@ -204,12 +204,22 @@ ctrl_mapper.__mul = function (a,b)
 		end
 		C.levels = levels
 	else --SINE?
-		
+		assert(false,"not implemented")
 	end
 	return C
 end
 ctrl_mapper.__div = function (a,b)
 	return a*(1/b)
+end
+function ctrl_mapper:plot(time,when)
+	local player = {node=0,group=0}
+	local bund = self:verb("dummy",player,0,1)
+
+	when = when or lanes.now_secs()
+	sendMultiBundle(when,bund)
+	time = beats2Time(1)
+	PlotBus(player.ctrl_buses.buses.dummy,time,when,1)
+
 end
 --------------------------
 

@@ -84,16 +84,23 @@ local function Server(IP, port)
    		return bufferTab
 	end
 
-	s.Bus = function()
+	s.Bus = function(Nchannels)
 		local busTab = setmetatable({
 			type = "bus",
 			value = nil,
-			busIndex = nextBusIndex(),
-			server = s
+			busIndex = GetCtrlBus(Nchannels),
+			server = s,
+			channels = Nchannels or 1
 		}, Bus_metatable)
 		return busTab
 	end
-	
+
+	s.RootNode = setmetatable({
+			type = "group",
+			nodeID = BASE_NODE,
+			server = s
+		}, Group_metatable)
+
 	s.Group = function(aGroup,action,paralel)
 		action = action or 0 -- add to head by default
 		local target 
@@ -154,14 +161,36 @@ function Server_metatable:Msg(...)
 	return self.oscout:Msg(...)
 end
 
+local BUNDLE = {}
+function Server_metatable:MsgBundler(...)
+	table.insert(BUNDLE,self.oscout:Msg(...))
+end
+
 function Server_metatable:notify(arg)
 	self.oscout:send('/notify', arg)
+end
+
+function Server_metatable:sync(id)
+	id = id or math.random(2^10)
+	self.oscout:send('/sync', id)
+	local msg = receiveBundle()
+	assert(msg[1] == "/synced" and msg[2][1] == id)
+	--prtable(msg)
 end
 
 function Server_metatable:status()
 	self.oscout:send('/status', arg)
 end
 
+function Server_metatable:makeBundle(time,func) --,bundle)
+	BUNDLE = {}
+	local oldf = Server_metatable.sendMsg
+	Server_metatable.sendMsg = Server_metatable.MsgBundler
+	local ret = func()
+	sendMultiBundle(time,BUNDLE)
+	Server_metatable.sendMsg = oldf
+	return ret
+end
 --function get_osc()
 --	for msg in oscin:recv() do	
 --		print(msg.addr, msg.types, unpack(msg))

@@ -2,11 +2,12 @@ local LILY = {}
 function LILY:Gen() end
 if typerun==1 then return LILY end
 
-require"sc.oscfunc"(scriptlinda)
 require"sc.callback_wrappers"
+require"sc.oscfunc"(scriptlinda)
 require"sc.sc_comm"
 --InitSCCOMM()
 require"sc.gui"
+require"sc.synthdefsc"
 if typeshed == false then
 	require"sc.playerssc"
 elseif typeshed then
@@ -53,14 +54,16 @@ local function numberToNote(number,scale)
 		octavestr = (","):rep(-octave)
 	end
     return notenumbers[note]..octavestr ---..diffstr
+
 end
 local lilyalts = {'eses', 'es', '', 'is' , 'isis'}
 local function makeLilyEvent(name,beatTime,note,dur,data)
 	if note == REST or note==NOP then return " r",0 end
 	--local dura = math.floor(4/(dur))
-	if data.degree then
+	if data.degree and math.floor(data.degree)== data.degree then
 		local nv = data.degree - 1
 		local nota = nv % #data.escale 
+		--nota = math.floor(nota +0.5) --round degree
 		--local octave = math.floor(nv / #data.escale) - 4
 		local octave = math.floor(note / 12) - 4
 
@@ -78,6 +81,7 @@ local function makeLilyEvent(name,beatTime,note,dur,data)
 	--prerror(name,beatTime,nota,dur,dura)
 	return " "..nota --..dura
 end
+--scales
 local function torational(x,maxden)
     local startx = x 
     -- initialize matrix */
@@ -128,11 +132,19 @@ local function getmode(sc)
 	end
 	return "ionian"
 end
+local durs = {}
+durs[12] = {[[\tuplet 3/2 ]],8}
 local function calcduration(score,beatLen)
 	local dura
 	if beatLen <=4 then
 		dura = math.floor(4/(beatLen))
-		table.insert(score,dura)
+		--dura = durs[dura] and durs[dura] or dura
+		if durs[dura] then
+			score[#score] = durs[dura][1]..score[#score]
+			table.insert(score,durs[dura][2])
+		else
+			table.insert(score,dura)
+		end
 	else
 --[[
 		local rest = beatLen
@@ -184,13 +196,14 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 			end
 		end
 	end
-	if maxlen > 1 then
-		for ii,score in ipairs(scores) do
-			table.insert(score,"<")
-		end
-	end
+--	if maxlen > 1 then
+--		for ii,score in ipairs(scores) do
+--			table.insert(score,"<")
+--		end
+--	end
 	local piano_scores = {{},{}}
-	for i=1,maxlen do
+	local eventtmp = {}
+	for i = 1,maxlen do
 		local keydata = {}
 		for k,v in pairs(lista) do
 			--need deepcopy in case item is altered in playOneEvent
@@ -214,8 +227,13 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 		local maxnote = LILY.maxnote[self.lilyscorenum] or -math.huge
 		minnote = (note < minnote ) and note or minnote
 		maxnote = (note > maxnote ) and note or maxnote
+	assert(note)
+	assert(minnote)
+	assert(maxnote)
 		LILY.minnote[self.lilyscorenum] = minnote
 		LILY.maxnote[self.lilyscorenum] = maxnote
+		else
+			print("not note",note)
 		end
 		--armadura
 		--if keydata.escale then
@@ -236,7 +254,8 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 		--	table.insert(score,str)
 		--end
 		if #scores < 2 then
-			table.insert(scores[1],str)
+			--table.insert(scores[1],str)
+			table.insert(eventtmp,str)
 		else
 			local scnum = 1
 			if type(note)=="number" and note < 60 and #scores>1 then scnum=2 end
@@ -244,21 +263,34 @@ local function LILYplayEvent(self,lista,beatTime, beatLen,delta)
 		end
 		allkeydata[i] = keydata
 	end
-	if #scores > 1 then 
+	if #scores < 2 then
+		if maxlen > 1 then
+			table.insert(eventtmp,1,"<")
+			table.insert(eventtmp,">")
+		end
+		table.insert(scores[1],table.concat(eventtmp))
+	--if #scores > 1 then
+	else
 		for ii,score in ipairs(piano_scores) do
 			if #score == 0 then 
 				table.insert(score," r")
 			end
-			for jj,str in ipairs(score) do
-				table.insert(scores[ii],str)
+	--		for jj,str in ipairs(score) do
+	--			table.insert(scores[ii],str)
+	--			end
+				--if maxlen > 1 then
+			if #score > 1 then --
+					table.insert(score,1,"<")
+					table.insert(score,">")
 			end
+			table.insert(scores[ii],table.concat(score))
 		end
 	end
-	if maxlen > 1 then
-		for ii,score in ipairs(scores) do
-			table.insert(score,">")
-		end
-	end
+--	if maxlen > 1 then
+--		for ii,score in ipairs(scores) do
+--			table.insert(score,">")
+--		end
+--	end
 	for ii,score in ipairs(scores) do
 		calcduration(score,beatLen)
 	end
@@ -293,12 +325,18 @@ function LILY:SaveStr(file)
 	fich:write("<<")
 	for i=1,#self.players do
 		local pl = self.players[i]
+		local mint,maxnt = LILY.minnote, LILY.maxnote
+		prtable(mint,maxnt)
 		local minn = self.minnote[pl.lilyscorenum]
 		local maxn = self.maxnote[pl.lilyscorenum]
 		local midn = (minn + maxn)*0.5
 		local clindex = math.floor(0.5+((midn - 67)/12))
 		clindex = clip(clindex,-3,2)
+		if self.args.clefs and self.args.clefs[pl.lilyscorenum] then
+			clindex = self.args.clefs[pl.lilyscorenum]
+		end
 		local clef = clefs[clindex]
+		
 		local scores = self.score[i]
 		if #scores > 1 then
 			fich:write("\n\\new PianoStaff <<")
@@ -306,7 +344,7 @@ function LILY:SaveStr(file)
 
 		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 		table.insert(score,2,"\\clef \"".."treble".."\" ")
-		table.insert(score,3,"\\time "..self.args.time or "4/4")
+		table.insert(score,3,"\\time "..(self.args.time or "4/4"))
 		score[#score+1] = "}"
 		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 		fich:write(table.concat(score))
@@ -314,9 +352,11 @@ function LILY:SaveStr(file)
 		score = scores[2]
 		table.insert(score,1,string.format("\n\\new Staff \\with{instrumentName = #%q } {",pl.name))
 		table.insert(score,2,"\\clef \"".."bass".."\" ")
-		table.insert(score,3,"\\time "..self.args.time or "4/4")
+		table.insert(score,3,"\\time "..(self.args.time or "4/4"))
 		score[#score+1] = "}"
-		print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
+		local minnx,maxnx = self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum]
+		print(pl.name,clef,midn,clindex,minnx,maxnx,numberToNote(minnx),numberToNote(maxnx))
+		--print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
 		fich:write(table.concat(score))
 
 
@@ -327,7 +367,8 @@ function LILY:SaveStr(file)
 			table.insert(score,2,"\\clef \""..clef.."\" ")
 			table.insert(score,3,"\\time "..(self.args.time or "4/4"))
 			score[#score+1] = "}"
-			print(pl.name,clef,midn,clindex,self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum])
+			local minnx,maxnx = self.minnote[pl.lilyscorenum],self.maxnote[pl.lilyscorenum]
+			print(pl.name,clef,midn,clindex,minnx,maxnx,numberToNote(minnx),numberToNote(maxnx))
 			fich:write(table.concat(score))
 		end
 	end
@@ -415,10 +456,11 @@ function LILY:Gen(inippq,endppq,players,args)
 		os.remove(pdffile)
 		local exestr = string.format([[""C:\Program Files (x86)\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s"]],pathnoext(scriptname),lilyfile)
 		print(exestr)
-		local retcode = os.execute(exestr)
-		print(retcode,"pdf done")
+
+		--local retcode = os.execute(exestr)
+		--print(retcode,"pdf done")
 		--os.execute(pathnoext(scriptname)..".pdf")
-		io.popen(pdffile)
+		--io.popen(pdffile)
     --end)
 end
 return LILY

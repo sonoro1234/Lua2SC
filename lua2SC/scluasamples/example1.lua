@@ -1,5 +1,5 @@
 require"lfs"
-lfs.chdir([[C:\LUA\lua-5.1.5set\build482posixdwrf\libmodules\]])
+--lfs.chdir([[C:\LUA\lua-5.1.5set\build482posixdwrf\libmodules\]])
 --[[
 This example shows:
 	- starting server

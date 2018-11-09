@@ -291,9 +291,11 @@ function Toggle(name,func)
 	return addControl(newcontrol)
 end
 
-function PlotBus(bus,secs)
-	local nsamples = math.floor(secs*44100)
-	local window = addWindow{w=350,h=370}
+function PlotBus(bus,secs,when,rate)
+	rate = rate or 2
+	local sampspersec = rate==2 and 44100 or 44100/64
+	local nsamples = math.floor(secs*sampspersec) 
+	local window = addWindow{w=350,h=370,label="bus"..tostring(bus)}
 	--local panel = addPanel{}
 	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
 
@@ -304,22 +306,26 @@ function PlotBus(bus,secs)
 	buff:alloc(nsamples,1)
 	local msg = receiveBundle()
 	--prtable(msg)
-
-	local syn2 = s.Synth("bufferwriter",{busin=bus,bufnum=buff.bufnum},nil,1)--tail
+	local bufwr = rate==2 and "bufferwriter" or "bufferwriter_k"
+	
+	local syn2 = s.Synth(bufwr,{busin=bus,bufnum=buff.bufnum,run=0},nil,1)--tail
 
 	OSCFunc.newfilter("/n_end",syn2.nodeID,function(msg) 
-
+		print"bufwriter ended"
 		buff:getn(0,nsamples,function(vals)
 			local t = {}
 			for i=1,#vals do
-				t[#t+1] = {(i-1)/44100,vals[i]}
+				t[#t+1] = {(i-1)/sampspersec,vals[i]}
 			end
 			grafic:val(t)
 			guiUpdate()
 		end)
 	end)
-
-	syn2:set{trig=1}
+	if not when then
+		syn2:set{run=1,trig=1}
+	else
+		s:makeBundle(when,function() syn2:set{run=1,trig=1} end)
+	end
 end
 
 gui = {default_control = "knob"}

@@ -53,6 +53,8 @@ local function bodyKeyWords()
             require("sc.named_events")
 			require("sc.MetronomLanes")
 			sclua = require("sclua.Server")
+			_run_options = {}
+			s = sclua.Server()
 			local keyword_table = {}
             for index, value in pairs(_G) do
 				if type(value)=="function" then

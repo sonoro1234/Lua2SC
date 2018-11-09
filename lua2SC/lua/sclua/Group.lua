@@ -41,6 +41,7 @@ function Group_metatable:queryTree(flag)
 	flag = flag or 0
 	-- Replies to the sender with a /g_queryTree.reply message
 	self.server:sendMsg('/g_queryTree', self.nodeID, flag )
+	return receiveBundle()
 end
 
 -- support garbage collection:
