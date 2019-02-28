@@ -8,23 +8,13 @@ plus some custom modules: osclua, pmidi, random.
 
 ------Building-----------
 
-1. Need to have lua 5.1 or 5.2 or luajit with lualanes wxlua luasocket or
-  - build lua 5.1 or 5.2
-  - build lualanes 
-  - build wxlua as a module (most difficult part)
-  - build luasocket
-
-2. Then build this repo:
-
-you need to provide in build/toolchain.cmake:
-  - LUA_INCLUDE_DIR with the lua source include directory
-  - LUA_LIBRARY with the path to luaXX.dll (luaXX.so)
-
-from build directory run:
-  init_cmake.bat (or copy to init_cmake.sh)
+from build directory:
+  set LUAJIT_BIN to the desired installation location in init_cmake.bat
+  run init_cmake.bat (or copy to init_cmake.sh)
   make install
 
-you will get Lua2SC directory inside build.
+you will get Lua2SCinstalled directory inside build.
+Only will need wxLua (You can get it from ZeroBraneStudio until I manage to bundle it)
 this directory can be copied anywhere.
 
 
