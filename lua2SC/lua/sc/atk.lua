@@ -46,7 +46,7 @@ function FoaDecoderKernel:initPath()
 		file:close()
 	end
 --]]
-	require"lfs"
+	local lfs = require"lfs"
 	if lfs.attributes(Atk.userKernelDir) and lfs.attributes(Atk.userKernelDir).mode == "directory" then
 		kernelLibPath = Atk.userKernelDir
 	elseif lfs.attributes(Atk.systemKernelDir) and lfs.attributes(Atk.systemKernelDir).mode == "directory" then

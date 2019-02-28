@@ -170,7 +170,7 @@ function SCFFI:init(options,linda)
 	local path = splitpath(options.SCpath)
 	if not self.libsc then
 		print("load from",path..[[liblibscsynth.dll]])
-		require"lfs"
+		local lfs = require"lfs"
 		local succes,msg = lfs.chdir(path)
         if not succes then
             print("cant chdir "..path,msg)

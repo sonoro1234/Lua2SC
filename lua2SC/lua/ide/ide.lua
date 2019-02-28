@@ -262,7 +262,7 @@ function CreateLog()
 	errorLog:SetFont(font)
 	errorLog:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, font)
 	--errorLog:SetCodePage(wxstc.wxSTC_CP_UTF8)
-	errorLog:SetCodePage(0)
+	--errorLog:SetCodePage(0)
 	for i = 0, 32 do
         errorLog:StyleSetCharacterSet(i, wxstc.wxSTC_CHARSET_ANSI)
     end

@@ -110,12 +110,12 @@ set_target_properties(portmidi-static PROPERTIES OUTPUT_NAME "portmidi_s")
 target_link_libraries(portmidi-static ${PM_NEEDED_LIBS})
 
 # define the jni library
-include_directories(${JAVA_INCLUDE_PATHS})
+# include_directories(${JAVA_INCLUDE_PATHS})
 
-set(JNISRC ${LIBSRC} ../pm_java/pmjni/pmjni.c)
-add_library(pmjni SHARED ${JNISRC})
-target_link_libraries(pmjni ${JNI_EXTRA_LIBS})
-set_target_properties(pmjni PROPERTIES EXECUTABLE_EXTENSION "jnilib")
+# set(JNISRC ${LIBSRC} ../pm_java/pmjni/pmjni.c)
+# add_library(pmjni SHARED ${JNISRC})
+# target_link_libraries(pmjni ${JNI_EXTRA_LIBS})
+# set_target_properties(pmjni PROPERTIES EXECUTABLE_EXTENSION "jnilib")
 
 # install the libraries (Linux and Mac OS X command line)
 if(UNIX)

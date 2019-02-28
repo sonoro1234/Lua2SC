@@ -1,6 +1,13 @@
 local autoCompleteEnable = true -- value of ID_AUTOCOMPLETE_ENABLE menu item
 G_do_write_midi = false
 G_do_write_midi_number = false
+
+
+local wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+")
+local useoldindicator = wxver <= "2.9.5"
+local BOX_INDICATOR = wxver <= "2.9.5" and 0 or wxstc.wxSTC_INDIC_CONTAINER
+print("wxver",wxver)
+
 local function FoldSome()
     local editor = GetEditor()
     editor:Colourise(0, -1)       -- update doc's folding info
@@ -212,7 +219,7 @@ function CreateEditor(name)
 
     editor:SetFont(font)
     editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, font)
-	editor:SetCodePage(wx.wxFONTENCODING_CP1253)
+	--editor:SetCodePage(wx.wxFONTENCODING_CP1253)
     for i = 0, 32 do
         editor:StyleSetFont(i, font)
     end
@@ -523,21 +530,50 @@ function CreateEditor(name)
 					editor:BraceHighlight(braceAtCaret, braceOpposite)
 				end
             end)
-	editor:IndicatorSetStyle(0,wxstc.wxSTC_INDIC_BOX)
-	function MarkWords(editor,what)
-		
-		local flags=wxstc.wxSTC_FIND_WHOLEWORD + wxstc.wxSTC_FIND_MATCHCASE
-		local len=editor:GetLength()
-		local wlen=string.len(what)
-		
-		editor:StartStyling(0,wxstc.wxSTC_INDICS_MASK)
-		editor:SetStyling(len,0)
-		
-		local posFind=editor:FindText(0,len,what,flags)
-		while posFind~=-1 do
-			editor:StartStyling(posFind,wxstc.wxSTC_INDICS_MASK)
-			editor:SetStyling(wlen,wxstc.wxSTC_INDIC0_MASK)
-			posFind=editor:FindText(posFind+wlen,len,what,flags)
+	editor:IndicatorSetStyle(BOX_INDICATOR,wxstc.wxSTC_INDIC_BOX)
+	local MarkWords,ClearMarkWords
+	if useoldindicator then
+		MarkWords = function(editor,what)
+			
+			local flags=wxstc.wxSTC_FIND_WHOLEWORD + wxstc.wxSTC_FIND_MATCHCASE
+			local len=editor:GetLength()
+			local wlen=string.len(what)
+			
+			editor:StartStyling(0,wxstc.wxSTC_INDICS_MASK)
+			editor:SetStyling(len,0)
+			
+			local posFind=editor:FindText(0,len,what,flags)
+			while posFind~=-1 do
+				--print("editor:GetStyleAt(posFind)",editor:GetStyleAt(posFind))
+				editor:StartStyling(posFind,wxstc.wxSTC_INDICS_MASK)
+				editor:SetStyling(wlen,wxstc.wxSTC_INDIC0_MASK) --0x20
+				posFind=editor:FindText(posFind+wlen,len,what,flags)
+			end
+		end
+		ClearMarkWords = function(editor)
+			editor:StartStyling(0,wxstc.wxSTC_INDICS_MASK)
+			editor:SetStyling(editor:GetLength(),0)
+		end
+	else --new indicators
+		MarkWords = function(editor,what)
+			
+			local flags=wxstc.wxSTC_FIND_WHOLEWORD + wxstc.wxSTC_FIND_MATCHCASE
+			local len=editor:GetLength()
+			local wlen=string.len(what)
+			
+			editor:SetIndicatorCurrent(BOX_INDICATOR)
+			editor:IndicatorClearRange(0,len)
+			
+			local posFind=editor:FindText(0,len,what,flags)
+			while posFind~=-1 do
+				--print("editor:GetStyleAt(posFind)",editor:GetStyleAt(posFind))
+				editor:IndicatorFillRange(posFind,wlen)
+				posFind=editor:FindText(posFind+wlen,len,what,flags)
+			end
+		end
+		ClearMarkWords = function(editor)
+			editor:SetIndicatorCurrent(BOX_INDICATOR)
+			editor:IndicatorClearRange(0,editor:GetLength())
 		end
 	end
 	---[[
@@ -549,8 +585,7 @@ function CreateEditor(name)
 					MarkWords(editor,editor:GetSelectedText())
 					--print(editor:GetSelectedText())
 				else
-					editor:StartStyling(0,wxstc.wxSTC_INDICS_MASK)
-					editor:SetStyling(editor:GetLength(),0)
+					ClearMarkWords(editor)
 				end
             end)
 			--]]

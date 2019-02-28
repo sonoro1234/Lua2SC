@@ -232,7 +232,7 @@ function ConfigSavePerspectives()
 end
 
 function Perspectives_MakeMenu()
-	for i=0,9 do
+	for i=0,#m_perspectives -1 do
 		m_perspectives_menu:Destroy(ID_FirstPerspective + i)
 	end
 	for i,v in ipairs(m_perspectives_names) do

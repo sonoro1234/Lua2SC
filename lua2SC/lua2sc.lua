@@ -20,7 +20,7 @@ mainlinda=lanes.linda("mainlinda")
 lindas = {idlelinda,scriptlinda,scriptguilinda,midilinda,udpsclinda,debuggerlinda,mainlinda}
 
 
-require"lfs"
+local lfs = require"lfs"
 
 -----------------extracted from penligth (Steve Donovan)
 local is_windows = package.config:sub(1,1) == '\\'

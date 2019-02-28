@@ -18,6 +18,6 @@ ADD_LIBRARY(pmidi SHARED luaportmidi.c )
 TARGET_LINK_LIBRARIES(pmidi ${LUA_LIBRARY} portmidi-static winmm)
 SET_TARGET_PROPERTIES(pmidi PROPERTIES PREFIX "" OUTPUT_NAME core)
 
-INSTALL (TARGETS pmidi RUNTIME DESTINATION luabin/pmidi)
-install(FILES pmidi.lua DESTINATION lua)
+INSTALL (TARGETS pmidi RUNTIME DESTINATION ./pmidi)
+install(FILES pmidi.lua DESTINATION ./lua)
 

@@ -1,0 +1,14 @@
+[submodule "luafilesystem"]
+	path = luafilesystem
+	url = https://github.com/sonoro1234/luafilesystem
+[submodule "lanes"]
+	path = lanes
+	url = https://github.com/sonoro1234/lanes
+[submodule "LuaJIT"]
+	path = LuaJIT/LuaJIT
+	url = https://github.com/LuaJIT/LuaJIT.git
+	branch = v2.1
+[submodule "luasocket"]
+	path = luasocket
+	url = https://github.com/sonoro1234/luasocket.git
+	branch = addcmake
