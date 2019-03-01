@@ -4,7 +4,11 @@ cmake_minimum_required(VERSION 2.8)
 set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)
 #TODO check unix and osx
 if(WIN32)
-	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.dll)
+	if(MSVC)
+		set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.lib)
+	else() #mingw
+		set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.dll)
+	endif()
 elseif(Darwin)
 	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/lua51.dylib)
 else() ##linux

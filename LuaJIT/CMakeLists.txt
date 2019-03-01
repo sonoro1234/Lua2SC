@@ -23,7 +23,7 @@ if(UNIX)
     set (ljname libluajit.a)
 else(UNIX)
   if(MSVC)
-    ExternalProject_Add(project_luaji
+    ExternalProject_Add(project_luajit
       PREFIX ${ljpre}
 	  SOURCE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT
 	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT ${ljdir}
