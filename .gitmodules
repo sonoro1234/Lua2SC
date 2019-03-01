@@ -12,3 +12,9 @@
 	path = luasocket
 	url = https://github.com/sonoro1234/luasocket.git
 	branch = addcmake
+[submodule "wxLua"]
+	path = wxLuaBundled/wxLua
+	url = https://github.com/sonoro1234/wxLua
+[submodule "wxWidgets"]
+	path = wxLuaBundled/wxWidgets
+	url = https://github.com/sonoro1234/wxWidgets

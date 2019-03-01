@@ -26,6 +26,10 @@ set(INSTALL_LMOD ./lua  CACHE INTERNAL "lmod" FORCE)
 set(INSTALL_DATA ${CMAKE_BINARY_DIR}/lanes_install  CACHE INTERNAL "lanes data" FORCE)
 add_subdirectory(lanes )
 
+if(BUILD_WXLUA)
+	add_subdirectory(wxLuaBundled)
+endif()
+
 ############ install #######################
 INSTALL (DIRECTORY  Lua2SC DESTINATION .)
 install(FILES luafilesystem/lfs_ffi.lua luafilesystem/lfs.lua DESTINATION ./lua)
