@@ -10,12 +10,12 @@ plus some custom modules: osclua, pmidi, random.
 
 from build directory:
 * set LUAJIT_BIN to the desired installation location in init_cmake.bat
+* add -DBUILD_WXLUA=ON in init_cmake.bat if you wish to also build wx module.
 * run init_cmake.bat (or copy to init_cmake.sh)
+* make
 * make install
 
 you will get Lua2SCinstalled directory inside build.
-
-Only will need wxLua (You can get it from ZeroBraneStudio until I manage to bundle it)
 
 this directory can be copied anywhere.
 
