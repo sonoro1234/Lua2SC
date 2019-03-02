@@ -564,7 +564,7 @@ function DisplayOutput(message, iserror)
     errorLog:GotoPos(errorLog:GetLength())
 	if iserror then
         --errorLog:MarkerAdd(errorLog:GetLineCount()-1, CURRENT_LINE_MARKER)
-		errorLog:StartStyling(pos,255)
+		errorLog:StartStyling(pos,0)
 		errorLog:SetStyling(wlen,1)
     end
 	errorLog:SetReadOnly(true)
