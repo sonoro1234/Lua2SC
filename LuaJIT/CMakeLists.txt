@@ -68,7 +68,7 @@ elseif(UNIX)
 else() #win
 	install(FILES ${ljsrc}/luajit.exe ${ljsrc}/lua51.dll DESTINATION .)
 endif()
-install(DIRECTORY ${ljsrc}/jit DESTINATION ./lua/jit)
+install(DIRECTORY ${ljsrc}/jit DESTINATION ./lua)
 
 
 
