@@ -9,36 +9,50 @@ set(ljpre ${CMAKE_CURRENT_BINARY_DIR}/luajit-2.1)
 set(ljdir ${ljpre}/project_luajit)
 set(ljsrc ${ljpre}/project_luajit/src)
 set(LUAJIT_INSTALL ${CMAKE_BINARY_DIR}/LuaJIT_install)
-#set(URLLUAJIT http://luajit.org/download/LuaJIT-2.0.1.tar.gz)
-#set(URLLUAJIT https://github.com/LuaJIT/LuaJIT.git)
+
+#debug flags
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+if(${CMAKE_BUILD_TYPE_LOWER} STREQUAL "debug")
+    message("== LuaJIT will be built in debug mode")
+	if(MSVC)
+		set(DEBUG_FLAGS "debug")
+	else()
+		set(DEBUG_FLAGS "CCDEBUG=-g")
+	endif()
+endif()
+
+set(LUAJIT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LuaJIT)
 if(UNIX)
     ExternalProject_Add(project_luajit
       PREFIX ${ljpre}
-      SOURCE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT
-	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT ${ljdir}
+      SOURCE_DIR ${LUAJIT_SOURCES}
+	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${LUAJIT_SOURCES} ${ljdir}
       BINARY_DIR ${ljdir}
-      BUILD_COMMAND ${CMAKE_MAKE_COMMAND} 
-      INSTALL_COMMAND ${CMAKE_MAKE_COMMAND} install PREFIX="${LUAJIT_INSTALL}"
+      BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${DEBUG_FLAGS}
+      INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install PREFIX="${LUAJIT_INSTALL}"
     )
     set (ljname libluajit.a)
 else(UNIX)
   if(MSVC)
     ExternalProject_Add(project_luajit
       PREFIX ${ljpre}
-	  SOURCE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT
-	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT ${ljdir}
+	  SOURCE_DIR ${LUAJIT_SOURCES}
+	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${LUAJIT_SOURCES} ${ljdir}
       BINARY_DIR ${ljsrc}
-      BUILD_COMMAND ${ljsrc}/msvcbuild.bat
+      BUILD_COMMAND ${ljsrc}/msvcbuild.bat ${DEBUG_FLAGS}
       INSTALL_COMMAND ""
     )
     set (ljname lua51.lib)
   else(MSVC) #mingw
+
       ExternalProject_Add(project_luajit
       PREFIX ${ljpre}
-	  SOURCE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT
-	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT ${ljdir}
+	  SOURCE_DIR ${LUAJIT_SOURCES}
+	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${LUAJIT_SOURCES} ${ljdir}
       BINARY_DIR ${ljsrc}
-      BUILD_COMMAND ${CMAKE_MAKE_COMMAND}
+      BUILD_COMMAND 
+		${CMAKE_MAKE_PROGRAM} 
+		${DEBUG_FLAGS}
       INSTALL_COMMAND ""
     )
   endif(MSVC)
