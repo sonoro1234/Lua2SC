@@ -381,9 +381,25 @@ function CreateTreeLog()
 end
 function AppInit()
 
+	--wx.wxIdleEvent.SetMode(wx.wxIDLE_PROCESS_SPECIFIED)
 
-
-	frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, "Lua2SC",wx.wxDefaultPosition, wx.wxSize(800, 600),wx.wxBORDER_SIMPLE + wx.wxDEFAULT_FRAME_STYLE )
+	frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, "Lua2SC",wx.wxDefaultPosition , wx.wxSize(800, 600),wx.wxBORDER_SIMPLE + wx.wxDEFAULT_FRAME_STYLE )
+	
+	--frame:SetExtraStyle(wx.wxWS_EX_PROCESS_IDLE)
+---[[
+	--instead of requestmore on idle
+local ID_TIMERIDLEWAKEUP = 2
+wakeupidletimer  = wx.wxTimer(frame,ID_TIMERIDLEWAKEUP)
+frame:Connect(wx.wxEVT_TIMER,
+		function (event)
+			local id=event:GetId()
+			if id==ID_TIMERIDLEWAKEUP then
+				wx.wxWakeUpIdle()
+			end
+		end)
+wakeupidletimer:Start(30,false)
+--]]
+	
 	-- wrap into protected call as DragAcceptFiles fails on MacOS with
 	-- wxwidgets 2.8.12 even though it should work according to change notes
 	-- for 2.8.10: "Implemented wxWindow::DragAcceptFiles() on all platforms."
@@ -1255,7 +1271,7 @@ function AppIDLE(event)
 				end
 				requestmore=true
 			end
-			if requestmore then event:RequestMore() end
+			if requestmore then event:RequestMore(true) end
 			--event:Skip()
 end
 
