@@ -6,7 +6,7 @@
         ]
     },
     "description" :"Audio to control rate converter.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "APF": {
@@ -23,7 +23,7 @@
         ]
     },
     "description" :"FIXME: APF purpose.",
-    "parent" :TwoPole,
+    "parent" :"TwoPole",
     "nOuts" :1
 },
 "AllpassC": {
@@ -42,7 +42,7 @@
         ]
     },
     "description" :"Schroeder allpass delay line with cubic interpolation.",
-    "parent" :CombN,
+    "parent" :"CombN",
     "nOuts" :1
 },
 "AllpassL": {
@@ -61,7 +61,7 @@
         ]
     },
     "description" :"Schroeder allpass delay line with linear interpolation.",
-    "parent" :CombN,
+    "parent" :"CombN",
     "nOuts" :1
 },
 "AllpassN": {
@@ -80,29 +80,29 @@
         ]
     },
     "description" :"Schroeder allpass delay line with no interpolation.",
-    "parent" :CombN,
+    "parent" :"CombN",
     "nOuts" :1
 },
 "AmpComp": {
     "methods":{
         "kr" :[
-          ["freq",nil],
-          ["root",nil],
+          ["freq",null],
+          ["root",null],
           ["exp",0.3333]
         ],
         "ar" :[
-          ["freq",nil],
-          ["root",nil],
+          ["freq",null],
+          ["root",null],
           ["exp",0.3333]
         ],
         "ir" :[
-          ["freq",nil],
-          ["root",nil],
+          ["freq",null],
+          ["root",null],
           ["exp",0.3333]
         ]
     },
     "description" :"Basic psychoacoustic amplitude compensation.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "AmpCompA": {
@@ -127,7 +127,7 @@
         ]
     },
     "description" :"Basic psychoacoustic amplitude compensation (ANSI A-weighting curve).",
-    "parent" :AmpComp,
+    "parent" :"AmpComp",
     "nOuts" :1
 },
 "Amplitude": {
@@ -144,93 +144,93 @@
         ]
     },
     "description" :"Amplitude follower",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "BAllPass": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rq",1.0]
         ]
     },
     "description" :"All Pass Filter",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BBandPass": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["bw",1.0]
         ]
     },
     "description" :"Band Pass Filter",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BBandStop": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["bw",1.0]
         ]
     },
     "description" :"Band reject filter",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BHiPass": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rq",1.0]
         ]
     },
     "description" :"12db/oct rolloff - 2nd order resonant  Hi Pass Filter",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BHiShelf": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rs",1.0],
           ["db",0.0]
         ]
     },
     "description" :"Hi Shelf",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BLowPass": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rq",1.0]
         ]
     },
     "description" :"12db/oct rolloff - 2nd order resonant Low Pass Filter",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BLowShelf": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rs",1.0],
           ["db",0.0]
         ]
     },
     "description" :"Low Shelf",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BPF": {
@@ -247,7 +247,7 @@
         ]
     },
     "description" :"2nd order Butterworth bandpass filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "BPZ2": {
@@ -260,20 +260,20 @@
         ]
     },
     "description" :"Two zero fixed midpass.",
-    "parent" :LPZ2,
+    "parent" :"LPZ2",
     "nOuts" :1
 },
 "BPeakEQ": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",1200.0],
           ["rq",1.0],
           ["db",0.0]
         ]
     },
     "description" :"Parametric equalizer",
-    "parent" :BEQSuite,
+    "parent" :"BEQSuite",
     "nOuts" :1
 },
 "BRF": {
@@ -290,7 +290,7 @@
         ]
     },
     "description" :"2nd order Butterworth band reject filter.",
-    "parent" :BPF,
+    "parent" :"BPF",
     "nOuts" :1
 },
 "BRZ2": {
@@ -303,26 +303,26 @@
         ]
     },
     "description" :"Two zero fixed midcut.",
-    "parent" :LPZ2,
+    "parent" :"LPZ2",
     "nOuts" :1
 },
 "Balance2": {
     "methods":{
         "kr" :[
-          ["left",nil],
-          ["right",nil],
+          ["left",null],
+          ["right",null],
           ["pos",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["left",nil],
-          ["right",nil],
+          ["left",null],
+          ["right",null],
           ["pos",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Stereo signal balancer",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -342,54 +342,54 @@
         ]
     },
     "description" :"physical model of bouncing object",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "BeatTrack": {
     "methods":{
         "kr" :[
-          ["chain",nil],
+          ["chain",null],
           ["lock",0]
         ]
     },
     "description" :"Autocorrelation beat tracker",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "BeatTrack2": {
     "methods":{
         "kr" :[
-          ["busindex",nil],
-          ["numfeatures",nil],
+          ["busindex",null],
+          ["numfeatures",null],
           ["windowsize",2.0],
           ["phaseaccuracy",0.02],
           ["lock",0],
-          ["weightingscheme",nil]
+          ["weightingscheme",null]
         ]
     },
     "description" :"Template matching beat tracker",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :6
 },
 "BiPanB2": {
     "methods":{
         "kr" :[
-          ["inA",nil],
-          ["inB",nil],
-          ["azimuth",nil],
+          ["inA",null],
+          ["inB",null],
+          ["azimuth",null],
           ["gain",1]
         ],
         "ar" :[
-          ["inA",nil],
-          ["inB",nil],
-          ["azimuth",nil],
+          ["inA",null],
+          ["inB",null],
+          ["azimuth",null],
           ["gain",1]
         ]
     },
     "description" :"2D Ambisonic B-format panner.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :3
 },
@@ -405,7 +405,7 @@
         ]
     },
     "description" :"Band limited impulse oscillator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "BlockSize": {
@@ -414,7 +414,7 @@
         ]
     },
     "description" :"(Undocumented class)",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "BrownNoise": {
@@ -425,7 +425,7 @@
         ]
     },
     "description" :"Brown Noise.",
-    "parent" :WhiteNoise,
+    "parent" :"WhiteNoise",
     "nOuts" :1
 },
 "BufAllpassC": {
@@ -438,7 +438,7 @@
         ]
     },
     "description" :"Buffer based all pass delay line with cubic interpolation.",
-    "parent" :BufCombN,
+    "parent" :"BufCombN",
     "nOuts" :1
 },
 "BufAllpassL": {
@@ -451,7 +451,7 @@
         ]
     },
     "description" :"Buffer based all pass delay line with linear interpolation.",
-    "parent" :BufCombN,
+    "parent" :"BufCombN",
     "nOuts" :1
 },
 "BufAllpassN": {
@@ -464,20 +464,20 @@
         ]
     },
     "description" :"Buffer based all pass delay line with no interpolation.",
-    "parent" :BufCombN,
+    "parent" :"BufCombN",
     "nOuts" :1
 },
 "BufChannels": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Current number of channels of soundfile in buffer.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufCombC": {
@@ -490,7 +490,7 @@
         ]
     },
     "description" :"Buffer based comb delay line with cubic interpolation.",
-    "parent" :BufCombN,
+    "parent" :"BufCombN",
     "nOuts" :1
 },
 "BufCombL": {
@@ -503,7 +503,7 @@
         ]
     },
     "description" :"Buffer based comb delay line with linear interpolation.",
-    "parent" :BufCombN,
+    "parent" :"BufCombN",
     "nOuts" :1
 },
 "BufCombN": {
@@ -516,7 +516,7 @@
         ]
     },
     "description" :"Buffer based comb delay line with no interpolation.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "BufDelayC": {
@@ -533,7 +533,7 @@
         ]
     },
     "description" :"Buffer based simple delay line with cubic interpolation.",
-    "parent" :BufDelayN,
+    "parent" :"BufDelayN",
     "nOuts" :1
 },
 "BufDelayL": {
@@ -550,7 +550,7 @@
         ]
     },
     "description" :"Buffer based simple delay line with linear interpolation.",
-    "parent" :BufDelayN,
+    "parent" :"BufDelayN",
     "nOuts" :1
 },
 "BufDelayN": {
@@ -567,59 +567,59 @@
         ]
     },
     "description" :"Buffer based simple delay line with no interpolation.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "BufDur": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Current duration of soundfile in buffer.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufFrames": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Current number of frames allocated in the buffer.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufRateScale": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Buffer rate scaling in respect to server samplerate.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufRd": {
     "methods":{
         "kr" :[
-          ["numChannels",nil],
+          ["numChannels",null],
           ["bufnum",0],
           ["phase",0.0],
           ["loop",1.0],
           ["interpolation",2]
         ],
         "ar" :[
-          ["numChannels",nil],
+          ["numChannels",null],
           ["bufnum",0],
           ["phase",0.0],
           ["loop",1.0],
@@ -627,70 +627,70 @@
         ]
     },
     "description" :"Buffer reading oscillator.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "BufSampleRate": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Buffer sample rate.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufSamples": {
     "methods":{
         "kr" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ],
         "ir" :[
-          ["bufnum",nil]
+          ["bufnum",null]
         ]
     },
     "description" :"Current number of samples in buffer.",
-    "parent" :BufInfoUGenBase,
+    "parent" :"BufInfoUGenBase",
     "nOuts" :1
 },
 "BufWr": {
     "methods":{
         "kr" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0],
           ["phase",0.0],
           ["loop",1.0]
         ],
         "ar" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0],
           ["phase",0.0],
           ["loop",1.0]
         ]
     },
     "description" :"Buffer writing oscillator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "COsc": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["beats",0.5]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["beats",0.5]
         ]
     },
     "description" :"Chorusing wavetable oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "CheckBadValues": {
@@ -707,7 +707,7 @@
         ]
     },
     "description" :"Test for infinity, not-a-number, and denormals",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Clip": {
@@ -729,7 +729,7 @@
         ]
     },
     "description" :"Clip a signal outside given thresholds.",
-    "parent" :InRange,
+    "parent" :"InRange",
     "nOuts" :1
 },
 "ClipNoise": {
@@ -740,22 +740,22 @@
         ]
     },
     "description" :"Clip Noise.",
-    "parent" :WhiteNoise,
+    "parent" :"WhiteNoise",
     "nOuts" :1
 },
 "CoinGate": {
     "methods":{
         "kr" :[
-          ["prob",nil],
-          ["in",nil]
+          ["prob",null],
+          ["in",null]
         ],
         "ar" :[
-          ["prob",nil],
-          ["in",nil]
+          ["prob",null],
+          ["in",null]
         ]
     },
     "description" :"Statistical gate.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "CombC": {
@@ -774,7 +774,7 @@
         ]
     },
     "description" :"Comb delay line with cubic interpolation.",
-    "parent" :CombN,
+    "parent" :"CombN",
     "nOuts" :1
 },
 "CombL": {
@@ -793,7 +793,7 @@
         ]
     },
     "description" :"Comb delay line with linear interpolation.",
-    "parent" :CombN,
+    "parent" :"CombN",
     "nOuts" :1
 },
 "CombN": {
@@ -812,7 +812,7 @@
         ]
     },
     "description" :"Comb delay line with no interpolation.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Compander": {
@@ -828,7 +828,7 @@
         ]
     },
     "description" :"Compressor, expander, limiter, gate, ducker",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "CompanderD": {
@@ -843,7 +843,7 @@
         ]
     },
     "description" :"Compressor, expander, limiter, gate, ducker.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "ControlDur": {
@@ -852,7 +852,7 @@
         ]
     },
     "description" :"Duration of one block",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "ControlRate": {
@@ -861,65 +861,65 @@
         ]
     },
     "description" :"Server control rate.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "Convolution": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["kernel",nil],
+          ["in",null],
+          ["kernel",null],
           ["framesize",512]
         ]
     },
     "description" :"Real-time convolver.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Convolution2": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["kernel",nil],
+          ["in",null],
+          ["kernel",null],
           ["trigger",0],
           ["framesize",2048]
         ]
     },
     "description" :"Real-time fixed kernel convolver.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Convolution2L": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["kernel",nil],
+          ["in",null],
+          ["kernel",null],
           ["trigger",0],
           ["framesize",2048],
           ["crossfade",1]
         ]
     },
     "description" :"Real-time convolver with linear interpolation",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Convolution3": {
     "methods":{
         "kr" :[
-          ["in",nil],
-          ["kernel",nil],
+          ["in",null],
+          ["kernel",null],
           ["trigger",0],
           ["framesize",2048]
         ],
         "ar" :[
-          ["in",nil],
-          ["kernel",nil],
+          ["in",null],
+          ["kernel",null],
           ["trigger",0],
           ["framesize",2048]
         ]
     },
     "description" :"Time based convolver.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Crackle": {
@@ -932,7 +932,7 @@
         ]
     },
     "description" :"Chaotic noise function.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "CuspL": {
@@ -945,7 +945,7 @@
         ]
     },
     "description" :"Cusp map chaotic generator",
-    "parent" :CuspN,
+    "parent" :"CuspN",
     "nOuts" :1
 },
 "CuspN": {
@@ -958,7 +958,7 @@
         ]
     },
     "description" :"Cusp map chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "DC": {
@@ -971,7 +971,7 @@
         ]
     },
     "description" :"Create a constant amplitude signal",
-    "parent" :PureMultiOutUGen,
+    "parent" :"PureMultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -982,11 +982,11 @@
           ["lo",0.0],
           ["hi",1.0],
           ["step",0.01],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate brownian movement generator.",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dbufrd": {
@@ -999,7 +999,7 @@
         ]
     },
     "description" :"Buffer read demand ugen",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dbufwr": {
@@ -1013,20 +1013,20 @@
         ]
     },
     "description" :"Buffer write demand ugen",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dconst": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["sum",nil],
-          ["in",nil],
+          ["sum",null],
+          ["in",null],
           ["tolerance",0.001]
         ]
     },
     "description" :"Constrain a demand-rate stream to a given sum",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Decay": {
@@ -1041,7 +1041,7 @@
         ]
     },
     "description" :"Exponential decay",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Decay2": {
@@ -1058,80 +1058,80 @@
         ]
     },
     "description" :"Exponential decay",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "DecodeB2": {
     "methods":{
         "kr" :[
-          ["numChans",nil],
-          ["w",nil],
-          ["x",nil],
-          ["y",nil],
+          ["numChans",null],
+          ["w",null],
+          ["x",null],
+          ["y",null],
           ["orientation",0.5]
         ],
         "ar" :[
-          ["numChans",nil],
-          ["w",nil],
-          ["x",nil],
-          ["y",nil],
+          ["numChans",null],
+          ["w",null],
+          ["x",null],
+          ["y",null],
           ["orientation",0.5]
         ]
     },
     "description" :"2D Ambisonic B-format decoder.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :0
 },
 "DegreeToKey": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0],
           ["octave",12.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0],
           ["octave",12.0]
         ]
     },
     "description" :"Convert signal to modal pitch.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "DelTapRd": {
     "methods":{
         "kr" :[
-          ["buffer",nil],
-          ["phase",nil],
-          ["delTime",nil],
+          ["buffer",null],
+          ["phase",null],
+          ["delTime",null],
           ["interp",1]
         ],
         "ar" :[
-          ["buffer",nil],
-          ["phase",nil],
-          ["delTime",nil],
+          ["buffer",null],
+          ["phase",null],
+          ["delTime",null],
           ["interp",1]
         ]
     },
     "description" :"Tap a delay line from a DelTapWr UGen",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "DelTapWr": {
     "methods":{
         "kr" :[
-          ["buffer",nil],
-          ["in",nil]
+          ["buffer",null],
+          ["in",null]
         ],
         "ar" :[
-          ["buffer",nil],
-          ["in",nil]
+          ["buffer",null],
+          ["in",null]
         ]
     },
     "description" :"Write to a buffer for a DelTapRd UGen",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Delay1": {
@@ -1144,7 +1144,7 @@
         ]
     },
     "description" :"Single sample delay.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Delay2": {
@@ -1157,7 +1157,7 @@
         ]
     },
     "description" :"Two sample delay.",
-    "parent" :Delay1,
+    "parent" :"Delay1",
     "nOuts" :1
 },
 "DelayC": {
@@ -1174,7 +1174,7 @@
         ]
     },
     "description" :"Simple delay line with cubic interpolation.",
-    "parent" :DelayN,
+    "parent" :"DelayN",
     "nOuts" :1
 },
 "DelayL": {
@@ -1191,7 +1191,7 @@
         ]
     },
     "description" :"Simple delay line with linear interpolation.",
-    "parent" :DelayN,
+    "parent" :"DelayN",
     "nOuts" :1
 },
 "DelayN": {
@@ -1208,32 +1208,32 @@
         ]
     },
     "description" :"Simple delay line with no interpolation.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Demand": {
     "methods":{
         "kr" :[
-          ["trig",nil],
-          ["reset",nil],
-          ["demandUGens",nil]
+          ["trig",null],
+          ["reset",null],
+          ["demandUGens",null]
         ],
         "ar" :[
-          ["trig",nil],
-          ["reset",nil],
-          ["demandUGens",nil]
+          ["trig",null],
+          ["reset",null],
+          ["demandUGens",null]
         ]
     },
     "description" :"Demand results from demand rate UGens.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "DemandEnvGen": {
     "methods":{
         "kr" :[
-          ["level",nil],
-          ["dur",nil],
+          ["level",null],
+          ["dur",null],
           ["shape",1],
           ["curve",0],
           ["gate",1.0],
@@ -1244,8 +1244,8 @@
           ["doneAction",0]
         ],
         "ar" :[
-          ["level",nil],
-          ["dur",nil],
+          ["level",null],
+          ["dur",null],
           ["shape",1],
           ["curve",0],
           ["gate",1.0],
@@ -1257,22 +1257,22 @@
         ]
     },
     "description" :"Demand rate envelope generator",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "DetectIndex": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Search a buffer for a value",
-    "parent" :Index,
+    "parent" :"Index",
     "nOuts" :1
 },
 "DetectSilence": {
@@ -1291,7 +1291,7 @@
         ]
     },
     "description" :"Detect when input falls below an amplitude threshold",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Dgeom": {
@@ -1300,11 +1300,11 @@
         "new" :[
           ["start",1],
           ["grow",2],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate geometric series UGen.",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dibrown": {
@@ -1314,35 +1314,35 @@
           ["lo",0.0],
           ["hi",1.0],
           ["step",0.01],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate brownian movement generator.",
-    "parent" :Dbrown,
+    "parent" :"Dbrown",
     "nOuts" :1
 },
 "DiskIn": {
     "methods":{
         "ar" :[
-          ["numChannels",nil],
-          ["bufnum",nil],
+          ["numChannels",null],
+          ["bufnum",null],
           ["loop",0]
         ]
     },
     "description" :"Stream in audio from a file.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "DiskOut": {
     "methods":{
         "ar" :[
-          ["bufnum",nil],
-          ["channelsArray",nil]
+          ["bufnum",null],
+          ["channelsArray",null]
         ]
     },
     "description" :"Record to a soundfile to disk.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Diwhite": {
@@ -1351,83 +1351,83 @@
         "new" :[
           ["lo",0.0],
           ["hi",1.0],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate white noise random generator.",
-    "parent" :Dwhite,
+    "parent" :"Dwhite",
     "nOuts" :1
 },
 "Done": {
     "methods":{
         "kr" :[
-          ["src",nil]
+          ["src",null]
         ]
     },
     "description" :"Monitors another UGen to see when it is finished",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Dpoll": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["in",nil],
-          ["label",nil],
+          ["in",null],
+          ["label",null],
           ["run",1],
           ["trigid",-1]
         ]
     },
     "description" :"Print the current output value of a demand rate UGen",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Drand": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
+          ["list",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate random sequence generator.",
-    "parent" :ListDUGen,
+    "parent" :"ListDUGen",
     "nOuts" :1
 },
 "Dreset": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["in",nil],
+          ["in",null],
           ["reset",0.0]
         ]
     },
     "description" :"demand rate reset",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dseq": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
+          ["list",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate sequence generator.",
-    "parent" :ListDUGen,
+    "parent" :"ListDUGen",
     "nOuts" :1
 },
 "Dser": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
+          ["list",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate sequence generator.",
-    "parent" :ListDUGen,
+    "parent" :"ListDUGen",
     "nOuts" :1
 },
 "Dseries": {
@@ -1436,72 +1436,72 @@
         "new" :[
           ["start",1],
           ["step",1],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate arithmetic series UGen.",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dshuf": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
+          ["list",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate random sequence generator",
-    "parent" :ListDUGen,
+    "parent" :"ListDUGen",
     "nOuts" :1
 },
 "Dstutter": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["n",nil],
-          ["in",nil]
+          ["n",null],
+          ["in",null]
         ]
     },
     "description" :"Demand rate input replicator",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dswitch": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
-          ["index",nil]
+          ["list",null],
+          ["index",null]
         ]
     },
     "description" :"Demand rate generator for embedding different inputs",
-    "parent" :Dswitch1,
+    "parent" :"Dswitch1",
     "nOuts" :1
 },
 "Dswitch1": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
-          ["index",nil]
+          ["list",null],
+          ["index",null]
         ]
     },
     "description" :"Demand rate generator for switching between inputs.",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dunique": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["source",nil],
+          ["source",null],
           ["maxBufferSize",1024],
           ["protected",true]
         ]
     },
     "description" :"Return the same unique series of values for several demand streams",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Dust": {
@@ -1514,7 +1514,7 @@
         ]
     },
     "description" :"Random impulses.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Dust2": {
@@ -1527,7 +1527,7 @@
         ]
     },
     "description" :"Random impulses.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Duty": {
@@ -1546,7 +1546,7 @@
         ]
     },
     "description" :"Demand results from demand rate UGens.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Dwhite": {
@@ -1555,42 +1555,42 @@
         "new" :[
           ["lo",0.0],
           ["hi",1.0],
-          ["length",inf]
+          ["length","inf"]
         ]
     },
     "description" :"Demand rate white noise random generator.",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dwrand": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
-          ["weights",nil],
+          ["list",null],
+          ["weights",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate weighted random sequence generator",
-    "parent" :DUGen,
+    "parent" :"DUGen",
     "nOuts" :1
 },
 "Dxrand": {
     "ratenew" :3,
     "methods":{
         "new" :[
-          ["list",nil],
+          ["list",null],
           ["repeats",1]
         ]
     },
     "description" :"Demand rate random sequence generator.",
-    "parent" :ListDUGen,
+    "parent" :"ListDUGen",
     "nOuts" :1
 },
 "EnvGen": {
     "methods":{
         "kr" :[
-          ["envelope",nil],
+          ["envelope",null],
           ["gate",1.0],
           ["levelScale",1.0],
           ["levelBias",0.0],
@@ -1598,7 +1598,7 @@
           ["doneAction",0]
         ],
         "ar" :[
-          ["envelope",nil],
+          ["envelope",null],
           ["gate",1.0],
           ["levelScale",1.0],
           ["levelBias",0.0],
@@ -1607,7 +1607,7 @@
         ]
     },
     "description" :"Envelope generator",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "ExpRand": {
@@ -1619,7 +1619,7 @@
         ]
     },
     "description" :"Exponential single random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "FBSineC": {
@@ -1635,7 +1635,7 @@
         ]
     },
     "description" :"Feedback sine with chaotic phase indexing",
-    "parent" :FBSineN,
+    "parent" :"FBSineN",
     "nOuts" :1
 },
 "FBSineL": {
@@ -1651,7 +1651,7 @@
         ]
     },
     "description" :"Feedback sine with chaotic phase indexing",
-    "parent" :FBSineN,
+    "parent" :"FBSineN",
     "nOuts" :1
 },
 "FBSineN": {
@@ -1667,14 +1667,14 @@
         ]
     },
     "description" :"Feedback sine with chaotic phase indexing",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "FFT": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["in",0.0],
           ["hop",0.5],
           ["wintype",0],
@@ -1683,7 +1683,7 @@
         ]
     },
     "description" :"Fast Fourier Transform",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "FOS": {
@@ -1702,7 +1702,7 @@
         ]
     },
     "description" :"First order filter section.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "FSinOsc": {
@@ -1717,7 +1717,7 @@
         ]
     },
     "description" :"Fast sine oscillator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Fold": {
@@ -1739,7 +1739,7 @@
         ]
     },
     "description" :"Fold a signal outside given thresholds.",
-    "parent" :InRange,
+    "parent" :"InRange",
     "nOuts" :1
 },
 "Formant": {
@@ -1751,7 +1751,7 @@
         ]
     },
     "description" :"Formant oscillator",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Formlet": {
@@ -1770,84 +1770,84 @@
         ]
     },
     "description" :"FOF-like filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Free": {
     "methods":{
         "kr" :[
-          ["trig",nil],
-          ["id",nil]
+          ["trig",null],
+          ["id",null]
         ]
     },
     "description" :"When triggered, frees a node.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "FreeSelf": {
     "methods":{
         "kr" :[
-          ["in",nil]
+          ["in",null]
         ]
     },
     "description" :"When triggered, free enclosing synth.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "FreeSelfWhenDone": {
     "methods":{
         "kr" :[
-          ["src",nil]
+          ["src",null]
         ]
     },
     "description" :"Free the enclosing synth when a UGen is finished",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "FreeVerb": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["mix",0.33],
           ["room",0.5],
           ["damp",0.5]
         ]
     },
     "description" :"A reverb",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "FreeVerb2": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["in2",nil],
+          ["in",null],
+          ["in2",null],
           ["mix",0.33],
           ["room",0.5],
           ["damp",0.5]
         ]
     },
     "description" :"A two-channel reverb",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
 "FreqShift": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",0.0],
           ["phase",0.0]
         ]
     },
     "description" :"Frequency Shifter.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "GVerb": {
     "methods":{
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["roomsize",10],
           ["revtime",3],
           ["damping",0.5],
@@ -1860,7 +1860,7 @@
         ]
     },
     "description" :"A two-channel reverb",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -1876,7 +1876,7 @@
         ]
     },
     "description" :"Gate or hold.",
-    "parent" :Latch,
+    "parent" :"Latch",
     "nOuts" :1
 },
 "GbmanL": {
@@ -1888,7 +1888,7 @@
         ]
     },
     "description" :"Gingerbreadman map chaotic generator",
-    "parent" :GbmanN,
+    "parent" :"GbmanN",
     "nOuts" :1
 },
 "GbmanN": {
@@ -1900,7 +1900,7 @@
         ]
     },
     "description" :"Gingerbreadman map chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "Gendy1": {
@@ -1915,7 +1915,7 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil]
+          ["knum",null]
         ],
         "ar" :[
           ["ampdist",1],
@@ -1927,11 +1927,11 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil]
+          ["knum",null]
         ]
     },
     "description" :"Dynamic stochastic synthesis generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Gendy2": {
@@ -1946,7 +1946,7 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil],
+          ["knum",null],
           ["a",1.17],
           ["c",0.31]
         ],
@@ -1960,13 +1960,13 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil],
+          ["knum",null],
           ["a",1.17],
           ["c",0.31]
         ]
     },
     "description" :"Dynamic stochastic synthesis generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Gendy3": {
@@ -1980,7 +1980,7 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil]
+          ["knum",null]
         ],
         "ar" :[
           ["ampdist",1],
@@ -1991,11 +1991,11 @@
           ["ampscale",0.5],
           ["durscale",0.5],
           ["initCPs",12],
-          ["knum",nil]
+          ["knum",null]
         ]
     },
     "description" :"Dynamic stochastic synthesis generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "GrainBuf": {
@@ -2004,7 +2004,7 @@
           ["numChannels",1],
           ["trigger",0],
           ["dur",1],
-          ["sndbuf",nil],
+          ["sndbuf",null],
           ["rate",1],
           ["pos",0],
           ["interp",2],
@@ -2014,7 +2014,7 @@
         ]
     },
     "description" :"Granular synthesis with sound stored in a buffer",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2033,7 +2033,7 @@
         ]
     },
     "description" :"Granular synthesis with frequency modulated sine tones",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2043,14 +2043,14 @@
           ["numChannels",1],
           ["trigger",0],
           ["dur",1],
-          ["in",nil],
+          ["in",null],
           ["pan",0],
           ["envbufnum",-1],
           ["maxGrains",512]
         ]
     },
     "description" :"Granulate an input signal",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2067,7 +2067,7 @@
         ]
     },
     "description" :"Granular synthesis with sine tones",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2079,7 +2079,7 @@
         ]
     },
     "description" :"Gray Noise.",
-    "parent" :WhiteNoise,
+    "parent" :"WhiteNoise",
     "nOuts" :1
 },
 "HPF": {
@@ -2094,7 +2094,7 @@
         ]
     },
     "description" :"2nd order Butterworth highpass filter.",
-    "parent" :LPF,
+    "parent" :"LPF",
     "nOuts" :1
 },
 "HPZ1": {
@@ -2107,7 +2107,7 @@
         ]
     },
     "description" :"Two point difference filter",
-    "parent" :LPZ1,
+    "parent" :"LPZ1",
     "nOuts" :1
 },
 "HPZ2": {
@@ -2120,7 +2120,7 @@
         ]
     },
     "description" :"Two zero fixed midcut.",
-    "parent" :LPZ2,
+    "parent" :"LPZ2",
     "nOuts" :1
 },
 "Hasher": {
@@ -2133,7 +2133,7 @@
         ]
     },
     "description" :"Scrambled value with a hash function.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "HenonC": {
@@ -2147,7 +2147,7 @@
         ]
     },
     "description" :"Henon map chaotic generator",
-    "parent" :HenonN,
+    "parent" :"HenonN",
     "nOuts" :1
 },
 "HenonL": {
@@ -2161,7 +2161,7 @@
         ]
     },
     "description" :"Henon map chaotic generator",
-    "parent" :HenonN,
+    "parent" :"HenonN",
     "nOuts" :1
 },
 "HenonN": {
@@ -2175,50 +2175,50 @@
         ]
     },
     "description" :"Henon map chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "Hilbert": {
     "methods":{
         "ar" :[
-          ["in",nil]
+          ["in",null]
         ]
     },
     "description" :"Applies the Hilbert transform to an input signal.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
 "IEnvGen": {
     "methods":{
         "kr" :[
-          ["envelope",nil],
-          ["index",nil]
+          ["envelope",null],
+          ["index",null]
         ],
         "ar" :[
-          ["envelope",nil],
-          ["index",nil]
+          ["envelope",null],
+          ["index",null]
         ]
     },
     "description" :"Envelope generator for polling values from an Env",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "IFFT": {
     "methods":{
         "kr" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["wintype",0],
           ["winsize",0]
         ],
         "ar" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["wintype",0],
           ["winsize",0]
         ]
     },
     "description" :"Inverse Fast Fourier Transform",
-    "parent" :WidthFirstUGen,
+    "parent" :"WidthFirstUGen",
     "nOuts" :1
 },
 "IRand": {
@@ -2230,7 +2230,7 @@
         ]
     },
     "description" :"Single integer random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Impulse": {
@@ -2245,7 +2245,7 @@
         ]
     },
     "description" :"Impulse oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "In": {
@@ -2260,7 +2260,7 @@
         ]
     },
     "description" :"Read a signal from a bus.",
-    "parent" :AbstractIn,
+    "parent" :"AbstractIn",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2272,7 +2272,7 @@
         ]
     },
     "description" :"Read signal from a bus with a current or one cycle old timestamp.",
-    "parent" :AbstractIn,
+    "parent" :"AbstractIn",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2295,7 +2295,7 @@
         ]
     },
     "description" :"Tests if a signal is within a given range.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "InRect": {
@@ -2303,16 +2303,16 @@
         "kr" :[
           ["x",0.0],
           ["y",0.0],
-          ["rect",nil]
+          ["rect",null]
         ],
         "ar" :[
           ["x",0.0],
           ["y",0.0],
-          ["rect",nil]
+          ["rect",null]
         ]
     },
     "description" :"Test if a point is within a given rectangle.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "InTrig": {
@@ -2323,53 +2323,53 @@
         ]
     },
     "description" :"Generate a trigger anytime a bus is set.",
-    "parent" :AbstractIn,
+    "parent" :"AbstractIn",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "Index": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Index into a table with a signal",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "IndexInBetween": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Finds the (lowest) point in the Buffer at which the input signal lies in-between the two values",
-    "parent" :Index,
+    "parent" :"Index",
     "nOuts" :1
 },
 "IndexL": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Index into a table with a signal, linear interpolated",
-    "parent" :Index,
+    "parent" :"Index",
     "nOuts" :1
 },
 "InfoUGenBase": {
@@ -2378,7 +2378,7 @@
         ]
     },
     "description" :"Base class for info ugens",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Integrator": {
@@ -2393,7 +2393,7 @@
         ]
     },
     "description" :"A leaky integrator.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "K2A": {
@@ -2403,7 +2403,7 @@
         ]
     },
     "description" :"Control to audio rate converter.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "KeyState": {
@@ -2416,45 +2416,45 @@
         ]
     },
     "description" :"Respond to the state of a key",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "KeyTrack": {
     "methods":{
         "kr" :[
-          ["chain",nil],
+          ["chain",null],
           ["keydecay",2.0],
           ["chromaleak",0.5]
         ]
     },
     "description" :"Key tracker",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Klang": {
     "methods":{
         "ar" :[
-          ["specificationsArrayRef",nil],
+          ["specificationsArrayRef",null],
           ["freqscale",1.0],
           ["freqoffset",0.0]
         ]
     },
     "description" :"Sine oscillator bank",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Klank": {
     "methods":{
         "ar" :[
-          ["specificationsArrayRef",nil],
-          ["input",nil],
+          ["specificationsArrayRef",null],
+          ["input",null],
           ["freqscale",1.0],
           ["freqoffset",0.0],
           ["decayscale",1.0]
         ]
     },
     "description" :"Bank of resonators",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LFClipNoise": {
@@ -2467,7 +2467,7 @@
         ]
     },
     "description" :"Clipped noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFCub": {
@@ -2482,7 +2482,7 @@
         ]
     },
     "description" :"A sine like shape made of two cubic pieces",
-    "parent" :LFSaw,
+    "parent" :"LFSaw",
     "nOuts" :1
 },
 "LFDClipNoise": {
@@ -2495,7 +2495,7 @@
         ]
     },
     "description" :"Dynamic clipped noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFDNoise0": {
@@ -2508,7 +2508,7 @@
         ]
     },
     "description" :"Dynamic step noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFDNoise1": {
@@ -2521,7 +2521,7 @@
         ]
     },
     "description" :"Dynamic ramp noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFDNoise3": {
@@ -2534,7 +2534,7 @@
         ]
     },
     "description" :"Dynamic cubic noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFGauss": {
@@ -2555,7 +2555,7 @@
         ]
     },
     "description" :"Gaussian function oscillator",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LFNoise0": {
@@ -2568,7 +2568,7 @@
         ]
     },
     "description" :"Step noise",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LFNoise1": {
@@ -2581,7 +2581,7 @@
         ]
     },
     "description" :"Ramp noise",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFNoise2": {
@@ -2594,7 +2594,7 @@
         ]
     },
     "description" :"Quadratic noise.",
-    "parent" :LFNoise0,
+    "parent" :"LFNoise0",
     "nOuts" :1
 },
 "LFPar": {
@@ -2609,7 +2609,7 @@
         ]
     },
     "description" :"Parabolic oscillator",
-    "parent" :LFSaw,
+    "parent" :"LFSaw",
     "nOuts" :1
 },
 "LFPulse": {
@@ -2626,7 +2626,7 @@
         ]
     },
     "description" :"pulse oscillator",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "LFSaw": {
@@ -2641,7 +2641,7 @@
         ]
     },
     "description" :"Sawtooth oscillator",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "LFTri": {
@@ -2656,7 +2656,7 @@
         ]
     },
     "description" :"Triangle oscillator",
-    "parent" :LFSaw,
+    "parent" :"LFSaw",
     "nOuts" :1
 },
 "LPF": {
@@ -2671,7 +2671,7 @@
         ]
     },
     "description" :"2nd order Butterworth lowpass filter",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "LPZ1": {
@@ -2684,7 +2684,7 @@
         ]
     },
     "description" :"Two point average filter",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "LPZ2": {
@@ -2697,7 +2697,7 @@
         ]
     },
     "description" :"Two zero fixed lowpass",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Lag": {
@@ -2712,7 +2712,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :0
 },
 "Lag2": {
@@ -2727,7 +2727,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :Lag,
+    "parent" :"Lag",
     "nOuts" :0
 },
 "Lag2UD": {
@@ -2744,7 +2744,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :LagUD,
+    "parent" :"LagUD",
     "nOuts" :0
 },
 "Lag3": {
@@ -2759,7 +2759,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :Lag,
+    "parent" :"Lag",
     "nOuts" :0
 },
 "Lag3UD": {
@@ -2776,7 +2776,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :LagUD,
+    "parent" :"LagUD",
     "nOuts" :0
 },
 "LagIn": {
@@ -2788,7 +2788,7 @@
         ]
     },
     "description" :"Read a control signal from a bus with a lag",
-    "parent" :AbstractIn,
+    "parent" :"AbstractIn",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -2806,7 +2806,7 @@
         ]
     },
     "description" :"Exponential lag",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :0
 },
 "LastValue": {
@@ -2821,7 +2821,7 @@
         ]
     },
     "description" :"Output the last value before the input changed",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Latch": {
@@ -2836,7 +2836,7 @@
         ]
     },
     "description" :"Sample and hold",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LatoocarfianC": {
@@ -2852,7 +2852,7 @@
         ]
     },
     "description" :"Latoocarfian chaotic generator",
-    "parent" :LatoocarfianN,
+    "parent" :"LatoocarfianN",
     "nOuts" :1
 },
 "LatoocarfianL": {
@@ -2868,7 +2868,7 @@
         ]
     },
     "description" :"Latoocarfian chaotic generator",
-    "parent" :LatoocarfianN,
+    "parent" :"LatoocarfianN",
     "nOuts" :1
 },
 "LatoocarfianN": {
@@ -2884,7 +2884,7 @@
         ]
     },
     "description" :"Latoocarfian chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "LeakDC": {
@@ -2899,7 +2899,7 @@
         ]
     },
     "description" :"Remove DC",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "LeastChange": {
@@ -2914,7 +2914,7 @@
         ]
     },
     "description" :"Output least changed",
-    "parent" :MostChange,
+    "parent" :"MostChange",
     "nOuts" :1
 },
 "Limiter": {
@@ -2926,7 +2926,7 @@
         ]
     },
     "description" :"Peak limiter",
-    "parent" :Normalizer,
+    "parent" :"Normalizer",
     "nOuts" :1
 },
 "LinCongC": {
@@ -2940,7 +2940,7 @@
         ]
     },
     "description" :"Linear congruential chaotic generator",
-    "parent" :LinCongN,
+    "parent" :"LinCongN",
     "nOuts" :1
 },
 "LinCongL": {
@@ -2954,7 +2954,7 @@
         ]
     },
     "description" :"Linear congruential chaotic generator",
-    "parent" :LinCongN,
+    "parent" :"LinCongN",
     "nOuts" :1
 },
 "LinCongN": {
@@ -2968,7 +2968,7 @@
         ]
     },
     "description" :"Linear congruential chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "LinExp": {
@@ -2989,24 +2989,24 @@
         ]
     },
     "description" :"Map a linear range to an exponential range",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "LinPan2": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Two channel linear pan.",
-    "parent" :Pan2,
+    "parent" :"Pan2",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -3020,26 +3020,26 @@
         ]
     },
     "description" :"Skewed random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LinXFade2": {
     "methods":{
         "kr" :[
-          ["inA",nil],
+          ["inA",null],
           ["inB",0.0],
           ["pan",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["inA",nil],
+          ["inA",null],
           ["inB",0.0],
           ["pan",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Two channel linear crossfade.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Line": {
@@ -3058,7 +3058,7 @@
         ]
     },
     "description" :"Line generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Linen": {
@@ -3072,7 +3072,7 @@
         ]
     },
     "description" :"Simple linear envelope generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LocalBuf": {
@@ -3084,7 +3084,7 @@
         ]
     },
     "description" :"Allocate a buffer local to the synth",
-    "parent" :WidthFirstUGen,
+    "parent" :"WidthFirstUGen",
     "nOuts" :1
 },
 "LocalIn": {
@@ -3099,7 +3099,7 @@
         ]
     },
     "description" :"Define and read from buses local to a synth.",
-    "parent" :AbstractIn,
+    "parent" :"AbstractIn",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -3107,14 +3107,14 @@
     "isOut" :true,
     "methods":{
         "kr" :[
-          ["channelsArray",nil]
+          ["channelsArray",null]
         ],
         "ar" :[
-          ["channelsArray",nil]
+          ["channelsArray",null]
         ]
     },
     "description" :"Write to buses local to a synth.",
-    "parent" :AbstractOut,
+    "parent" :"AbstractOut",
     "nOuts" :0
 },
 "Logistic": {
@@ -3131,7 +3131,7 @@
         ]
     },
     "description" :"Chaotic noise function",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "LorenzL": {
@@ -3148,30 +3148,30 @@
         ]
     },
     "description" :"Lorenz chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "Loudness": {
     "methods":{
         "kr" :[
-          ["chain",nil],
+          ["chain",null],
           ["smask",0.25],
           ["tmask",1]
         ]
     },
     "description" :"Extraction of instantaneous loudness in sones",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "MFCC": {
     "methods":{
         "kr" :[
-          ["chain",nil],
+          ["chain",null],
           ["numcoeff",13]
         ]
     },
     "description" :"Mel frequency cepstral coefficients",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :13
 },
@@ -3187,7 +3187,7 @@
         ]
     },
     "description" :"Reduce precision.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Median": {
@@ -3202,7 +3202,7 @@
         ]
     },
     "description" :"Median filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "MidEQ": {
@@ -3221,7 +3221,7 @@
         ]
     },
     "description" :"Parametric filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "ModDif": {
@@ -3243,26 +3243,26 @@
         ]
     },
     "description" :"Minimum difference of two values in modulo arithmetics",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "MoogFF": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["freq",100],
           ["gain",2],
           ["reset",0]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["freq",100],
           ["gain",2],
           ["reset",0]
         ]
     },
     "description" :"Moog VCF implementation, designed by Federico Fontana",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "MostChange": {
@@ -3277,7 +3277,7 @@
         ]
     },
     "description" :"Output most changed.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "MouseButton": {
@@ -3289,7 +3289,7 @@
         ]
     },
     "description" :"Mouse button UGen.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "MouseX": {
@@ -3302,7 +3302,7 @@
         ]
     },
     "description" :"Cursor tracking UGen.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "MouseY": {
@@ -3315,7 +3315,7 @@
         ]
     },
     "description" :"Cursor tracking UGen.",
-    "parent" :MouseX,
+    "parent" :"MouseX",
     "nOuts" :1
 },
 "NRand": {
@@ -3328,7 +3328,7 @@
         ]
     },
     "description" :"Sum of uniform distributions.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "NodeID": {
@@ -3337,7 +3337,7 @@
         ]
     },
     "description" :"(Undocumented class)",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "Normalizer": {
@@ -3349,7 +3349,7 @@
         ]
     },
     "description" :"Flattens dynamics.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "NumAudioBuses": {
@@ -3358,7 +3358,7 @@
         ]
     },
     "description" :"Number of audio busses.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "NumBuffers": {
@@ -3367,7 +3367,7 @@
         ]
     },
     "description" :"Number of open buffers.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "NumControlBuses": {
@@ -3376,7 +3376,7 @@
         ]
     },
     "description" :"Number of control busses.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "NumInputBuses": {
@@ -3385,7 +3385,7 @@
         ]
     },
     "description" :"Number of input busses.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "NumOutputBuses": {
@@ -3394,7 +3394,7 @@
         ]
     },
     "description" :"Number of output busses.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "NumRunningSynths": {
@@ -3405,7 +3405,7 @@
         ]
     },
     "description" :"Number of currently running synths.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "OffsetOut": {
@@ -3414,12 +3414,12 @@
         "kr" :[
         ],
         "ar" :[
-          ["bus",nil],
-          ["channelsArray",nil]
+          ["bus",null],
+          ["channelsArray",null]
         ]
     },
     "description" :"Write a signal to a bus with sample accurate timing.",
-    "parent" :Out,
+    "parent" :"Out",
     "nOuts" :0
 },
 "OnePole": {
@@ -3434,7 +3434,7 @@
         ]
     },
     "description" :"One pole filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "OneZero": {
@@ -3449,15 +3449,15 @@
         ]
     },
     "description" :"One zero filter.",
-    "parent" :OnePole,
+    "parent" :"OnePole",
     "nOuts" :1
 },
 "Onsets": {
     "methods":{
         "kr" :[
-          ["chain",nil],
+          ["chain",null],
           ["threshold",0.5],
-          ["odftype",rcomplex],
+          ["odftype","rcomplex"],
           ["relaxtime",1],
           ["floor",0.1],
           ["mingap",10],
@@ -3467,41 +3467,41 @@
         ]
     },
     "description" :"Onset detector",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Osc": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["phase",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["phase",0.0]
         ]
     },
     "description" :"Interpolating wavetable oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "OscN": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["phase",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["freq",440.0],
           ["phase",0.0]
         ]
     },
     "description" :"Noninterpolating wavetable oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "PSinGrain": {
@@ -3513,72 +3513,72 @@
         ]
     },
     "description" :"Very fast sine grain with a parabolic envelope",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PV_Add": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Complex addition.",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_BinScramble": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["wipe",0.0],
           ["width",0.2],
           ["trig",0.0]
         ]
     },
     "description" :"Scramble bins.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_BinShift": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["stretch",1.0],
           ["shift",0.0],
           ["interp",0]
         ]
     },
     "description" :"Shift and stretch bin position.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_BinWipe": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil],
+          ["bufferA",null],
+          ["bufferB",null],
           ["wipe",0.0]
         ]
     },
     "description" :"Combine low and high bins from two inputs.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_BrickWall": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["wipe",0.0]
         ]
     },
     "description" :"Zero bins.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_ChainUGen": {
@@ -3589,85 +3589,85 @@
         ]
     },
     "description" :"Base class for UGens that operate on FFT chains",
-    "parent" :WidthFirstUGen,
+    "parent" :"WidthFirstUGen",
     "nOuts" :1
 },
 "PV_ConformalMap": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["areal",0.0],
           ["aimag",0.0]
         ]
     },
     "description" :"Complex plane attack.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_Conj": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Complex conjugate",
-    "parent" :PV_MagSquared,
+    "parent" :"PV_MagSquared",
     "nOuts" :1
 },
 "PV_Copy": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Copy an FFT buffer",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_CopyPhase": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Copy magnitudes and phases.",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_Diffuser": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["trig",0.0]
         ]
     },
     "description" :"Random phase shifting.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_Div": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Complex division",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_HainsworthFoote": {
     "methods":{
         "ar" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["proph",0.0],
           ["propf",0.0],
           ["threshold",1.0],
@@ -3675,13 +3675,13 @@
         ]
     },
     "description" :"FFT onset detector.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_JensenAndersen": {
     "methods":{
         "ar" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["propsc",0.25],
           ["prophfe",0.25],
           ["prophfc",0.25],
@@ -3691,319 +3691,319 @@
         ]
     },
     "description" :"FFT feature detector for onset detection.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_LocalMax": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["threshold",0.0]
         ]
     },
     "description" :"Pass bins which are a local maximum.",
-    "parent" :PV_MagAbove,
+    "parent" :"PV_MagAbove",
     "nOuts" :1
 },
 "PV_MagAbove": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["threshold",0.0]
         ]
     },
     "description" :"Pass bins above a threshold.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagBelow": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["threshold",0.0]
         ]
     },
     "description" :"Pass bins below a threshold.",
-    "parent" :PV_MagAbove,
+    "parent" :"PV_MagAbove",
     "nOuts" :1
 },
 "PV_MagClip": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["threshold",0.0]
         ]
     },
     "description" :"Clip bins to a threshold.",
-    "parent" :PV_MagAbove,
+    "parent" :"PV_MagAbove",
     "nOuts" :1
 },
 "PV_MagDiv": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil],
+          ["bufferA",null],
+          ["bufferB",null],
           ["zeroed",0.0001]
         ]
     },
     "description" :"Division of magnitudes",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagFreeze": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["freeze",0.0]
         ]
     },
     "description" :"Freeze magnitudes.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagMul": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Multiply magnitudes.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagNoise": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Multiply magnitudes by noise.",
-    "parent" :PV_MagSquared,
+    "parent" :"PV_MagSquared",
     "nOuts" :1
 },
 "PV_MagShift": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["stretch",1.0],
           ["shift",0.0]
         ]
     },
     "description" :"shift and stretch magnitude bin position.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagSmear": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["bins",0.0]
         ]
     },
     "description" :"Average magnitudes across bins.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_MagSquared": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Square magnitudes.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_Max": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Maximum magnitude.",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_Min": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Minimum magnitude.",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_Mul": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil]
+          ["bufferA",null],
+          ["bufferB",null]
         ]
     },
     "description" :"Complex multiply.",
-    "parent" :PV_MagMul,
+    "parent" :"PV_MagMul",
     "nOuts" :1
 },
 "PV_PhaseShift": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
-          ["shift",nil],
+          ["buffer",null],
+          ["shift",null],
           ["integrate",0]
         ]
     },
     "description" :"Shift phase.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_PhaseShift270": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Shift phase by 270 degrees.",
-    "parent" :PV_MagSquared,
+    "parent" :"PV_MagSquared",
     "nOuts" :1
 },
 "PV_PhaseShift90": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Shift phase by 90 degrees.",
-    "parent" :PV_MagSquared,
+    "parent" :"PV_MagSquared",
     "nOuts" :1
 },
 "PV_RandComb": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["wipe",0.0],
           ["trig",0.0]
         ]
     },
     "description" :"Pass random bins.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_RandWipe": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil],
+          ["bufferA",null],
+          ["bufferB",null],
           ["wipe",0.0],
           ["trig",0.0]
         ]
     },
     "description" :"Crossfade in random bin order.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_RectComb": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["numTeeth",0.0],
           ["phase",0.0],
           ["width",0.5]
         ]
     },
     "description" :"Make gaps in spectrum.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "PV_RectComb2": {
     "ratenew" :1,
     "methods":{
         "new" :[
-          ["bufferA",nil],
-          ["bufferB",nil],
+          ["bufferA",null],
+          ["bufferB",null],
           ["numTeeth",0.0],
           ["phase",0.0],
           ["width",0.5]
         ]
     },
     "description" :"Make gaps in spectrum.",
-    "parent" :PV_ChainUGen,
+    "parent" :"PV_ChainUGen",
     "nOuts" :1
 },
 "Pan2": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Two channel equal power pan.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
 "Pan4": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["xpos",0.0],
           ["ypos",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["xpos",0.0],
           ["ypos",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Four channel equal power pan.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :4
 },
 "PanAz": {
     "methods":{
         "kr" :[
-          ["numChans",nil],
-          ["in",nil],
+          ["numChans",null],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0],
           ["width",2.0],
           ["orientation",0.5]
         ],
         "ar" :[
-          ["numChans",nil],
-          ["in",nil],
+          ["numChans",null],
+          ["in",null],
           ["pos",0.0],
           ["level",1.0],
           ["width",2.0],
@@ -4011,89 +4011,89 @@
         ]
     },
     "description" :"Azimuth panner",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :0
 },
 "PanB": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["azimuth",0],
           ["elevation",0],
           ["gain",1]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["azimuth",0],
           ["elevation",0],
           ["gain",1]
         ]
     },
     "description" :"Ambisonic B-format panner.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :4
 },
 "PanB2": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["azimuth",0],
           ["gain",1]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["azimuth",0],
           ["gain",1]
         ]
     },
     "description" :"2D Ambisonic B-format panner.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :3
 },
 "PartConv": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["fftsize",nil],
-          ["irbufnum",nil]
+          ["in",null],
+          ["fftsize",null],
+          ["irbufnum",null]
         ]
     },
     "description" :"Real-time partitioned convolution",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Pause": {
     "methods":{
         "kr" :[
-          ["gate",nil],
-          ["id",nil]
+          ["gate",null],
+          ["id",null]
         ]
     },
     "description" :"When triggered, pauses a node.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PauseSelf": {
     "methods":{
         "kr" :[
-          ["in",nil]
+          ["in",null]
         ]
     },
     "description" :"When triggered, pause enclosing synth.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PauseSelfWhenDone": {
     "methods":{
         "kr" :[
-          ["src",nil]
+          ["src",null]
         ]
     },
     "description" :"FIXME: PauseSelfWhenDone purpose.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Peak": {
@@ -4108,7 +4108,7 @@
         ]
     },
     "description" :"Track peak signal amplitude.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PeakFollower": {
@@ -4123,7 +4123,7 @@
         ]
     },
     "description" :"Track peak signal amplitude.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Phasor": {
@@ -4144,7 +4144,7 @@
         ]
     },
     "description" :"A resettable linear ramp between two levels.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PinkNoise": {
@@ -4155,7 +4155,7 @@
         ]
     },
     "description" :"Pink Noise.",
-    "parent" :WhiteNoise,
+    "parent" :"WhiteNoise",
     "nOuts" :1
 },
 "Pitch": {
@@ -4175,7 +4175,7 @@
         ]
     },
     "description" :"Autocorrelation pitch follower",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -4190,13 +4190,13 @@
         ]
     },
     "description" :"Time domain pitch shifter.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PlayBuf": {
     "methods":{
         "kr" :[
-          ["numChannels",nil],
+          ["numChannels",null],
           ["bufnum",0],
           ["rate",1.0],
           ["trigger",1.0],
@@ -4205,7 +4205,7 @@
           ["doneAction",0]
         ],
         "ar" :[
-          ["numChannels",nil],
+          ["numChannels",null],
           ["bufnum",0],
           ["rate",1.0],
           ["trigger",1.0],
@@ -4215,7 +4215,7 @@
         ]
     },
     "description" :"Sample playback oscillator.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -4231,26 +4231,26 @@
         ]
     },
     "description" :"A Karplus-Strong UGen",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Poll": {
     "methods":{
         "kr" :[
-          ["trig",nil],
-          ["in",nil],
-          ["label",nil],
+          ["trig",null],
+          ["in",null],
+          ["label",null],
           ["trigid",-1]
         ],
         "ar" :[
-          ["trig",nil],
-          ["in",nil],
-          ["label",nil],
+          ["trig",null],
+          ["in",null],
+          ["label",null],
           ["trigid",-1]
         ]
     },
     "description" :"Print the current output value of a UGen",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Pulse": {
@@ -4265,7 +4265,7 @@
         ]
     },
     "description" :"Band limited pulse wave.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PulseCount": {
@@ -4280,7 +4280,7 @@
         ]
     },
     "description" :"Pulse counter.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "PulseDivider": {
@@ -4297,7 +4297,7 @@
         ]
     },
     "description" :"Pulse divider.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "QuadC": {
@@ -4311,7 +4311,7 @@
         ]
     },
     "description" :"General quadratic map chaotic generator",
-    "parent" :QuadN,
+    "parent" :"QuadN",
     "nOuts" :1
 },
 "QuadL": {
@@ -4325,7 +4325,7 @@
         ]
     },
     "description" :"General quadratic map chaotic generator",
-    "parent" :QuadN,
+    "parent" :"QuadN",
     "nOuts" :1
 },
 "QuadN": {
@@ -4339,7 +4339,7 @@
         ]
     },
     "description" :"General quadratic map chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "RHPF": {
@@ -4356,7 +4356,7 @@
         ]
     },
     "description" :"A resonant high pass filter.",
-    "parent" :RLPF,
+    "parent" :"RLPF",
     "nOuts" :1
 },
 "RLPF": {
@@ -4373,7 +4373,7 @@
         ]
     },
     "description" :"A resonant low pass filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "RadiansPerSample": {
@@ -4382,7 +4382,7 @@
         ]
     },
     "description" :"Number of radians per sample.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "Ramp": {
@@ -4397,7 +4397,7 @@
         ]
     },
     "description" :"Break a continuous signal into line segments",
-    "parent" :Lag,
+    "parent" :"Lag",
     "nOuts" :0
 },
 "Rand": {
@@ -4409,7 +4409,7 @@
         ]
     },
     "description" :"Single random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "RandID": {
@@ -4422,7 +4422,7 @@
         ]
     },
     "description" :"Set the synth's random generator ID.",
-    "parent" :WidthFirstUGen,
+    "parent" :"WidthFirstUGen",
     "nOuts" :0
 },
 "RandSeed": {
@@ -4441,13 +4441,13 @@
         ]
     },
     "description" :"Sets the synth's random generator seed.",
-    "parent" :WidthFirstUGen,
+    "parent" :"WidthFirstUGen",
     "nOuts" :0
 },
 "RecordBuf": {
     "methods":{
         "kr" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0],
           ["offset",0.0],
           ["recLevel",1.0],
@@ -4458,7 +4458,7 @@
           ["doneAction",0]
         ],
         "ar" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0],
           ["offset",0.0],
           ["recLevel",1.0],
@@ -4470,23 +4470,23 @@
         ]
     },
     "description" :"Record or overdub into a Buffer.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "ReplaceOut": {
     "isOut" :true,
     "methods":{
         "kr" :[
-          ["bus",nil],
-          ["channelsArray",nil]
+          ["bus",null],
+          ["channelsArray",null]
         ],
         "ar" :[
-          ["bus",nil],
-          ["channelsArray",nil]
+          ["bus",null],
+          ["channelsArray",null]
         ]
     },
     "description" :"Send signal to a bus, overwriting previous contents.",
-    "parent" :Out,
+    "parent" :"Out",
     "nOuts" :0
 },
 "Resonz": {
@@ -4503,7 +4503,7 @@
         ]
     },
     "description" :"Resonant filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Ringz": {
@@ -4520,24 +4520,24 @@
         ]
     },
     "description" :"Ringing filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "Rotate2": {
     "methods":{
         "kr" :[
-          ["x",nil],
-          ["y",nil],
+          ["x",null],
+          ["y",null],
           ["pos",0.0]
         ],
         "ar" :[
-          ["x",nil],
-          ["y",nil],
+          ["x",null],
+          ["y",null],
           ["pos",0.0]
         ]
     },
     "description" :"Rotate a sound field.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -4553,7 +4553,7 @@
         ]
     },
     "description" :"Track maximum level.",
-    "parent" :Peak,
+    "parent" :"Peak",
     "nOuts" :1
 },
 "RunningMin": {
@@ -4568,22 +4568,22 @@
         ]
     },
     "description" :"Track minimum level.",
-    "parent" :Peak,
+    "parent" :"Peak",
     "nOuts" :1
 },
 "RunningSum": {
     "methods":{
         "kr" :[
-          ["in",nil],
+          ["in",null],
           ["numsamp",40]
         ],
         "ar" :[
-          ["in",nil],
+          ["in",null],
           ["numsamp",40]
         ]
     },
     "description" :"Running sum over n frames",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "SOS": {
@@ -4606,7 +4606,7 @@
         ]
     },
     "description" :"Second order filter section (biquad).",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "SampleDur": {
@@ -4615,7 +4615,7 @@
         ]
     },
     "description" :"Duration of one sample.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "SampleRate": {
@@ -4624,7 +4624,7 @@
         ]
     },
     "description" :"Server sample rate.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "Sanitize": {
@@ -4639,7 +4639,7 @@
         ]
     },
     "description" :"Remove infinity, NaN, and denormals",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Saw": {
@@ -4652,7 +4652,7 @@
         ]
     },
     "description" :"Band limited sawtooth.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Schmidt": {
@@ -4674,56 +4674,56 @@
         ]
     },
     "description" :"Schmidt trigger.",
-    "parent" :InRange,
+    "parent" :"InRange",
     "nOuts" :1
 },
 "ScopeOut": {
     "methods":{
         "kr" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0]
         ],
         "ar" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["bufnum",0]
         ]
     },
     "description" :"FIXME: ScopeOut purpose.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :0
 },
 "ScopeOut2": {
     "methods":{
         "kr" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["scopeNum",0],
           ["maxFrames",4096],
-          ["scopeFrames",nil]
+          ["scopeFrames",null]
         ],
         "ar" :[
-          ["inputArray",nil],
+          ["inputArray",null],
           ["scopeNum",0],
           ["maxFrames",4096],
-          ["scopeFrames",nil]
+          ["scopeFrames",null]
         ]
     },
     "description" :"(Undocumented class)",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :0
 },
 "Select": {
     "methods":{
         "kr" :[
-          ["which",nil],
-          ["array",nil]
+          ["which",null],
+          ["array",null]
         ],
         "ar" :[
-          ["which",nil],
-          ["array",nil]
+          ["which",null],
+          ["array",null]
         ]
     },
     "description" :"Select output from an array of inputs.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "SendTrig": {
@@ -4740,7 +4740,7 @@
         ]
     },
     "description" :"Send a trigger message from the server back to the client.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :0
 },
 "SetResetFF": {
@@ -4755,22 +4755,22 @@
         ]
     },
     "description" :"Set-reset flip flop.",
-    "parent" :PulseCount,
+    "parent" :"PulseCount",
     "nOuts" :1
 },
 "Shaper": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Wave shaper.",
-    "parent" :Index,
+    "parent" :"Index",
     "nOuts" :1
 },
 "SinOsc": {
@@ -4785,7 +4785,7 @@
         ]
     },
     "description" :"Interpolating sine wavetable oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "SinOscFB": {
@@ -4800,7 +4800,7 @@
         ]
     },
     "description" :"Feedback FM oscillator",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Slew": {
@@ -4817,7 +4817,7 @@
         ]
     },
     "description" :"Slew rate limiter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :0
 },
 "Slope": {
@@ -4830,39 +4830,39 @@
         ]
     },
     "description" :"Slope of signal",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "SpecCentroid": {
     "methods":{
         "kr" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Spectral centroid",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "SpecFlatness": {
     "methods":{
         "kr" :[
-          ["buffer",nil]
+          ["buffer",null]
         ]
     },
     "description" :"Spectral Flatness measure",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "SpecPcile": {
     "methods":{
         "kr" :[
-          ["buffer",nil],
+          ["buffer",null],
           ["fraction",0.5],
           ["interpolate",0]
         ]
     },
     "description" :"Find a percentile of FFT magnitude spectrum",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Spring": {
@@ -4879,7 +4879,7 @@
         ]
     },
     "description" :"physical model of resonating spring",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "StandardL": {
@@ -4892,7 +4892,7 @@
         ]
     },
     "description" :"Standard map chaotic generator",
-    "parent" :StandardN,
+    "parent" :"StandardN",
     "nOuts" :1
 },
 "StandardN": {
@@ -4905,7 +4905,7 @@
         ]
     },
     "description" :"Standard map chaotic generator",
-    "parent" :ChaosGen,
+    "parent" :"ChaosGen",
     "nOuts" :1
 },
 "Stepper": {
@@ -4916,7 +4916,7 @@
           ["min",0],
           ["max",7],
           ["step",1],
-          ["resetval",nil]
+          ["resetval",null]
         ],
         "ar" :[
           ["trig",0],
@@ -4924,26 +4924,26 @@
           ["min",0],
           ["max",7],
           ["step",1],
-          ["resetval",nil]
+          ["resetval",null]
         ]
     },
     "description" :"Pulse counter.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "StereoConvolution2L": {
     "methods":{
         "ar" :[
-          ["in",nil],
-          ["kernelL",nil],
-          ["kernelR",nil],
+          ["in",null],
+          ["kernelL",null],
+          ["kernelR",null],
           ["trigger",0],
           ["framesize",2048],
           ["crossfade",1]
         ]
     },
     "description" :"Stereo real-time convolver with linear interpolation",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :2
 },
@@ -4953,34 +4953,34 @@
         ]
     },
     "description" :"Offset from synth start within one sample.",
-    "parent" :InfoUGenBase,
+    "parent" :"InfoUGenBase",
     "nOuts" :1
 },
 "Sum3": {
     "ratenew" :0,
     "methods":{
         "new" :[
-          ["in0",nil],
-          ["in1",nil],
-          ["in2",nil]
+          ["in0",null],
+          ["in1",null],
+          ["in2",null]
         ]
     },
     "description" :"Sum three signals",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Sum4": {
     "ratenew" :0,
     "methods":{
         "new" :[
-          ["in0",nil],
-          ["in1",nil],
-          ["in2",nil],
-          ["in3",nil]
+          ["in0",null],
+          ["in1",null],
+          ["in2",null],
+          ["in3",null]
         ]
     },
     "description" :"Sum four signals",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Sweep": {
@@ -4995,7 +4995,7 @@
         ]
     },
     "description" :"Triggered linear ramp",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "SyncSaw": {
@@ -5010,7 +5010,7 @@
         ]
     },
     "description" :"Hard sync sawtooth wave.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "T2A": {
@@ -5021,7 +5021,7 @@
         ]
     },
     "description" :"Control rate trigger to audio rate trigger converter",
-    "parent" :K2A,
+    "parent" :"K2A",
     "nOuts" :1
 },
 "T2K": {
@@ -5031,7 +5031,7 @@
         ]
     },
     "description" :"Audio rate trigger to control rate trigger converter",
-    "parent" :A2K,
+    "parent" :"A2K",
     "nOuts" :1
 },
 "TBall": {
@@ -5050,7 +5050,7 @@
         ]
     },
     "description" :"physical model of bouncing object",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "TDelay": {
@@ -5065,7 +5065,7 @@
         ]
     },
     "description" :"Trigger delay.",
-    "parent" :Trig1,
+    "parent" :"Trig1",
     "nOuts" :1
 },
 "TDuty": {
@@ -5086,7 +5086,7 @@
         ]
     },
     "description" :"Demand results as trigger from demand rate UGens.",
-    "parent" :Duty,
+    "parent" :"Duty",
     "nOuts" :1
 },
 "TExpRand": {
@@ -5103,13 +5103,13 @@
         ]
     },
     "description" :"Triggered exponential random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "TGrains": {
     "methods":{
         "ar" :[
-          ["numChannels",nil],
+          ["numChannels",null],
           ["trigger",0],
           ["bufnum",0],
           ["rate",1],
@@ -5121,7 +5121,7 @@
         ]
     },
     "description" :"Buffer granulator.",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -5139,7 +5139,7 @@
         ]
     },
     "description" :"Triggered integer random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "TRand": {
@@ -5156,24 +5156,24 @@
         ]
     },
     "description" :"Triggered random number generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "TWindex": {
     "methods":{
         "kr" :[
-          ["in",nil],
-          ["array",nil],
+          ["in",null],
+          ["array",null],
           ["normalize",0]
         ],
         "ar" :[
-          ["in",nil],
-          ["array",nil],
+          ["in",null],
+          ["array",null],
           ["normalize",0]
         ]
     },
     "description" :"Triggered windex.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Timer": {
@@ -5186,7 +5186,7 @@
         ]
     },
     "description" :"Returns time since last triggered.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "ToggleFF": {
@@ -5199,7 +5199,7 @@
         ]
     },
     "description" :"Toggle flip flop.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Trig": {
@@ -5214,7 +5214,7 @@
         ]
     },
     "description" :"Timed trigger.",
-    "parent" :Trig1,
+    "parent" :"Trig1",
     "nOuts" :1
 },
 "Trig1": {
@@ -5229,20 +5229,20 @@
         ]
     },
     "description" :"Timed trigger.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "TrigControl": {
     "methods":{
         "kr" :[
-          ["values",nil]
+          ["values",null]
         ],
         "ir" :[
-          ["values",nil]
+          ["values",null]
         ]
     },
     "description" :"FIXME: TrigControl purpose.",
-    "parent" :Control,
+    "parent" :"Control",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -5260,7 +5260,7 @@
         ]
     },
     "description" :"Two pole filter.",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :1
 },
 "TwoZero": {
@@ -5277,58 +5277,58 @@
         ]
     },
     "description" :"Two zero filter.",
-    "parent" :TwoPole,
+    "parent" :"TwoPole",
     "nOuts" :1
 },
 "VDiskIn": {
     "methods":{
         "ar" :[
-          ["numChannels",nil],
-          ["bufnum",nil],
+          ["numChannels",null],
+          ["bufnum",null],
           ["rate",1],
           ["loop",0],
           ["sendID",0]
         ]
     },
     "description" :"Stream in audio from a file, with variable rate",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
 "VOsc": {
     "methods":{
         "kr" :[
-          ["bufpos",nil],
+          ["bufpos",null],
           ["freq",440.0],
           ["phase",0.0]
         ],
         "ar" :[
-          ["bufpos",nil],
+          ["bufpos",null],
           ["freq",440.0],
           ["phase",0.0]
         ]
     },
     "description" :"Variable wavetable oscillator.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "VOsc3": {
     "methods":{
         "kr" :[
-          ["bufpos",nil],
+          ["bufpos",null],
           ["freq1",110.0],
           ["freq2",220.0],
           ["freq3",440.0]
         ],
         "ar" :[
-          ["bufpos",nil],
+          ["bufpos",null],
           ["freq1",110.0],
           ["freq2",220.0],
           ["freq3",440.0]
         ]
     },
     "description" :"Three variable wavetable oscillators.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "VarLag": {
@@ -5338,18 +5338,18 @@
           ["time",0.1],
           ["curvature",0],
           ["warp",5],
-          ["start",nil]
+          ["start",null]
         ],
         "ar" :[
           ["in",0.0],
           ["time",0.1],
           ["curvature",0],
           ["warp",5],
-          ["start",nil]
+          ["start",null]
         ]
     },
     "description" :"Variable shaped lag",
-    "parent" :Filter,
+    "parent" :"Filter",
     "nOuts" :0
 },
 "VarSaw": {
@@ -5366,7 +5366,7 @@
         ]
     },
     "description" :"Variable duty saw",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Vibrato": {
@@ -5395,7 +5395,7 @@
         ]
     },
     "description" :"The Vibrato oscillator models a slow frequency modulation.",
-    "parent" :PureUGen,
+    "parent" :"PureUGen",
     "nOuts" :1
 },
 "Warp1": {
@@ -5413,7 +5413,7 @@
         ]
     },
     "description" :"Warp a buffer with a time pointer",
-    "parent" :MultiOutUGen,
+    "parent" :"MultiOutUGen",
     "isMultiOut" :true,
     "nOuts" :1
 },
@@ -5425,7 +5425,7 @@
         ]
     },
     "description" :"White noise.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "Wrap": {
@@ -5447,41 +5447,41 @@
         ]
     },
     "description" :"Wrap a signal outside given thresholds.",
-    "parent" :InRange,
+    "parent" :"InRange",
     "nOuts" :1
 },
 "WrapIndex": {
     "methods":{
         "kr" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ],
         "ar" :[
-          ["bufnum",nil],
+          ["bufnum",null],
           ["in",0.0]
         ]
     },
     "description" :"Index into a table with a signal.",
-    "parent" :Index,
+    "parent" :"Index",
     "nOuts" :1
 },
 "XFade2": {
     "methods":{
         "kr" :[
-          ["inA",nil],
+          ["inA",null],
           ["inB",0.0],
           ["pan",0.0],
           ["level",1.0]
         ],
         "ar" :[
-          ["inA",nil],
+          ["inA",null],
           ["inB",0.0],
           ["pan",0.0],
           ["level",1.0]
         ]
     },
     "description" :"Equal power two channel cross fade.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "XLine": {
@@ -5500,25 +5500,25 @@
         ]
     },
     "description" :"Exponential line generator.",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 },
 "XOut": {
     "isOut" :true,
     "methods":{
         "kr" :[
-          ["bus",nil],
-          ["xfade",nil],
-          ["channelsArray",nil]
+          ["bus",null],
+          ["xfade",null],
+          ["channelsArray",null]
         ],
         "ar" :[
-          ["bus",nil],
-          ["xfade",nil],
-          ["channelsArray",nil]
+          ["bus",null],
+          ["xfade",null],
+          ["channelsArray",null]
         ]
     },
     "description" :"Send signal to a bus, crossfading with previous contents.",
-    "parent" :AbstractOut,
+    "parent" :"AbstractOut",
     "nOuts" :0
 },
 "ZeroCrossing": {
@@ -5531,7 +5531,7 @@
         ]
     },
     "description" :"Zero crossing frequency follower",
-    "parent" :UGen,
+    "parent" :"UGen",
     "nOuts" :1
 }
 }
