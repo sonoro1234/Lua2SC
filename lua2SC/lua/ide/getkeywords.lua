@@ -38,12 +38,12 @@ local function bodyKeyWords()
 			end
 			setmetatable(_G, {__newindex = newindex})
 			require"sc.callback_wrappers"
+			require("sc.utils")
 			require("sc.gui")
 			require("sc.sc_comm")
 			require("sc.synthdefsc")
 			require("sc.playerssc")
 			require("sc.stream")
-			require("sc.utils")
 			require("sc.miditoosc")
 			require("sc.playersscgui")
 			require("sc.scbuffer")
@@ -86,7 +86,7 @@ local function bodyKeyWords()
 end
 
 function GetSCKeyWords()
-			local kw = lanegen(bodyKeyWords,nil,"keywords_lane")()
+			local kw = lanegen(bodyKeyWords,{lua2scpath=lua2scpath},"keywords_lane")()
 			sckeywordsSource = kw[2]
 			return kw[1]
 end
