@@ -9,11 +9,7 @@ function Adachi.ar(flip,p0,radio,buffnum,yequil,mul,add)
 	local flip = flip or 231;p0 = p0 or 5000;radio= radio or 0.005;mul=mul or 1;add=add or 0;yequil = yequil or 0;gate = gate or 1
 	return Adachi:MultiNew{2,flip,p0,radio,buffnum,yequil,gate}:madd(mul,add)
 end
-AdachiAyers=UGen:new{name="AdachiAyers"}
-function AdachiAyers.ar(flip,p0,radio,buffnum,buffnum2,buffnum3,yequil,gate,delay,mul,add)
-	local flip = flip or 231;p0 = p0 or 5000;radio= radio or 0.005;mul=mul or 1;add=add or 0;yequil = yequil or 0;gate = gate or 1;delay = delay or 0
-	return AdachiAyers:MultiNew{2,flip,p0,radio,buffnum,buffnum2,buffnum3,yequil,gate,delay}:madd(mul,add)
-end
+
 AdachiIIR=UGen:new{name="AdachiIIR"}
 function AdachiIIR.ar(flip,p0,radio,buffnum1b,buffnum1a,buffnum2,buffnum3,yequil,gate,delay,mul,add)
 	local flip = flip or 231;p0 = p0 or 5000;radio= radio or 0.005;mul=mul or 1;add=add or 0;yequil = yequil or 0;gate = gate or 1;delay = delay or 0
@@ -51,16 +47,4 @@ function MichaelPhaser1.ar(...)
 	return ((1 - depth)*input + output);
 end
 
-Karplus=UGen:new{name="Karplus"}
-function Karplus.ar(inp,trig,maxdelaytime,delaytime,decaytime,coef,coefsA,coefsB,mul,add)
-	inp=inp or 0;trig=trig or 1;maxdelaytime=maxdelaytime or 0.2;delaytime=delaytime or 0.2
-	decaytime=decaytime or 1;coef=coef or 0.5;coefsA=coefsA or {-0.6};coefsB=coefsB or {1-0.6};mul=mul or 1;add=add or 0
-	return Karplus:MultiNew(concatTables({2,inp,trig,maxdelaytime,delaytime,decaytime,coef},#coefsA,#coefsB,coefsA,coefsB)):madd(mul,add)
-end
-------------------------
 
-IIRf = UGen:new{name="IIRf"}
-function IIRf.ar(inp, kB,kA)
-	inp = inp or 0;
-	return IIRf:MultiNew(concatTables({2,inp, #kB,#kA},kB,kA))
-end
