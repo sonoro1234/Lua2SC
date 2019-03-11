@@ -113,7 +113,7 @@ ugens.sort({|a, b| a.name < b.name});
 
 ugens.do({arg it;
 	var armet,nameclass,defaultval,argnames;
-	var methodfound,dump;
+	var methodfound,dump,res;
 
 	nameclass=it.name.asString;
 	ugens_db.put(nameclass,Dictionary.new());
@@ -128,6 +128,10 @@ ugens.do({arg it;
 	ugens_db.at(nameclass).put("nOuts",dump[4]);
 	ugens_db.at(nameclass).put("description",dump[5].asCompileString;);
 	methodfound=false;
+
+
+	//try {res=it.perform(dump[6]); }{res=\fail};
+	//if(res!=\fail && res.isKindOf(it).not && ugens_db.at(nameclass).at("isMultiOut").isNil,{ugens_db.at(nameclass).put("pseudo",true);});
 
 	losmetodos.do({arg metod,indmetod;
 	armet=it.class.findRespondingMethodFor(metod);
