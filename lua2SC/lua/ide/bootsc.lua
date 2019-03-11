@@ -171,10 +171,11 @@ function BootSC(use_tcp)
 		wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
 	end
 	local plugpath=[["]]..path..[[/plugins"]]
+	local plugpathsep = jit.os=="Windows" and ";" or ":"
 	for i,v in ipairs(this_file_settings.SC_PLUGIN_PATH) do
 		if(v=="default") then
 		else	
-			plugpath=plugpath..[[;"]]..v..[["]]
+			plugpath=plugpath..plugpathsep..[["]]..v..[["]]
 		end
 	end
 	local numcores_option = ""
