@@ -1,33 +1,4 @@
-KLJunction=UGen:new{name='KLJunction'}
-function KLJunction.ar(input,lossarray,karray,delaylengtharray,mul,add)
-	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
-	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
-	local lossarrayfix = lossarray
-	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
-	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
-	--prtable("karray",delaylengtharray)
-	return KLJunction:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
-end
-KLJunction2=UGen:new{name='KLJunction2'}
-function KLJunction2.ar(input,lossarray,karray,delaylengtharray,mul,add)
-	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
-	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
-	local lossarrayfix = lossarray
-	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
-	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
-	--prtable("karray",delaylengtharray)
-	return KLJunction2:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
-end
-KLJunction3=UGen:new{name='KLJunction3'}
-function KLJunction3.ar(input,lossarray,karray,delaylengtharray,mul,add)
-	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
-	--local lossarrayfix = (type(lossarray)=="table" and lossarray.isRef) and lossarray or TA():Fill(#delaylengtharray + 1,lossarray)
-	local lossarrayfix = lossarray
-	--local allargs= TA(lossarrayfix)..TA(karray)..TA(delaylengtharray);
-	local allargs= concatTables(lossarrayfix,karray,delaylengtharray);
-	--prtable("karray",delaylengtharray)
-	return KLJunction3:MultiNew{2,input,unpack(allargs)}:madd(mul,add)
-end
+
 HumanV=UGen:new{name='HumanV'}
 function HumanV.ar(input,loss,rg,rl,areas,mul,add)
 	input=input or 0;loss=loss or 1;mul=mul or 1;add=add or 0;
