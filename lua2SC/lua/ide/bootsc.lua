@@ -170,13 +170,16 @@ function BootSC(use_tcp)
 	if this_file_settings.SC_SYNTHDEF_PATH~="default" then
 		wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
 	end
-	local plugpath=[["]]..path..[[/plugins"]]
+	local plugpath=[[ -U ]]..[["]]..path..[[/plugins"]]
 	local plugpathsep = jit.os=="Windows" and ";" or ":"
 	for i,v in ipairs(this_file_settings.SC_PLUGIN_PATH) do
 		if(v=="default") then
 		else	
 			plugpath=plugpath..plugpathsep..[["]]..v..[["]]
 		end
+	end
+	if #this_file_settings.SC_PLUGIN_PATH==0 then
+		plugpath = ""
 	end
 	local numcores_option = ""
     if string.match(this_file_settings.SCpath,".*supernova[^"..path_sep.."]") then
@@ -188,7 +191,7 @@ function BootSC(use_tcp)
 		audio_dev_option = [[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" ]]
 	end
 	
-	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..audio_dev_option..[[ -U ]]..plugpath..numcores_option..
+	local cmd=[[""]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..audio_dev_option..plugpath..numcores_option..
 	[[ -m 65536]]
 	--[[ -m 4096]]
 	..[[ 2>&1"]]
