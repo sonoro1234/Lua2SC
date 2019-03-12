@@ -251,6 +251,15 @@ function LocalIn.ar(numChannels,default)
 	end
 	return LocalIn:MultiNew{2,numChannels,unpack(alldefaults)}
 end
+-- dont work with assign because first arg can be a table
+LocalOut=Out:new{name='LocalOut'}
+function LocalOut.ar(channels)
+	return LocalOut:donew(2,channels)
+end
+function LocalOut.kr(channels)
+	return LocalOut:donew(1,channels)
+end
+
 -----------Pan2
 Pan2=MultiOutUGen:new{name="Pan2"}
 function Pan2.ar(inp,pos,level)
