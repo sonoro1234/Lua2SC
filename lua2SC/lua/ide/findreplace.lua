@@ -303,7 +303,7 @@ function InitFindMenu()
         { ID_FINDPREV,   "Find &Previous\tShift-F3", "Repeat the search backwards in the file" },
         { ID_REPLACE,    "&Replace\tCtrl-H",         "Replaces the specified text with different text" },
         { },
-		{ID_FIND_SOURCE, "Find Source" , "Opens source file from keyword."},
+		{ID_FIND_SOURCE, "Find Source\tCtrl-I" , "Opens source file from keyword."},
 		{},
         { ID_GOTOLINE,   "&Goto line\tCtrl-G",       "Go to a selected line" },
         { },
