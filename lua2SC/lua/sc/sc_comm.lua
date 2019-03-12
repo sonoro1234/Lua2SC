@@ -299,6 +299,7 @@ function initinternal()
 	local t = {}
 	function t:send(msg)
 		mainlinda:send("sendsc",msg)
+		return true
 	end
 	function t:close() end
 	local tb = {}
@@ -307,6 +308,7 @@ function initinternal()
 		self.tmplinda = lanes.linda()
 		OSCFunc.newfilter(done,"ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
 		mainlinda:send("sendsc",msg)
+		return true
 	end
 	function tb:close() end
 	function tb:receive()
