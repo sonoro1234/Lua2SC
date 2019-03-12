@@ -457,6 +457,22 @@ function Tract.phon.getK(ph)
 	
 	return {Ar={Tract.areas[ph]},ArN = ((isN and {Tract.AreaNose}) or {Tract.AreaNoseC}),Gain=gain,lenT=lenT,noiseloc=noiseloc,noisef={noisefreq},noisebw={noisebw},glot=glot,plosive=plosive,area1len=Tract.area1len,t_gate=1}
 end
+function Tract.phon.getArgs(ph)
+	local res = {}
+	local isN = Tract.nasal[ph]
+	local gain = Tract.gains[ph] or 1
+	local lenT = Tract.len[ph] or Tract.deflen
+
+	local noise = Tract.noise[ph]
+	local noiseloc = noise and noise.pos or MINIMAL --0
+	local noisefreq = noise and noise.freqs or {2500,7500}
+	local noisebw = noise and noise.bw or {0.1,0.1}
+
+	local glot = Tract.glot[ph] or 1
+	local plosive = Tract.plosive[ph] or MINIMAL --0
+	
+	return {Ar=Tract.areas[ph],ArN = ((isN and Tract.AreaNose) or Tract.AreaNoseC),Gain=gain,lenT=lenT,noiseloc=noiseloc,noisef=noisefreq,noisebw=noisebw,glot=glot,plosive=plosive,area1len=Tract.area1len,t_gate=1}
+end
 local function makeenv(t,name,val,rate,dur)
 	local first = not t[name]
 	t[name] = t[name] or {{},{}}
