@@ -177,7 +177,7 @@ function Settings:Create(parent)
 		function(event)
 			local path=self:FindSynthPath()
 			if path then
-				if string.sub(path,-1)~="\\" then path=path.."\\" end 
+				if string.sub(path,-1)~=path_sep then path=path..path_sep end 
 				synthTC:SetValue(path)
 			end
 		end)

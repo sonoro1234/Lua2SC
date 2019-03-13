@@ -102,7 +102,7 @@ function DoDir(func,path,pattern,recur,level)
 		local cont,filename = dir:GetFirst("",wx.wxDIR_DIRS + wx.wxDIR_HIDDEN)-- filespec, flags);
 		while ( cont ) do
 			func(filename,level,path)
-			DoDir(func,path.."\\"..filename,pattern,recur,level+1)
+			DoDir(func,path.."/"..filename,pattern,recur,level+1)
 			cont,filename = dir:GetNext();
 		end
 	end
@@ -1066,7 +1066,7 @@ end
 function SaveFileAs(editor)
     local id       = editor:GetId()
     local saved    = false
-    local fn       = wx.wxFileName(openDocuments[id].filePath or lastDirectory.."\\untitled.lua")
+    local fn       = wx.wxFileName(openDocuments[id].filePath or lastDirectory.."/untitled.lua")
 	--print("openDocuments[id].filePath",openDocuments[id].filePath)
 	--print("lastDirectory",lastDirectory)
 	

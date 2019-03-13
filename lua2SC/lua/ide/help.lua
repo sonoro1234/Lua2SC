@@ -18,7 +18,7 @@ local function DisplayHelp()
 	topsizer:SetSizeHints(htmlframe)
 	htmlframe:Show()
 --]]
-io.popen(lua2scpath.."doc\\index.html")
+io.popen(lua2scpath.."doc/index.html")
 end
 local function DisplayAbout(event)
     local page = [[
