@@ -474,7 +474,15 @@ function wxFuncGraph3(parent,name,label,id,co)
 		dc:SetPen(wx.wxNullPen)
 		dc:SetBrush(wx.wxNullBrush)
 		end
-
+		dc:SetPen(wx.wxBLACK_PEN)
+		dc:SetBrush(wx.wxBLACK_BRUSH)
+		dc:SetFont(wx.wxNORMAL_FONT)
+		local tlab = wxwindow:GetLabel()
+		--prtable(tlab)
+		dc:DrawLabel(tlab,wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
+		dc:DrawText(name,0,0)
+		dc:SetPen(wx.wxNullPen)
+		dc:SetBrush(wx.wxNullBrush)
 
 	end
 	
