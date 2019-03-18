@@ -1148,7 +1148,9 @@ for file in lfs.dir(lua2scpath.."/lua/ugendefs/") do
 	--print("ugendef:",file)
 	--prtable(lfs.attributes(lua2scpath.."/lua/ugendefs/"..file))
 	if lfs.attributes(lua2scpath.."/lua/ugendefs/"..file).mode == "file" then
+		if file:sub(-3,-1)=="lua" then
 		dofile(lua2scpath.."/lua/ugendefs/"..file)
+		end
 	end
 end
 
