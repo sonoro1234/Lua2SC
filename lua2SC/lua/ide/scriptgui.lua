@@ -651,8 +651,8 @@ function wxTimePlot(parent,name,label,id,co)
 	local height=co.height or 150
 	local width= co.width or 200
 	local label_height=0
-	local name_height=0
-	local extra_w=0
+	local name_height=20
+	local extra_w=25
 	local data_table = {}
 	for i=0,width-1 do
 		data_table[i+1]=0
@@ -731,18 +731,20 @@ function wxTimePlot(parent,name,label,id,co)
 			local y
 			local points = {}
 			for i=0,maxbin-1 do
-				x=i
-				y=-(data_table[i+1]-miny)*facY
+				x=i + extra_w
+				y=name_height-(data_table[i+1]-miny)*facY
 				points[#points +1]={x,y}
 			end
 			dc:DrawLines(points,0,height)
 			--]]
 		end
-		
-		
-		--dc:SetFont(wx.wxNORMAL_FONT)
-		--dc:DrawLabel(wxwindow:GetLabel(),wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
-		--dc:DrawText(name,0,0)
+		dc:SetPen(wx.wxBLACK_PEN)
+		dc:SetBrush(wx.wxBLACK_BRUSH)
+		dc:SetFont(wx.wxNORMAL_FONT)
+		--local tlab = wxwindow:GetLabel()
+		--prtable(tlab)
+		--dc:DrawLabel(tlab,wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
+		dc:DrawText(name,0,0)
 		dc:SetPen(wx.wxNullPen)
 		dc:SetBrush(wx.wxNullBrush)
 
@@ -802,7 +804,26 @@ function wxFuncGraph(parent,name,label,id,co)
 		
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:DrawRectangle(0, name_height, width+extra_w*2,height);
+		----
+		local parts = 5
+		local widthf=width/parts
+		local widthx = 1
+		for i=0,parts do
+			local x1=widthf*i + extra_w
+			dc:DrawLine(x1, name_height, x1,name_height + height);
+			local str=string.format("%.2f", widthx*i/parts)
+			dc:DrawText(str,x1,0)
+		end
+		local heightf=height/parts
+		local heighty = maxy - miny
+		for i=0,parts do
+			local y1=height + name_height - heightf*i
+			dc:DrawLine(extra_w, y1, width+extra_w,y1);
+			local str=string.format("%.2f",miny + heighty*i/parts)
+			dc:DrawText(str,0,y1)
+		end
 		
+		---
 		dc:SetPen(wx.wxGREEN_PEN)
 		dc:SetBrush(wx.wxGREEN_BRUSH)
 		local maxbin=#GraphClass.value
