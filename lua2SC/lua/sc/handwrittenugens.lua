@@ -1,5 +1,37 @@
 --------------not real ugens
 --------------------------------------
+function VarLag:new1(rate,inp, time, curvature, warp, start)
+	print(rate,inp, time, curvature, warp, start)
+	start = start or inp
+	local curve = Env.shapeNames[warp] or warp
+	if curve~=1 then
+		--print"with EnvGen"
+		local e = Env({start, inp}, {time}, warp)
+		--prtable(e:prAsArray())
+		if rate == 1 then
+			local trig = Changed.kr(inp) + Impulse.kr(0)
+			if type(time)~="number" then
+				 trig = trig + Changed.kr(time)
+			end
+			return EnvGen.kr(e, trig);
+		else
+			error("VarLag.ar not working")
+		end
+	else
+		--print"with Varlag"
+		return UGen.new1(self,rate,inp,time,start)
+	end
+	
+end
+Changed = {}
+function Changed.kr(inp,th)
+	th = th or 0
+	return BinaryOpUGen.newop(">",HPZ1.kr(inp):abs(),th)
+end
+function Changed.ar(inp,th)
+	th = th or 0
+	return BinaryOpUGen.newop(">",HPZ1.ar(inp):abs(),th)
+end
 PMOsc = {}
 function PMOsc.ar(carfreq,modfreq,pmindex,modphase,mul,add)
 	pmindex=pmindex or 0.0;modphase=modphase or 0.0;mul=mul or 1.0; add=add or 0.0;
