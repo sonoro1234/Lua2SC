@@ -66,6 +66,14 @@ function scale.__add(a,b)
 	end
 	return a:new(res)
 end
+function scale.__sub(a,b)
+	if getmetatable(a)~=scale then a,b = b,a end
+	local res = {name=a.name}
+	for i=1,#a do
+		res[i] = a[i] - b
+	end
+	return a:new(res)
+end
 function scale.__eq(a,b)
 	if #a~=#b then return false end
 	if getmetatable(a)~=getmetatable(b) then return false end
