@@ -140,8 +140,8 @@ Tract.nasal = {["M"]=true,["N"]=true}
 
 Tract.noise = {}
 Tract.noise.F = {pos=22,freqs={1800,4000},bw={0.5,0.15}} 
-Tract.noise.S = {pos=22,freqs={2500,7500},bw={0.15,0.15}}--{pos=21,freqs={3500,7500},bw={0.5,0.15}} 
-Tract.noise.Z = {pos=22,freqs={4000,4500},bw={0.15,0.15}} --,bw={1,0.5}}
+Tract.noise.S = {pos=22,freqs={2500,7500},bw={0.15,0.15}}
+Tract.noise.Z = {pos=22,freqs={4000,4500},bw={0.15,0.15}} 
 
 
 Tract.len = {}

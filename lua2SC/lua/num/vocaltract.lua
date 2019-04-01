@@ -57,6 +57,8 @@ noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fA
 			dels[i] = dels[i]*fP2
 		end
 --]]
+		--t_send = Impulse.kr(10)
+		--SendReply.kr(t_send,"areas",Ar)
 		local signal 
 		if resamp then
 			signal = HumanVNdelO2.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 
@@ -97,13 +99,13 @@ local function Rd2Times(Rd)
 end
 
 local function MakeCoralSynth(Tract,name,freqs,resamp)
-	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.05,jitter=0.01,vibampfac=20},
+	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.05,jitter=0.01,vibampfac=20},
 	function()
 	
 	--local freqs = TA():series(10,1 - 0.002*5,0.002)
 	freqs = freq * freqs
 	freqs = freqs + freqs * LFDNoise3.kr(10,jitter)
-	local vibratoF =  Vibrato.kr{freqs, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
+	local vibratoF =  Vibrato.kr{freqs, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 
 	local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)
 
@@ -131,14 +133,14 @@ local function LFexci()
 		--local jitfac = 1 + jsig*0.5*jitter
 		
 		freq = freq*jitfac
-		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdeph, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0,trig=t_gate}
+		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0,trig=t_gate}
 		local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd*jitfac2)
 		
 		local exci = LFglottal.ar(vibratoF,Tp,Te,Ta,alpha,namp,nwidth)*glot*3*Ee
 		--local exci = VeldhuisGlot.ar(vibratoF,Tp,Te,Ta,namp,nwidth)*glot*3*Ee
 		exci =  WhiteNoise.ar()*plosive*Ee + exci
 		exci = Mix(exci)
-		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,vibdeph*vibampfac,1)
+		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,vibdepth*vibampfac,1)
 		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 		return exci
 	end
@@ -158,9 +160,9 @@ local function InitSynths(Tract)
 	Tract:MakeCoralSynth("coralO2",freqs,true)
 
 
-	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci)
-	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdeph=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci,true)
-	Tract:MakeSynth("sinte_chen",{OQ=0.8,asym=0.6,Sop=0.4,Scp=0.12,vibrate=5,vibdeph=0.01,rv=0.1},function()
+	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci)
+	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci,true)
+	Tract:MakeSynth("sinte_chen",{OQ=0.8,asym=0.6,Sop=0.4,Scp=0.12,vibrate=5,vibdepth=0.01,rv=0.1},function()
 		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 		local exci = ChenglottalU.ar(vibratoF,OQ,asym,Sop,Scp)*glot*3
 		exci = HPZ1.ar(exci)
@@ -217,11 +219,11 @@ Tract.glot.K = 0
 Tract.glot.G = 1
 Tract.glot.H = 0
 Tract.plosive = {}
-Tract.plosive.K = 0.5 --.5 --1 --0.5 --db2amp(-15)
+Tract.plosive.K = 0 --0.5 --.5 --1 --0.5 --db2amp(-15)
 Tract.plosive.G = 0
-Tract.plosive.P  = 2 --0.5
+Tract.plosive.P  = 0 --2 --0.5
 Tract.plosive.B = 0.25
-Tract.plosive.T = 2
+Tract.plosive.T = 1 --2
 Tract.plosive.D  = 0
 
 
