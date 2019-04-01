@@ -150,6 +150,7 @@ end
 EventPlayer={MUSPOS=0,ppqOffset=0,ppqPos=0,playing=true,dur=0}
 function EventPlayer:new(o)
 	o = o or {}
+	o.Filters = {}
 	setmetatable(o, self)
 	self.__index = self
 	return o

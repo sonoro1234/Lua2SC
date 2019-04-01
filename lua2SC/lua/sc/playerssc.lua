@@ -3,7 +3,9 @@ require"sc.sc_comm"
 
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
 ROOT_NODE = 0
-INST_ROOT_NODE = 0  --make it a pargroup for paralelizing all OscPlayers
+INST_ROOT_NODE = GetNode()  --make it a pargroup for paralelizing all OscPlayers
+local msg={"/p_new",{INST_ROOT_NODE,0,ROOT_NODE}}
+sendBundle(msg)
 --------------------------------------------------------
 OsceventQueue = {}
 local OsceventQueueDirty = false
