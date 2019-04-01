@@ -1037,6 +1037,9 @@ function SFindur:pnext(e)
 	else
 		self.acabado = true
 		vals.dur = self.findur - self.cfindur
+		vals.delta = vals.dur
+		--print("last cfindur",cfindur,vals.delta)
+		--print(vals.dur,"vals.dur")
 		self.cfindur = self.findur
 		if vals.dur > 0 then
 			return vals
