@@ -20,7 +20,7 @@ SynthDef("earlypan",{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},fun
 	local Ps = Ref{9,1,1.2} --{9,5,1.2}
 	local Pr = Ps --Ref{3,3,1.2}
 	local B = In.kr(cbusB,1) --0.92 --0.72
-	dist = In.kr(busDist.busIndex,1)
+	dist = In.kr(busDist.busIndex,1)*dist
 	local HW=0.2
 	local N = 5
 	local input = In.ar(busout,2)
@@ -32,10 +32,10 @@ SynthDef("earlypan",{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},fun
 	local bR = LocalBuf(Nbuf)
 
 	local trig = EarlyRefGen.kr(bL,bR,Psmod,Pr,L,HW,-B,N)
--- 	local sigL = PartConvT.ar(monoin,1024*4,bL,trig)
--- 	local sigR = PartConvT.ar(monoin,1024*4,bR,trig)
-	local sigL = Convolution2L.ar(monoin,bL,trig,Nbuf)
-	local sigR = Convolution2L.ar(monoin,bR,trig,Nbuf)
+ 	local sigL = PartConvT.ar(monoin,1024,bL,trig)
+ 	local sigR = PartConvT.ar(monoin,1024,bR,trig)
+--	local sigL = Convolution2L.ar(monoin,bL,trig,Nbuf)
+--	local sigR = Convolution2L.ar(monoin,bR,trig,Nbuf)
 	local early = {sigL,sigR} --*dist
 --	local early = StereoConvolution2L.ar(monoin, bL, bR, trig, Nbuf)
 	
@@ -47,6 +47,7 @@ SynthDef("earlypan",{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},fun
 end):store()
 	local M = {}
 	function M:setER(pl,val,dist)
+		pl.inserts = pl.inserts or {}
 		table.insert(pl.inserts,{"earlypan",{angle = val,dist=dist}})
 	end
 	return M
