@@ -4,8 +4,10 @@ require"sc.sc_comm"
 NEW_GROUP = "/g_new" --"/p_new" -- "/g_new"
 ROOT_NODE = 0
 INST_ROOT_NODE = GetNode()  --make it a pargroup for paralelizing all OscPlayers
-local msg={"/p_new",{INST_ROOT_NODE,0,ROOT_NODE}}
-sendBundle(msg)
+table.insert(initCbCallbacks,1,function()
+	local msg={"/p_new",{INST_ROOT_NODE,0,ROOT_NODE}}
+	sendBundle(msg)
+end)
 --------------------------------------------------------
 OsceventQueue = {}
 local OsceventQueueDirty = false
