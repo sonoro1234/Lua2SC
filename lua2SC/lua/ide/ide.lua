@@ -451,6 +451,18 @@ wakeupidletimer:Start(30,false)
             event:Skip() -- skip to let page change
 			--wx.wxMessageBox(wxT("pagina cambia"));
         end)
+	local function ResetDocumentsIndex()
+		for id, document in pairs(openDocuments) do
+			document.index = notebook:GetPageIndex(document.editor)
+		end
+	end
+	notebook:Connect(wx.wxID_ANY, wxaui.wxEVT_COMMAND_AUINOTEBOOK_DRAG_DONE, function(evt)
+			--local editor = GetEditor(evt:GetSelection())
+			--local id = editor:GetId()
+			--print("wxEVT_AUINOTEBOOK_DRAG_DONE",openDocuments[id].filePath)
+			ResetDocumentsIndex()
+			evt:Skip()
+	end)
 	notebook:Connect(wx.wxID_ANY, wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE, function(evt)
 			--local ctrl = evt:GetEventObject():DynamicCast("wxAuiNotebook");
 			--if (ctrl:GetPage(evt:GetSelection()):IsKindOf(wx.wxClassInfo.FindClass("wxHtmlWindow"))) then
@@ -1051,6 +1063,7 @@ function SaveFile(editor, filePath)
             openDocuments[id].modTime  = GetFileModTime(filePath)
             SetDocumentModified(id, false)
 			IdentifiersList:SetEditor(editor)
+			frame:SetTitle(filePath or "")
             return true
         else
             wx.wxMessageBox("Unable to save file '"..filePath.."'.",
