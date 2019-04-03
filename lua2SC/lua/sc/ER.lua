@@ -1,5 +1,5 @@
 
-function ERmaker(B,Dist,Size)
+function ERmaker(B,Dist,Size,direct,compensation)
 B = B or 0.85
 Dist = Dist or 2.5
 Size = Size or 1
@@ -11,10 +11,18 @@ local busDist = sc.Bus()
 Slider("Dist",0,8,Dist,function(val) busDist:set(val) end)
 local busSize = sc.Bus()
 Slider("Size",0,8,Size,function(val) busSize:set(val) end)
+--[[
 local busBypass = sc.Bus()
 Toggle("Bypas",function(val) print(val);busBypass:set(val) end)
+--]]
+local busEq
+if direct then
+busEq = sc.Bus()
+Slider("Eq",0,1,0,function(val) busEq:set(val) end)
+end
 local Nbuf = 2048*8
-SynthDef("earlypan",{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},function()
+local synname = direct and "earlypandir" or "earlypan"
+SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},function()
 	print("busB.busIndex",busB.busIndex)
 	local L=TA{20,10,16}*In.kr(busSize.busIndex,1)
 	local Ps = Ref{9,1,1.2} --{9,5,1.2}
@@ -30,15 +38,19 @@ SynthDef("earlypan",{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},fun
 
 	local bL = LocalBuf(Nbuf)
 	local bR = LocalBuf(Nbuf)
-
+	local early
+if not direct then
 	local trig = EarlyRefGen.kr(bL,bR,Psmod,Pr,L,HW,-B,N)
  	local sigL = PartConvT.ar(monoin,1024,bL,trig)
  	local sigR = PartConvT.ar(monoin,1024,bR,trig)
 --	local sigL = Convolution2L.ar(monoin,bL,trig,Nbuf)
 --	local sigR = Convolution2L.ar(monoin,bR,trig,Nbuf)
-	local early = {sigL,sigR} --*dist
+	early = {sigL,sigR} --*dist
 --	local early = StereoConvolution2L.ar(monoin, bL, bR, trig, Nbuf)
-	
+else	
+	early = EarlyRef.ar(monoin,Psmod,Pr,L,HW,-B,2,In.kr(busEq.busIndex,1))
+end
+	if compensation then early = early*dist end
 
 	local sig = Select.ar(bypass,{early,input})
 	--local sig = Select.ar(In.kr(busBypass.busIndex),{early,Pan2.ar(monoin,angle)})
@@ -48,7 +60,7 @@ end):store()
 	local M = {}
 	function M:setER(pl,val,dist)
 		pl.inserts = pl.inserts or {}
-		table.insert(pl.inserts,{"earlypan",{angle = val,dist=dist}})
+		table.insert(pl.inserts,{synname,{angle = val,dist=dist}})
 	end
 	return M
 end
