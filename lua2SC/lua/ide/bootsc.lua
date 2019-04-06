@@ -48,7 +48,11 @@ function InitSCMenu()
 	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(false) end)
     frame:Connect(ID_BOOTSC_tcp,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(true) end)
 	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
-		IDESCSERVER:init("internal",file_settings:load_table("settings"),mainlinda)
+		local this_file_settings = file_settings:load_table("settings")
+		if this_file_settings.SC_SYNTHDEF_PATH~="default" then
+			wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
+		end
+		IDESCSERVER:init("internal",this_file_settings,mainlinda)
 		ClearLog(ScLog)
 		lanes.timer(idlelinda,"statusSC",1,0)
 	end)
