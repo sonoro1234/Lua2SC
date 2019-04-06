@@ -1486,9 +1486,9 @@ function SYNTHDef:send(block)
 	if block==nil then block=false end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}
 	if block then
-		sendBundle(msg)
-		local res = receiveBundle()
-		--local res = sendBlocked(msg)
+		--sendBundle(msg)
+		--local res = receiveBundle()
+		local res = sendBlocked(msg)
 		print(prOSC(res))
 		--assert(res[2][1]=="/d_recv")
 		assert(res[1]=="/done")
