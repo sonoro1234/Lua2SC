@@ -479,7 +479,10 @@ wakeupidletimer:Start(30,false)
 	notebookLogs = wxaui.wxAuiNotebook(managedpanel, wx.wxID_ANY,
                          wx.wxDefaultPosition, wx.wxDefaultSize,
                           wxaui.wxAUI_NB_TAB_MOVE  + wxaui.wxAUI_NB_TAB_SPLIT) --   + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
-
+	notebookLogs:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,function(evt) 
+		notebookLogs:Refresh();
+		evt:Skip()
+	end)
 	errorLog = CreateLog()
 	ScLog = CreateLog()
 	DebugLog = CreateTreeLog()
