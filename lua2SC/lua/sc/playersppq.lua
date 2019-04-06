@@ -220,10 +220,12 @@ function EventPlayer:Pull()
 	end
 	--]]
 	--if curHostTime.playing > 0 then
+		self.pulling = true
 		while self.playing and curHostTime.oldppqPos > self.ppqPos do
 			--print("Pull ",self.name)
 			local havenext = self:NextVals()
 			if havenext then
+				self:playEvent(self.curlist,self.ppqPos,self.curlist.dur,self.curlist.delta)
 				self:UpdatePos(self.curlist.delta)
 			else
 			--if havenext == nil  then
@@ -238,6 +240,7 @@ function EventPlayer:Pull()
 				break
 			end
 		end
+		self.pulling = false
 	--end
 end
 function EventPlayer:NextVals()

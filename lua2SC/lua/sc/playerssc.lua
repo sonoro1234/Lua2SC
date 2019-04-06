@@ -157,7 +157,7 @@ function scEventPlayer:playOneEvent(lista,beatTime, beatLen)
 			lista[k]=v(self)
 		end
 	end
-
+	if self.pulling then return end
 	--play osc-----------------
 	local msg
 	if self.node == nil then
@@ -634,7 +634,7 @@ function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 			lista[k]=v(self)
 		end
 	end
-	
+	if self.pulling then return end
 	--freq
 	local freq
 	if lista.freq then
