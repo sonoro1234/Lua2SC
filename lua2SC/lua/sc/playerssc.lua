@@ -551,6 +551,10 @@ function OscEventPlayer:SetSends()
 		end 
 	end
 end
+function  OscEventPlayer:SetLevel(val)
+	self.channel.params.level = val
+	self.channel:SendParams()
+end
 function OscEventPlayer:FreeInstrGroup()
 	sendBundle({"/g_freeAll",{self.instr_group}}) --,lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.instr_group}}) --,lanes.now_secs())
@@ -621,7 +625,7 @@ local function copylist(lis)
 end
 
 function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
-	if self.piano then return self:playOnePianoEvent(lista,beatTime, beatLen,delta) end
+	--if self.piano then return self:playOnePianoEvent(lista,beatTime, beatLen,delta) end
 	--set defaults, get freq,escale,legato,inst
 	lista.escale = lista.escale or "ionian"
 	local escale = lista.escale
@@ -916,6 +920,149 @@ function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 	end
 	
 	self:setFreeQueue(thisnode,beatTime + beatLen,freq)
+end
+---voicer
+
+OscVoicerEventPlayer = OscEventPlayer:new({isOscGuitarEP=true})
+function OscVoicerEP(t)
+	local player = OscVoicerEventPlayer:new(t)
+	player.params={}
+	player.voicenodes = {}
+	player.dontfree = true
+	OSCPlayers[#OSCPlayers + 1]= player
+	return player
+end
+function OscVoicerEventPlayer:Release(time,voice)
+	local thisnode = self.voicenodes[voice]
+	if thisnode == nil then return end
+	local msg = {"/n_set",{thisnode,"gate",{"float",0}}}
+	--prerror("Release",self.node)
+	sendBundle(msg,time) -- or lanes.now_secs())
+	self.voicenodes[voice] = nil
+	self.havenode = false
+end
+function OscVoicerEventPlayer:FreeNode(now)
+	for i,node in pairs(self.voicenodes) do
+	local msg = {"/n_free",{node}}
+	if now then sendBundle(msg)
+	else
+		sendBundle(msg,theMetro:ppq2time(self.ppqPos)) --,lanes.now_secs())
+	end
+	self.voicenodes[i] = nil
+	end
+end
+function OscVoicerEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
+	--if self.piano then return self:playOnePianoEvent(lista,beatTime, beatLen,delta) end
+	--set defaults, get freq,escale,legato,inst
+	lista.escale = lista.escale or "ionian"
+	local escale = lista.escale
+	--because lista will be changed
+	self.curvals = copylist(lista)
+
+	--eval funcs
+	for k,v in pairs(lista) do
+		if type(v)=="function" then
+			lista[k]=v(self)
+		end
+	end
+	if self.pulling then return end
+	--freq
+	local freq
+	if lista.freq then
+		freq = lista.freq
+	elseif lista.note then
+		--freq = functabla(lista.note,midi2freq)
+		freq = midi2freq(lista.note)
+	elseif lista.degree then
+		freq = midi2freq(getNote(lista.degree,escale))
+		--freq = functabla(freq,midi2freq)
+	end
+	lista.note=nil;lista.degree=nil;lista.freq=freq
+	
+	--legato
+	local legato
+	if lista.legato then 
+		beatLen = beatLen * lista.legato;legato=lista.legato;lista.legato=nil 
+	end
+
+	--inst = lista.inst or "default";
+	local inst = lista.inst or self.inst
+	lista.inst=nil
+	
+	
+	if IsREST(freq) then
+		self:Release(theMetro:ppq2time(beatTime),lista.voice) 
+		return  
+	end
+	if IsNOP(freq) then
+		return  
+	end
+	if lista.detune then
+		lista.freq=freq*lista.detune
+		lista.detune=nil
+	end
+	
+	--assert(lista.voice)
+	if not lista.voice then return end
+	local thisnode
+	local on
+	thisnode = self.voicenodes[lista.voice]
+	if thisnode then
+		--if not self.node then print("n_set without node") return end
+		on ={"/n_set", {thisnode}}
+	else
+		thisnode = GetNode()
+		self.voicenodes[lista.voice] = thisnode
+		self.havenode = true
+		on ={"/s_new", {inst, thisnode, 0, self.instr_group}}
+	end
+	lista.type = nil
+---[[
+	-- get is_ctrl_mapper
+	local listafunc = {}
+	for k,v in pairs(lista) do
+		--if type(v)=="function" then
+		if type(v)=="table" and v.is_ctrl_mapper then
+			listafunc[k]=v
+			lista[k]=nil
+		end
+	end
+	--
+--]]
+	lista.escale=nil --dont send escale
+	getMsgLista(on,lista)
+	lista.escale=escale
+
+	table.insert(on[2],"out")
+	table.insert(on[2],{"int32",self.channel.busin})
+	
+	--send functions
+	local gbundle = {on}
+	for k,v in pairs(listafunc) do
+		--v(k,self,beatTime,beatLen)
+		local bund = v:verb(k,self,beatTime,beatLen)
+		if bund then
+			for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+		end
+	end
+	sendMultiBundle(theMetro:ppq2time(beatTime),gbundle)
+	---
+	if _GUIAUTOMATE then
+		self.autom_dur=self.autom_dur+ beatLen
+		if self.autom_dur >= 0.5 then
+			self.autom_dur=0
+			self.params = lista
+			self:sendToRegisteredControls()
+		end
+	end
+---[[
+	if dontfree == false then
+			local off = {"/n_set",{self.node,"gate",{"float",0}}}
+			scheduleOscEvent(off,beatTime + beatLen)
+			self.havenode = false
+			--self.node = nil
+	end	
+--]]
 end
 --------------------------------------Inicio
 function FillSends(val)

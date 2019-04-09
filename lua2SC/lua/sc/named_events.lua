@@ -1,7 +1,7 @@
 named_events = {events = {}}
 local checkpl = {}
 function named_events:subscribe(name, func, pl,...)
-	prerror("subscribe ev",name,pl.name,pl)
+	--prerror("subscribe ev",name,pl.name,pl)
 
 	checkpl[pl] = checkpl[pl] or {}
 	if checkpl[pl][name] then error("already set") end
@@ -53,7 +53,7 @@ function WAITEv(name)
 						return nil 
 					end
 					named_events:subscribe(name,function(ppq) 
-														--print("WatiEv triger",ppq)
+														prerror("WatiEv triger",name,ppq,e.name)
 														e.prevppqPos = -math.huge --avoid reset
 														e.ppqPos = ppq;
 														e.playing = true
