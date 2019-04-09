@@ -862,9 +862,27 @@ function Out:init(...)
 end
 
 
+--first to get functions help link 
+--require"sc.handwrittenugens"
+print("loading ugendefs from",lua2scpath.."/lua/ugendefs/")
+local lfs = require"lfs"
+for file in lfs.dir(lua2scpath.."/lua/ugendefs/") do
+	--print("ugendef:",file)
+	--prtable(lfs.attributes(lua2scpath.."/lua/ugendefs/"..file))
+	if lfs.attributes(lua2scpath.."/lua/ugendefs/"..file).mode == "file" then
+		if file:sub(-3,-1)=="lua" then
+		dofile(lua2scpath.."/lua/ugendefs/"..file)
+		end
+	end
+end
 require "sc.declareugens4"
+--second to avoid definitions in declareugens4
+require"sc.handwrittenugens"
 
-
+LFPulse.signalRange="unipolar"
+MouseX.signalRange="unipolar"
+MouseY.signalRange="unipolar"
+MouseButton.signalRange="unipolar"
 ---------------------------
 --[[
 ------------------------------------------------------
@@ -1024,29 +1042,7 @@ function EnvGen.kr(...)
 	return EnvGen:MultiNew{1,gate, levelScale, levelBias, timeScale, doneAction,unpack(arrEnv)}
 end
 --]]
---[[
-function EnvGen.ar(envelope,gate, levelScale, levelBias, timeScale, doneAction)
-	gate =gate or 1.0; levelScale =levelScale or 1.0; levelBias =levelBias or 0.0; timeScale =timeScale or 1.0; doneAction =doneAction or 0
-	local arrEnv
-	if envelope.isEnv then
-		arrEnv = envelope:prAsArray()
-	else
-		arrEnv = envelope
-	end
-	return EnvGen:MultiNew{2,gate, levelScale, levelBias, timeScale, doneAction,unpack(arrEnv)}
-end
-function EnvGen.kr(envelope,gate, levelScale, levelBias, timeScale, doneAction)
-	--debuglocals()
-	gate =gate or 1.0; levelScale =levelScale or 1.0; levelBias =levelBias or 0.0; timeScale =timeScale or 1.0; doneAction =doneAction or 0
-	local arrEnv
-	if envelope.isEnv then
-		arrEnv = envelope:prAsArray()
-	else
-		arrEnv = envelope
-	end
-	return EnvGen:MultiNew{1,gate, levelScale, levelBias, timeScale, doneAction,unpack(arrEnv)}
-end
---]]
+
 
 --------------------------------------------------------------
 MulAdd=UGen:new{name="MulAdd"}
@@ -1140,19 +1136,7 @@ function Mix(t)
 	end
 end
 --]]
-require"sc.handwrittenugens"
-require"sc.myugens"
-print("loading ugendefs from",lua2scpath.."/lua/ugendefs/")
-local lfs = require"lfs"
-for file in lfs.dir(lua2scpath.."/lua/ugendefs/") do
-	--print("ugendef:",file)
-	--prtable(lfs.attributes(lua2scpath.."/lua/ugendefs/"..file))
-	if lfs.attributes(lua2scpath.."/lua/ugendefs/"..file).mode == "file" then
-		if file:sub(-3,-1)=="lua" then
-		dofile(lua2scpath.."/lua/ugendefs/"..file)
-		end
-	end
-end
+
 
 ----------------------------------------------
 ------------- SynthDef

@@ -1,5 +1,7 @@
---------------not real ugens
+
 --------------------------------------
+VarLag = nil --for creating new global and get keyword link
+VarLag=UGen:new{name='VarLag'}
 function VarLag:new1(rate,inp, time, curvature, warp, start)
 	print(rate,inp, time, curvature, warp, start)
 	start = start or inp
@@ -23,6 +25,8 @@ function VarLag:new1(rate,inp, time, curvature, warp, start)
 	end
 	
 end
+--------------not real ugens pseudo ugens
+Changed = nil
 Changed = {}
 function Changed.kr(inp,th)
 	th = th or 0
@@ -32,6 +36,7 @@ function Changed.ar(inp,th)
 	th = th or 0
 	return BinaryOpUGen.newop(">",HPZ1.ar(inp):abs(),th)
 end
+PMOsc = nil
 PMOsc = {}
 function PMOsc.ar(carfreq,modfreq,pmindex,modphase,mul,add)
 	pmindex=pmindex or 0.0;modphase=modphase or 0.0;mul=mul or 1.0; add=add or 0.0;
@@ -90,6 +95,7 @@ end
 
 -----------------
 --specificationsArrayRef, input, freqscale = 1.0, freqoffset = 0.0, decayscale = 1.0;
+Klank = nil
 Klank=UGen:new({name="Klank"})
 function Klank.ar(specificationsArrayRef, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
@@ -119,18 +125,21 @@ function Klank:init(input, freqscale, freqoffset,decayscale,arrRef)
 	self.inputs={input, freqscale, freqoffset,decayscale,unpack(specs)}
 	return self
 end
+DynKlank = nil
 DynKlank={}
 function DynKlank.ar(spec, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
 	--return Mix(Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]})
 	return Mix(Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]))
 end
+DynKlankS = nil
 DynKlankS={}
 function DynKlankS.ar(spec, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
 	--return Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset,spec[3]*decayscale,spec[2]}
 	return Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2])
 end
+DynKlang = nil
 DynKlang={}
 function DynKlang.ar(spec, freqscale, freqoffset)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0;
@@ -143,16 +152,21 @@ function DynKlangS.ar(spec, freqscale, freqoffset)
 	return SinOsc.ar(freqscale*spec[1]+freqoffset, spec[3], spec[2])
 end
 ---[[
+GVerb = nil
+GVerb=MultiOutUGen:new{name='GVerb'}
 function GVerb.ar(in_a,roomsize,revtime,damping,inputbw,spread,drylevel,earlyreflevel,taillevel,maxroomsize)
 	roomsize=roomsize or 10;revtime=revtime or 3;damping=damping or 0.5;inputbw=inputbw or 0.5;spread=spread or 15;drylevel=drylevel or 1;earlyreflevel=earlyreflevel or 0.7;taillevel=taillevel or 0.5;maxroomsize=maxroomsize or 300;
 	return GVerb:MultiNew{2,2,in_a,roomsize,revtime,damping,inputbw,spread,drylevel,earlyreflevel,taillevel,maxroomsize}
 end
+FreeVerb2 = nil
 FreeVerb2=MultiOutUGen:new{name='FreeVerb2'}
 function FreeVerb2.ar(...)
 	local   inp, in2, mix, room, damp, mul, add   = assign({ 'inp', 'in2', 'mix', 'room', 'damp', 'mul', 'add' },{ nil, nil, 0.33, 0.5, 0.5, 1.0, 0.0 },...)
 	return FreeVerb2:MultiNew{2,2,inp,in2,mix,room,damp}:madd(mul,add)
 end
 --]]
+Select = nil
+Select=UGen:new{name='Select'}
 function Select.kr(which,array)
 	return Select:MultiNew{1,which,unpack(array)}
 end
@@ -160,11 +174,14 @@ end
 function Select.ar(which,array)
 	return Select:MultiNew{2,which,unpack(array)}
 end
+DiskOut = nil
 DiskOut=UGen:new{name='DiskOut'}
 function DiskOut.ar(bufnum,channelsArray)
 	return DiskOut:MultiNew{2,bufnum,unpack(channelsArray)}
 end
 ---[[
+DC = nil
+DC=MultiOutUGen:new{name='DC'}
 function DC.ar(inp)
 	inp = inp or 0
 	if type(inp)=="number" or (not inp.isUGenArr and not isSimpleTable(inp)) then
@@ -184,6 +201,7 @@ end
 --]]
 
 ---------------------------------------------
+SendTrig = nil
 SendTrig=UGen:new{name='SendTrig'}
 function SendTrig.kr(in_a,id,value)
 	in_a=in_a or 0;id=id or 0;value=value or 0;
@@ -199,18 +217,20 @@ function SendTrig:init(...)
 	_BUILDSYNTHDEF.outputugens[#_BUILDSYNTHDEF.outputugens+1]=self
 	return 0
 end
+SendReply = nil
 SendReply=SendTrig:new{name='SendReply'}
 function SendReply.kr(trig, cmdName, values, replyID)
 	trig = trig or 0.0;cmdName = cmdName or '/reply';replyID = replyID or -1
 	local ascii = {cmdName:byte(1,-1)}
 	return SendReply:MultiNew(concatTables(concatTables({1,trig, replyID,#ascii},ascii),values))
 end
----------------------------
+
 function SendReply.ar(trig, cmdName, values, replyID)
 	trig = trig or 0.0;cmdName = cmdName or '/reply';replyID = replyID or -1
 	local ascii = {cmdName:byte(1,-1)}
 	return SendReply:MultiNew(concatTables(concatTables({2,trig, replyID,#ascii},ascii),values))
 end
+Poll = nil
 Poll=SendTrig:new{name='Poll'}
 function Poll.kr(trig, inp, label, replyID)
 	trig = trig or 0.0;label = label or '/poll';replyID = replyID or -1
@@ -223,6 +243,7 @@ function Poll.ar(trig, inp, label, replyID)
 	return Poll:MultiNew(concatTables({2,trig,inp, replyID,#ascii},ascii))
 end
 
+SendPeakRMS = nil
 SendPeakRMS=SendTrig:new{name='SendPeakRMS'}
 function SendPeakRMS.kr(sig,replyRate,peakLag,cmdName,replyID)
 	replyRate=replyRate or 20;peakLag=peakLag or 3;cmdName=cmdName or '/reply';replyID=replyID or -1;
@@ -235,6 +256,7 @@ function SendPeakRMS.ar(sig,replyRate,peakLag,cmdName,replyID)
 	return SendPeakRMS:MultiNew(concatTables({2,replyRate,peakLag,replyID,#sig},sig,#ascii,ascii))
 end
 
+DetectSilence = nil
 DetectSilence=SendTrig:new{name='DetectSilence'}
 function DetectSilence.kr(in_a,amp,time,doneAction)
 	in_a=in_a or 0;amp=amp or 0.0001;time=time or 0.1;doneAction=doneAction or 0;
@@ -248,6 +270,7 @@ function FreeOnSilence(a)
 	return DetectSilence.ar(a,nil,nil,2)
 end
 ---------In
+In = nil
 In=MultiOutUGen:new{name='In'}
 function In.kr(bus,numChannels)
 	bus=bus or 0;numChannels=numChannels or 1;
@@ -257,6 +280,8 @@ function In.ar(bus,numChannels)
 	bus=bus or 0;numChannels=numChannels or 1;
 	return In:MultiNew{2,numChannels,bus}
 end
+InFeedback = nil
+InFeedback=MultiOutUGen:new{name='InFeedback'}
 function InFeedback.ar(...)
 	local   bus, numChannels   = assign({ 'bus', 'numChannels' },{ 0, 1 },...)
 	return InFeedback:MultiNew{2,numChannels,bus}
@@ -266,6 +291,7 @@ function SoundOut.ar(bus,numChannels)
 	assert(bus + numChannels <= _run_options.SC_NOUTS)
 	return Out.ar(bus, numChannels)
 end
+LocalIn = nil
 LocalIn=MultiOutUGen:new{name='LocalIn'}
 function LocalIn.kr(numChannels,default)
 	numChannels=numChannels or 1;default = default or 0;
@@ -284,6 +310,7 @@ function LocalIn.ar(numChannels,default)
 	return LocalIn:MultiNew{2,numChannels,unpack(alldefaults)}
 end
 -- dont work with assign because first arg can be a table
+LocalOut = nil
 LocalOut=Out:new{name='LocalOut'}
 function LocalOut.ar(channels)
 	return LocalOut:donew(2,channels)
@@ -293,6 +320,7 @@ function LocalOut.kr(channels)
 end
 
 -----------Pan2
+Pan2 = nil
 Pan2=MultiOutUGen:new{name="Pan2"}
 function Pan2.ar(inp,pos,level)
 	inp=inp or 0;pos=pos or 0;level=level or 1
@@ -302,6 +330,8 @@ function Pan2.kr(inp,pos,level)
 	inp=inp or 0;pos=pos or 0;level=level or 1
 	return Pan2:MultiNew{1,2,inp,pos,level}
 end
+LinPan2 = nil
+LinPan2=MultiOutUGen:new{name='LinPan2'}
 function LinPan2.ar(inp,pos,level)
 	inp=inp or 0;pos=pos or 0;level=level or 1
 	return LinPan2:MultiNew{2,2,inp,pos,level}
@@ -314,6 +344,7 @@ end
 	-- self.inputs={...}
 	-- return self:initOutputs(2)
 -- end
+Balance2 = nil
 Balance2=MultiOutUGen:new{name='Balance2'}
 function Balance2.kr(left,right,pos,level)
 	pos=pos or 0;level=level or 1;
@@ -324,7 +355,7 @@ function Balance2.ar(left,right,pos,level)
 	return Balance2:MultiNew{2,2,left,right,pos,level}
 end
 
-
+RecordBuf = nil
 RecordBuf=UGen:new{name='RecordBuf'}
 function RecordBuf.kr(inputArray,bufnum,offset,recLevel,preLevel,run,loop,trigger,doneAction)
 	bufnum=bufnum or 0;offset=offset or 0;recLevel=recLevel or 1;preLevel=preLevel or 0;run=run or 1;loop=loop or 1;trigger=trigger or 1;doneAction=doneAction or 0;
@@ -335,6 +366,7 @@ function RecordBuf.ar(inputArray,bufnum,offset,recLevel,preLevel,run,loop,trigge
 	bufnum=bufnum or 0;offset=offset or 0;recLevel=recLevel or 1;preLevel=preLevel or 0;run=run or 1;loop=loop or 1;trigger=trigger or 1;doneAction=doneAction or 0;
 	return RecordBuf:MultiNew{2,bufnum,offset,recLevel,preLevel,run,loop,trigger,doneAction,unpack(inputArray)}
 end
+MaxLocalBufs = nil
 MaxLocalBufs=UGen:new{name='MaxLocalBufs'}
 function MaxLocalBufs.ir()
 		return MaxLocalBufs:MultiNew{0, 0};
@@ -342,6 +374,8 @@ end
 function MaxLocalBufs:increment()
 		self.inputs[1] = self.inputs[1] + 1;
 end
+
+LocalBuf = nil
 LocalBuf=UGen:new{name='LocalBuf'}
 function LocalBuf.create(samp,chan)
 	samp = samp or 1;chan = chan or 1
@@ -359,17 +393,17 @@ function LocalBuf:init(a,b)
 		return self
 end
 
+PackFFT = nil
+PackFFT=UGen:new{name='PackFFT'}
 function PackFFT.kr(chain, bufsize, magsphases, frombin, tobin, zeroothers)
 	frombin = frombin or 0;tobin = tobin or #magsphases/2;zeroothers = zeroothers or 0
 	--^this.multiNewList(['control', chain, bufsize, frombin, tobin, zeroothers, magsphases.size] ++ magsphases.asArray)
 	return PackFFT:MultiNew(concatTables({1,chain,bufsize, frombin, tobin, zeroothers,#magsphases},magsphases))
 end
 
-LFPulse.signalRange="unipolar"
-MouseX.signalRange="unipolar"
-MouseY.signalRange="unipolar"
-MouseButton.signalRange="unipolar"
+
 ------------pseudo ugens
+Splay = nil
 Splay=UGen:new{name='Splay'}
 function Splay.kr(...)
 	local   inArray, spread, level, center, levelComp   = assign({ 'inArray', 'spread', 'level', 'center', 'levelComp' },{ nil, 1, 1, 0.0, true },...)
@@ -395,6 +429,7 @@ function Splay:new1(rate,spread,level,center,levelComp,...)
 	--TODO care about kr but what for?
 	return Mix(Pan2.ar(inArray, positions)) * level;
 end
+NTube = nil
 NTube=UGen:new{name='NTube'}
 function NTube.ar(input,lossarray,karray,delaylengtharray,mul,add)
 	input=input or 0;lossarray=lossarray or 1;mul=mul or 1;add=add or 0;
@@ -408,6 +443,7 @@ end
 
 ----------------------
 ---[[
+Gendy1 = nil
 Gendy1=UGen:new{name='Gendy1'}
 function Gendy1.kr(...)
 	local ampdist,durdist,adparam,ddparam,minfreq,maxfreq,ampscale,durscale,initCPs,knum,mul,add = assign({"ampdist","durdist","adparam","ddparam","minfreq","maxfreq","ampscale","durscale","initCPs","knum","mul","add"},
@@ -421,23 +457,27 @@ function Gendy1.ar(ampdist,durdist,adparam,ddparam,minfreq,maxfreq,ampscale,durs
 end
 --]]
 -----------------------
-
-
+Tartini = nil
+Tartini=MultiOutUGen:new{name='Tartini'}
 function Tartini.kr(inp,threshold,n,k,overlap,smallCutoff)
 	inp=inp or 0;threshold=threshold or 0.93;n=n or 2048;k=k or 0;overlap=overlap or 1024;smallCutoff=smallCutoff or 0.5;
 	return Tartini:MultiNew{1,2,inp,threshold,n,k,overlap,smallCutoff}
 end
+Pitch = nil
+Pitch=MultiOutUGen:new{name='Pitch'}
 function Pitch.kr(...)
 	local   inp, initFreq, minFreq, maxFreq, execFreq, maxBinsPerOctave, median, ampThreshold, peakThreshold, downSample, clar   = assign({ 'inp', 'initFreq', 'minFreq', 'maxFreq', 'execFreq', 'maxBinsPerOctave', 'median', 'ampThreshold', 'peakThreshold', 'downSample', 'clar' },{ 0.0, 440.0, 60.0, 4000.0, 100.0, 16, 1, 0.01, 0.5, 1, 0 },...)
 	return Pitch:MultiNew{1,2,inp,initFreq,minFreq,maxFreq,execFreq,maxBinsPerOctave,median,ampThreshold,peakThreshold,downSample,clar}
 end
 
+StereoConvolution2L = nil
 StereoConvolution2L=MultiOutUGen:new{name='StereoConvolution2L'}
 function StereoConvolution2L.ar(...)
 	local   inp, kernelL, kernelR, trigger, framesize, crossfade, mul, add   = assign({ 'inp', 'kernelL', 'kernelR', 'trigger', 'framesize', 'crossfade', 'mul', 'add' },{ nil, nil, nil, 0, 2048, 1, 1.0, 0.0 },...)
 	return StereoConvolution2L:MultiNew{2,2,inp,kernelL,kernelR,trigger,framesize,crossfade}:madd(mul,add)
 end
 
+Demand = nil
 Demand=MultiOutUGen:new{name='Demand'}
 function Demand.kr(trig,reset,demandUGens)
 	--local ddd = {1,#demandUGens,trig,reset}..TA(demandUGens)
@@ -449,16 +489,21 @@ function Demand.ar(trig,reset,demandUGens)
 		return Demand:MultiNew({2,#demandUGens,trig,reset}..TA(demandUGens))
 end
 
+BeatTrack = nil
 BeatTrack=MultiOutUGen:new{name='BeatTrack'}
 function BeatTrack.kr(...)
 	local   chain, lock   = assign({ 'chain', 'lock' },{ nil, 0 },...)
 	return BeatTrack:MultiNew{1,4,chain,lock}
 end
+
+MFCC = nil
 MFCC=MultiOutUGen:new{name='MFCC'}
 function MFCC.kr(...)
 	local   chain, numcoeff   = assign({ 'chain', 'numcoeff' },{ nil, 13 },...)
 	return MFCC:MultiNew{1,numcoeff,chain,numcoeff}
 end
+
+FFTPeak = nil
 FFTPeak=MultiOutUGen:new{name='FFTPeak'}
 function FFTPeak.kr(...)
 	local   buffer, freqlo, freqhi   = assign({ 'buffer', 'freqlo', 'freqhi' },{ nil, 0, 50000 },...)
