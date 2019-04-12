@@ -1306,6 +1306,7 @@ function SYNTHDef:findTerminals()
 	-- same as above in AllUgens order
 	self.outputugens={}
 	for i,v in ipairs(self.Allugens) do
+		--if terminals[v] and v.isOutUGen then
 		if terminals[v] then
 			self.outputugens[#self.outputugens+1]=v
 		end
@@ -1586,9 +1587,9 @@ function PlotSynth(synname,secs,outrate)
 	syn = s.Synth.before(syn2,synname,{out=bus,busout=bus})
 
 end
-function SYNTHDef:plot(seg)
-	self:send()
-	local outrate = self.outputugens[1].calcrate
+function SYNTHDef:plot(seg,rate)
+	self:send(true)
+	local outrate = rate or self.outputugens[1].calcrate
 	PlotSynth(self.name,seg,outrate)
 	return self
 end

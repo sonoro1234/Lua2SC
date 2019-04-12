@@ -20,8 +20,8 @@ table.insert(onFrameCallbacks,function()
 	end
 end)
 ---replaces original-------work with ppq
-eventQueue = {}
-eventQueueDirty = false
+local eventQueue = {}
+local eventQueueDirty = false
 function eventCompare(a, b)
     return b.delta>a.delta         
 end 

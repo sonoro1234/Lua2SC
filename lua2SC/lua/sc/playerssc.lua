@@ -101,6 +101,11 @@ function scEventPlayer:Init(setnode)
 
 	end
 	EventPlayer.Init(self)
+	if self.initTasks then
+		for i,t in ipairs(self.initTasks) do
+			t()
+		end
+	end
 end
 function scEventPlayer:UsePreset(preset)
 	local pre=LoadPreset(preset)
@@ -462,16 +467,16 @@ function CHN(channel,oscplayer,busout)
 	return chn
 end
 -------------------------------------------------
-function OscEventPlayer:plot(secs,when)
+function scEventPlayer:plot(secs,when)
 	if self.init_done then
 		print("when1",when,theMetro:ppq2time(when))
-		PlotBus(self.channel.busin,secs,when and theMetro:ppq2time(when))
+		PlotBus(self.busout,secs,when and theMetro:ppq2time(when))
 	else
 		self.initTasks = self.initTasks or {}
 		table.insert(self.initTasks,
 			function() 
 				print("when2",when,theMetro:ppq2time(when))
-				PlotBus(self.channel.busin,secs,when and theMetro:ppq2time(when)) 
+				PlotBus(self.busout,secs,when and theMetro:ppq2time(when)) 
 			end)
 	end
 end
@@ -530,7 +535,7 @@ end
 function OscEventPlayer:SendLevel(i,lev)
 	self.envios[i].level = lev
 	local msg = {"/n_set",{self.envios[i].node,"level",{"float",lev}}}
-	sendBundle(msg) --,lanes.now_secs())
+	sendBundle(msg,theMetro:ppq2time(self.ppqPos)) 
 	if self.envios[i].control then
 		self.envios[i].control:guiSetScaledValue(lev,false)
 	end
@@ -554,6 +559,13 @@ end
 function  OscEventPlayer:SetLevel(val)
 	self.channel.params.level = val
 	self.channel:SendParams()
+end
+function OscEventPlayer:SetInsert(i,pars)
+	local ins = self._inserts[i]
+	for k,v in pairs(pars) do
+		ins.params[k]=v
+	end
+	ins:SendParams()
 end
 function OscEventPlayer:FreeInstrGroup()
 	sendBundle({"/g_freeAll",{self.instr_group}}) --,lanes.now_secs())

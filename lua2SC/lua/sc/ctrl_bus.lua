@@ -244,7 +244,7 @@ function SINE(freq,phase,amp,add)
 	return ctmap
 end
 function SINEr(freq,phase,lo,hi)
-	local amp = hi-lo
+	local amp = (hi-lo)*0.5
 	local add = (hi+lo)*0.5
 	return SINE(freq,phase,amp,add)
 end

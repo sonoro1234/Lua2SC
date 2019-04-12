@@ -1115,6 +1115,9 @@ function DOREST(dur)
 	return PS{dur = LS{dur},delta = LS{dur}, freq = REST, note = REST,_dummy=function() 
 print("DOREST",dur) end}
 end
+function DOACTION(fun)
+	return PS{dur=LS{0},delta=LS{0},freq = NOP,_dummy= fun}
+end
 function COUNT(str)
 	local turn = 0
 	PS{dur =LS{0},_dummy=function() turn=turn+1;print(str,turn) end}
@@ -1146,6 +1149,14 @@ function SETCHAN(parvals)
 						end
 					end
 					pl.channel:SendParams(theMetro:ppq2time(pll.ppqPos))
+				end
+					return {delta=0,dur=0,freq=NOP,_=fun}
+				end)
+end
+function SETSENDS(i,lev)
+	return FS(function(pl)
+				local function fun(pll)
+					pll:SendLevel(i,lev)
 				end
 					return {delta=0,dur=0,freq=NOP,_=fun}
 				end)
