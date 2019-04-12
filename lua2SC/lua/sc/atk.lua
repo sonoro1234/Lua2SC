@@ -1,13 +1,26 @@
+
 local function GetUserLocalDataDir()
 	tmplinda = lanes.linda()
-	idlelinda:send("wxeval",{function() return wx.wxStandardPaths.Get():GetUserLocalDataDir()  end,tmplinda})
+	idlelinda:send("wxeval",{function()
+		local wxsp = wx.wxStandardPaths.Get()
+		local wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+")
+		if wxver > "2.9.0" then
+		wxsp:UseAppInfo(0)--wx.AppInfo_None)
+		end
+		return wxsp:GetUserLocalDataDir()  end,tmplinda})
 	local key,val=tmplinda:receive(1,"wxevalResp")
 	if not key then error("timeout") end
 	return val[2]
 end
 local function GetConfigDir()
 	tmplinda = lanes.linda()
-	idlelinda:send("wxeval",{function() return wx.wxStandardPaths.Get():GetConfigDir()  end,tmplinda})
+	idlelinda:send("wxeval",{function() 
+		local wxsp = wx.wxStandardPaths.Get()
+		local wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+")
+		if wxver > "2.9.0" then
+		wxsp:UseAppInfo(0)--wx.AppInfo_None)
+		end
+		return wxsp:GetConfigDir()  end,tmplinda})
 	local key,val=tmplinda:receive(1,"wxevalResp")
 	if not val[1] then error(val[2]) end
 	return val[2]
@@ -16,7 +29,7 @@ end
 local Platform = {}
 Platform.userAppSupportDir = GetUserLocalDataDir()
 Platform.systemAppSupportDir = GetConfigDir()
-
+local lfs = require"lfs"
 local Atk = {}
 Atk.userSupportDir = Platform.userAppSupportDir .. "/ATK";
 Atk.userSoundsDir = Atk.userSupportDir .. "/sounds";
@@ -46,13 +59,12 @@ function FoaDecoderKernel:initPath()
 		file:close()
 	end
 --]]
-	local lfs = require"lfs"
-	if lfs.attributes(Atk.userKernelDir) and lfs.attributes(Atk.userKernelDir).mode == "directory" then
+	if lfs.attributes(Atk.portabKernelDir) and lfs.attributes(Atk.portabKernelDir).mode == "directory" then
+		kernelLibPath = Atk.portabKernelDir
+	elseif lfs.attributes(Atk.userKernelDir) and lfs.attributes(Atk.userKernelDir).mode == "directory" then
 		kernelLibPath = Atk.userKernelDir
 	elseif lfs.attributes(Atk.systemKernelDir) and lfs.attributes(Atk.systemKernelDir).mode == "directory" then
 		kernelLibPath = Atk.systemKernelDir
-	elseif lfs.attributes(Atk.portabKernelDir) and lfs.attributes(Atk.portabKernelDir).mode == "directory" then
-		kernelLibPath = Atk.portabKernelDir
 	else
 		prtable(Platform)
 		error("is Atk instaled in above directories?")
