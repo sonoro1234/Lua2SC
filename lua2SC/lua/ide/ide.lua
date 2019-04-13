@@ -167,7 +167,7 @@ function checkendScript(lane)
 	if status=="error" or status=="done" or status=="cancelled" or status=="killed" then
 		print("checkend status ",status)
 	end
-	if status=="error" or status=="done" or status=="cancelled" then --or status=="killed" then
+	if status=="error" or status=="done" or status=="cancelled" or status=="killed" then
 		print("checkend ffinished",status)
 		EnableDebugCommands(false,false)
 		return true
@@ -1413,6 +1413,7 @@ function CloseWindow(event)
         return
     end
 	print("Main frame Closing")
+	wakeupidletimer:Stop()
     local count_cancel = 0
 	while script_lane and (count_cancel < 10) do
 		--local cancelled,err=script_lane:cancel(0.1)

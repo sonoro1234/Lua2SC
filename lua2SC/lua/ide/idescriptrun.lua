@@ -137,8 +137,8 @@ function InitRunMenu()
 						idlelinda:set("prout",{"softCANCEL!"})
 						--script_lane=nil
 						return
-					elseif canceled == false then
-						print("trying to kill",reason)
+					elseif cancelled == false then
+						print("trying to cancel",reason)
 						-- cancelled,reason=script_lane:cancel(0.1,true)
 						-- print("cancelled2",cancelled,reason);
 						-- print("script_lane.status",script_lane.status)
@@ -146,7 +146,7 @@ function InitRunMenu()
 							-- idlelinda:set("prout",{"ABORT!"})
 							-- script_lane=nil
 						-- end
-                    elseif canceled == nil then
+                    elseif cancelled == nil then
                         print("linda timeout in CANCEL")
 					end
 					prtable(lanes.threads())
@@ -162,7 +162,7 @@ function InitRunMenu()
 						idlelinda:set("prout",{"hardCANCEL!"})
 						--script_lane=nil
 						return
-					elseif canceled == false then
+					elseif cancelled == false then
 						print("trying to kill",reason)
 						-- cancelled,reason=script_lane:cancel(0.1,true)
 						-- print("cancelled2",cancelled,reason);
@@ -171,7 +171,7 @@ function InitRunMenu()
 							-- idlelinda:set("prout",{"ABORT!"})
 							-- script_lane=nil
 						-- end
-                    elseif canceled == nil then
+                    elseif cancelled == nil then
                         print("linda timeout in CANCEL")
 					end
 					prtable(lanes.threads())
