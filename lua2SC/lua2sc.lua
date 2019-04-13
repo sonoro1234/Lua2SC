@@ -225,4 +225,5 @@ for i,linda in ipairs(lindas) do
 end
 prtable(lanes.timers())
 prtable(lanes.threads())
+os.exit() --can help in wx SIGSEGV at exit
 
