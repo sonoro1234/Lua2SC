@@ -156,8 +156,8 @@ end
 --require"sc.oscfunc"
 SCSERVER = require"scserver"
 
-require"ide.ide_lane"
-
+local ide_lane = require"ide.ide_lane"
+print(ide_lane ,"is ide_lane")
 
 ----------------------------------
 MidiOpen(file_config:load_table("settings"))

@@ -26,7 +26,7 @@ local function finalizer_func(err,stk)
 end
 
 
-function ide_main()
+local function ide_main()
 	--local 
 	lanes = require "lanes" --.configure()
 	set_finalizer( finalizer_func ) 
@@ -49,7 +49,7 @@ function ide_main()
 	--require"ide.ide"
 	
 end
-function ide_lane()
+local function ide_lane()
 	local function MidiOpen(opt) return mainlinda:send("MidiOpen",opt) end
 	local function MidiClose() 
 		local tmplinda = lanes.linda()
@@ -81,4 +81,5 @@ function ide_lane()
 		ide_main)
 		return process_gen()
 end
+return ide_lane
 
