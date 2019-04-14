@@ -632,11 +632,13 @@ function UGen:doInputs(syndef,sucesor)
 	--if not syndef.ugens[actualugen] then syndef.ugens[actualugen]=tablelength(syndef.ugens)+1 end
 	if not actualugen.visited then actualugen.visited=true else return end 	
 	actualugen.inputs_toposort=actualugen.inputs_toposort or {}
+	actualugen.ugeninputs = 0
 	for i,v in ipairs(inputs) do
 		if type(v)=="number" then
 			if not syndef.constants[v] then syndef.constants[v]=tablelength(syndef.constants)+1 end 
 			actualugen.inputs_toposort[#actualugen.inputs_toposort+1]=v
 		else
+			actualugen.ugeninputs = actualugen.ugeninputs + 1
 			--[[
 			--does not work metametod returns always boolean
 			if v.name=="ConstantUGen" then
@@ -1313,18 +1315,7 @@ function SYNTHDef:findTerminals()
 	end
 	return self
 end
-function SYNTHDef:build()
-	self.ugens= {}
-	self.indugens={}
-	self.constants= {}
-	--find terminal ugens
-	self:findTerminals()
-	--------------------
-	for i,v in ipairs(self.outputugens) do
-		--print(v.name)
-		v:doInputs(self)
-	end
-	--[[
+function SYNTHDef:toposort()
 	---------sort breath first from input----------
 	--seems not necessary
 	--find input ugens
@@ -1334,13 +1325,19 @@ function SYNTHDef:build()
 	local L={}
 	local sorted={}
 	for i,v in ipairs(self.indugens) do
-		if #v.inputs==0 then
+		--if #v.inputs==0 then
+		if v.ugeninputs == 0 then --only non numeric
 			--Skey[v]=#S+1
 			S[#S+1]=v
 			Sadded[v]=true
-			
 		end
 	end
+	---[[
+	print"S is:"
+	for i,v in ipairs(S) do
+		print(i,v.name)
+	end
+	--]]
 	while next(S) do
 		local skey,ug=next(S)
 		print("next S ",skey,ug.name)
@@ -1350,18 +1347,18 @@ function SYNTHDef:build()
 			L[#L+1]=ug
 		end
 		for i,v in ipairs(ug.sucesors) do
-			--print("sucesor ",i,v.name)
+			print("\tsucesor ",i,v.name)
 			local allinputs=true
 			for i2,v2 in ipairs(v.inputs_toposort) do
 				if type(v2)~="number" then
-					--print("inputs toposort ",i2,v2.name)
+					print("\tinputs toposort ",i2,v2.name,sorted[v2])
 					if not sorted[v2] then
 						allinputs=false
 					end
 				end
 			end
 			if allinputs and not Sadded[v] then
-				print("add to S ",v.name)
+				print("\tadd to S ",v.name)
 				--Skey[v]=#S+1
 				S[#S+1]=v
 				Sadded[v]=true
@@ -1374,13 +1371,37 @@ function SYNTHDef:build()
 	end
 	self.ugens=sorted
 	self.indugens=L
-	--]]
+end
+function SYNTHDef:toposortcheck()
+	local order = {}
+	for i,v in ipairs(self.indugens) do
+		order[v] = i
+	end
+	for i,v in ipairs(self.indugens) do
+		for j,su in ipairs(v.sucesors) do
+			assert(order[su] > i,"bad toposort")
+		end
+	end
+end
+function SYNTHDef:build()
+	self.ugens= {}
+	self.indugens={}
+	self.constants= {}
+	--find terminal ugens
+	self:findTerminals()
+	--------------------
+	for i,v in ipairs(self.outputugens) do
+		--print(v.name)
+		v:doInputs(self)
+	end
+
+	self:toposortcheck()
+
 	self.isBuild=true
 	return self
 end
 function SYNTHDef:writeDefFile()
-	--assert(self.isBuild,"Not already build!!")
-	--if not self.isBuild then self:build() end
+
 	if not self.compiledStr then self:makeDefStr() end
 	local fout = assert(io.open(SynthDefs_path..self.name..".scsyndef", "wb"),"cannot open "..SynthDefs_path..self.name..".scsyndef")
 	fout:write(self.compiledStr)
@@ -1391,7 +1412,7 @@ function SYNTHDef:makeDefStr(version)
 	local version = version or 2
 	local lens
 	if version == 1 then lens = 2 elseif version == 2 then lens = 4 else error("wrong version") end
-	--assert(self.isBuild,"Not already build!!")
+
 	if not self.isBuild then self:build() end
 	local tout = {}
 	table.insert(tout,"SCgf")
