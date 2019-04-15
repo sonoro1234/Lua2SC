@@ -305,6 +305,7 @@ function INS(insert,oscplayer,doinit)
 	--insert[2].inst=insert[2].inst or ins.name
 	ins.dontfree=insert.dontfree
 	ins:Bind(PS(insert[2]))
+	ins.usetext = insert[3]
 	-------------------------
 	ins.headtail=1
 	ins.group=oscplayer.insertsgroup

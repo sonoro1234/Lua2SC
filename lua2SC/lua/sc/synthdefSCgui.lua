@@ -139,6 +139,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					end
 					newcontrol.variable={v,i2-i+1}
 					newcontrol.callback=function(val,s,c)
+							params[v] = params[v] or {}
 							params[v][i2-i+1]=val;
 							--print("callbak ",val,s)
 							--c:setLabel(string.format("%4.2f",val))
@@ -183,7 +184,10 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					local tecont=addControl(textcontrol)
 					tecont.callback=function(val,str,c) 
 						--print("tecont.callback",val,str)
-						cont:val(tonumber(str)) --there is no loop: tecont uses str
+						if str then
+							cont:val(tonumber(str)) --there is no loop: tecont uses str
+							cont:donotify() --simulate _valueChangedCb
+						end
 					end
 					cont.callback=function(val,str,c)
 							--print("cont.callback",val,str)

@@ -282,8 +282,8 @@ function opengui()
 			if player.isOscEP then
 				for i2,insert in ipairs(player._inserts) do
 					panelInsertsOne=addPanel{type="collapse",name=insert.name,parent=panelInserts}
-					print("insert:",insert.name)
-					openSynthdefGui(insert,panelInsertsOne,true,false,1)
+					print("insert:",insert,insert.name,insert.params)
+					openSynthdefGui(insert,panelInsertsOne,true,insert.usetext,1)
 				end
 			end
 		end	
@@ -359,7 +359,8 @@ function opengui()
 			_FreqScope(panelFs,nil,player.channel.busin)
 		end
 	end
-	--MidiToOssc
+	
+	-------------MidiToOssc
 	print("Miditooscgui beguin")
 	for i=0,15 do
 		if MidiToOsc and MidiToOsc.vars[i] then
@@ -434,13 +435,13 @@ function opengui()
 					GUIControls[#GUIControls +1] = cont
 					player.envios[i2].control = cont
 				end
-			--inserts={}
+			--midi player inserts={}
 
 			panelInserts=addPanel{type="vbox",parent=panel}
 			--if player.isOscEP then
 			for i2,insert in ipairs(player._inserts) do
 				panelInsertsOne=addPanel{type="collapse",name=insert.name,parent=panelInserts}
-				print("insert:",insert.name)
+				print("midi pl insert:",insert.name)
 				openSynthdefGui(insert,panelInsertsOne,true,false,1)
 			end
 			--end
