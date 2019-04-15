@@ -625,5 +625,20 @@ function PrintTable(ta, maxl, level)
 		end
 	end
 end
-
+--usefull for tracking key acces to table
+function METACONTROL(tt)
+	tt = tt or {}
+	local _tt = {}
+	local meta = {
+		__index = function(t,k,v) 
+			print("index",t,k); 
+			return _tt[k]  
+		end,
+		__newindex = function(t,k,v) 
+			print("newindex",t,k,v);
+			_tt[k]=v 
+		end,
+	}
+	return setmetatable(tt,meta)
+end
 require"sc.TA"
