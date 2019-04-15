@@ -493,8 +493,16 @@ bhightshelf=SynthDef("BHiShelf", {busin=0, busout=0,freqEQ= 1200, rs= 1, db= -4,
 	ReplaceOut.ar(busout,Select.ar(bypass,{effect,input}))
 end)
 sintes[#sintes+1]=bhightshelf
-
-
+fourband = SynthDef("FourBandEq", {busin=0,busout=0,ff=Ref{100,1200,4000,6000}, rq=Ref{1,1,1,1}, db=Ref{-4,-4,-4, -4},bypass=0},function()
+	local input, effect;
+	input=In.ar(busin,2);
+	effect = BLowShelf.ar(input,ff[1],rq[1],db[1])
+	effect = BPeakEQ.ar(effect,ff[2],rq[2],db[2])
+	effect = BPeakEQ.ar(effect,ff[3],rq[3],db[3])
+	effect = BHiShelf.ar(effect,ff[4],rq[4],db[4])
+	ReplaceOut.ar(busout,Select.ar(bypass,{effect,input}))
+end)--:store(true)
+sintes[#sintes+1]=fourband
 --]]
 ---[[
 flangerb=SynthDef("flangerb", {busin=0, busout=0,flangefreq=0.1, fdback=0.25,flangems=20,bypass=0},function()
