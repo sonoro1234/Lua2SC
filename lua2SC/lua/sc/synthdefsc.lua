@@ -176,6 +176,26 @@ function Env:asArray()
 	end
 	return self.array
 end
+
+function Env:delay(del)
+	local levels = concatTables({self.levels[1]},self.levels)
+	local times = concatTables({del},self.times)
+	local curve
+	if type(self.curve)=="table" then
+		curve = concatTables({"lin"},self.curve)
+	else
+		curve = self.curve
+	end	
+	local releaseNode = self.releaseNode and self.releaseNode +1 or nil
+	local loopNode = self.loopNode and self.loopNode +1 or nil
+	return Env.new(levels,times,curve,releaseNode,loopNode)
+end
+function Env:ar(doneAction, gate, timeScale, levelScale, levelBias)
+	return EnvGen.ar(self,gate,levelScale, levelBias,timeScale,doneAction)
+end
+function Env:kr(doneAction, gate, timeScale, levelScale, levelBias)
+	return EnvGen.kr(self,gate,levelScale, levelBias,timeScale,doneAction)
+end
 Env.shapeNames = {
 			step = 0,
 			lin = 1,
