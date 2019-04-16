@@ -1,3 +1,4 @@
+local wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+")
 -- ------------------------------wxKnob------------------------------------------
 function TableToPen(penTable)
     local c = wx.wxColour(unpack(penTable.colour))
@@ -341,8 +342,10 @@ function wxFuncGraph3(parent,name,label,id,co)
 	local penwidth=1
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
+
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
 	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+
 	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
 	wxwindow:SetLabel(label)
 	
@@ -420,6 +423,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 	end
 	
 	local function Draw(dc)
+		
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:SetFont(wx.wxNORMAL_FONT)
 		dc:DrawRectangle(extra_w, name_height, width ,height);
@@ -496,7 +500,13 @@ function wxFuncGraph3(parent,name,label,id,co)
 		end) 
     
 	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+			if co.expand then
+			width,height  = wxwindow:GetClientSizeWH()
+			width,height = width-extra_w*2, height-label_height-name_height
+			GraphClass.SetValue(nil,GraphClass.valf)
+			else
 			wxwindow:Refresh();
+			end
 		end)
 	GraphClass.window=wxwindow
 	return GraphClass 
@@ -760,6 +770,56 @@ function wxTimePlot(parent,name,label,id,co)
 		end) 
     
 	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+			wxwindow:Refresh();
+		end)
+	GraphClass.window=wxwindow
+	return GraphClass 
+end
+---------------------------wxControl
+function wxNewControl(parent,name,label,id,co)
+	id = id or wx.wxID_ANY
+	local miny = co.miny or 0
+	local maxy = co.maxy or 1
+	local height=co.height or 150
+	local width= co.width or 200
+	local label_height=0
+	local name_height=0
+	local extra_w=0
+	
+	local penwidth=1
+	
+	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
+	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
+	wxwindow:SetLabel(label)
+	
+	local GraphClass={value={0,0},window=wx.wxNULL,width=width,height=height,customclass="GraphClass"}
+	
+	function GraphClass.SetValue(_,val)
+		GraphClass.value=val
+		wxwindow:Refresh()
+	end
+	function GraphClass.SetLabel(_,val)
+		wxwindow:SetLabel(val)
+		wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
+		--wxwindow:RefreshRect()
+	end
+	
+	local Draw = co.DrawCb or function() end
+	
+	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
+			local dc = wx.wxPaintDC(wxwindow)
+			local ok,ret = pcall(Draw,GraphClass,dc)
+			if not ok then thread_print("error on customcontrol draw",ret) end
+			dc:delete() 
+		end)
+    wxwindow:Connect(wx.wxEVT_ERASE_BACKGROUND, function(event) 
+			event:Skip() 
+		end) 
+    
+	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+			GraphClass.width, GraphClass.height = wxwindow:GetClientSizeWH()
 			wxwindow:Refresh();
 		end)
 	GraphClass.window=wxwindow
@@ -1061,11 +1121,16 @@ function wxGLCanvas(parent,name,label,id,co)
 	local height=co.height or 150
 	local width= co.width or 200
 	
-	local wxwindow = wx.wxGLCanvas(parent, id, wx.wxDefaultPosition, wx.wxSize(width,height), wx.wxEXPAND)
+	local wxwindow 
+	if wxver > "3.0.0" then
+		wxwindow = wx.wxGLCanvas(parent, id,{}, wx.wxDefaultPosition, wx.wxSize(width,height), wx.wxEXPAND)
+	else
+		wxwindow = wx.wxGLCanvas(parent, id, wx.wxDefaultPosition, wx.wxSize(width,height), wx.wxEXPAND)
+	end
 	local canvas = wxwindow
 	local context = wx.wxGLContext(canvas)
 	local mouseLD = co.mouseLD or function() end
-	local gl = require"luagl"
+	--local gl = require"luagl"
 	local Draw = co.DrawCb
 	local CanvasClass={value=0,window=canvas,height=height,width=width,customclass="CanvasClass"}
 	wxwindow:Connect(wx.wxEVT_LEFT_DOWN,function (event)
@@ -1077,12 +1142,14 @@ function wxGLCanvas(parent,name,label,id,co)
 			event:Skip()
 	end )
 	function CanvasClass.SetValue(_,val)
+		--thread_print"llega valor"
 		for k,v in pairs(val) do
 			CanvasClass[k]=v
 		end
 		wxwindow:Refresh()
 	end
 	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
+			--thread_print"voy a pintar"
 			local dc = wx.wxPaintDC(wxwindow)
 			canvas:SetCurrent(context)
 			Draw(CanvasClass)
@@ -1443,6 +1510,9 @@ function CreateScriptGUI()
 		elseif co.typex=="vumeter" then
 			control.control=wxVuMeter(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) -- wx.wxST_NO_AUTORESIZE +
 			control.customclass=true
+		elseif co.typex=="newcontrol" then
+			control.control=wxNewControl(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
+			control.customclass=true
 		elseif co.typex=="funcgraph" then
 			control.control=wxFuncGraph(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
 			control.customclass=true
@@ -1550,6 +1620,8 @@ function CreateScriptGUI()
 					co.control:SetValue(val)
 				elseif co.typex=="vumeter" then
 					co.control:SetValue(val)
+				elseif co.typex=="newcontrol" then
+					co.control:SetValue(val)
 				elseif co.typex=="funcgraph" then
 					co.control:SetValue(val)
 				elseif co.typex=="funcgraph2" then
@@ -1598,8 +1670,10 @@ function CreateScriptGUI()
 		--print(control) window
 		--prtable(control)
 		if control then
-			local prop=0
-			local style=wx.wxALIGN_CENTER_HORIZONTAL  +wx.wxALL  --+ wx.wxEXPAND  
+			
+			local prop= const.expand and 1 or 0
+			local style=wx.wxALIGN_CENTER_HORIZONTAL  +wx.wxALL  + (const.expand and wx.wxEXPAND or 0)
+			--thread_print("expand?",const.expand,prop)
 			if const.typex=="toggle" then prop=0; style=wx.wxALIGN_CENTER_HORIZONTAL  +wx.wxALL; end
 			if const.panel=="main" then prop=0; style=0; end
 			--container.sizer:Add(control.insobj,prop,style)
@@ -1751,8 +1825,9 @@ function CreateScriptGUI()
 		
 		local mainsizer = wx.wxBoxSizer(wx.wxHORIZONTAL)
 		Sizers[ScriptWindows[win.tag]] = {sizer=mainsizer,type="hbox"}
-		ScriptWindows[win.tag]:SetSizer(mainsizer)
+		ScriptWindows[win.tag]:SetSizerAndFit(mainsizer)
 		mainsizer:SetSizeHints(ScriptWindows[win.tag])
+		--prtable("AddWindow",Sizers)
 		--[[
 		local ScriptGUI = ScriptWindows[win.tag]
 		local ScriptGUImainSizer=wx.wxBoxSizer(wx.wxHORIZONTAL)
@@ -1819,7 +1894,9 @@ function CreateScriptGUI()
 	--{type,parent,cols,rows,tag(auto),name}
 	function AddPanel(pan)
 		local ScriptGUI = ScriptWindows[pan.window] or ScriptGUI
-		pan.parent = pan.parent or (pan.window and Sizers[ScriptWindows[pan.window]]) or "main"
+		--pan.parent = pan.parent or (pan.window and Sizers[ScriptWindows[pan.window]]) or "main"
+		pan.parent = pan.parent or (pan.window and ScriptWindows[pan.window]) or "main"
+		--prtable("AddPanel",pan)
 		local panel
 		if pan.type=="vbox" then
 			if pan.name then
@@ -1944,6 +2021,7 @@ function CreateScriptGUI()
 							local siz = Sizers[win]
 							siz.sizer:Layout()
 							siz.sizer:SetSizeHints(win)
+							win:SetSizerAndFit(siz.sizer)
 							-- win:Refresh()
 						end
 					elseif key=="guiGetValue" then
