@@ -297,7 +297,7 @@ function PlotBus(bus,secs,when,rate)
 	local nsamples = math.floor(secs*sampspersec) 
 	local window = addWindow{w=350,h=370,label="bus"..tostring(bus)}
 	--local panel = addPanel{}
-	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
+	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300,expand=true}
 
 	local sclua = require"sclua.Server"
 	local s = sclua.Server()

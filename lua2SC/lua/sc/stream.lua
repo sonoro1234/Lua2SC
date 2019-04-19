@@ -279,7 +279,7 @@ function LS(t,r)
 		--error("ListStream Error: List should be a not stream table!!",2) 
 		t = {t}
 	end
-
+	assert(t[1],"first item is null!!")
 	return ListStream:new({reps=r,list=t})
 end
 --- Creates a ListStream from t with infinite repetitions

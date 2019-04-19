@@ -276,6 +276,7 @@ function scEventPlayer:notify(control)
 		self.params[control.variable[1]] = control:val()
 	else
 		--self.params[control.variable[1]] = self.params[control.variable[1]] or {}
+		--print("notify",control.variable[1],control.variable[2],control:val())
 		self.params[control.variable[1]][control.variable[2]] = control:val()
 	end
 	self:SendParam(control.variable[1])
@@ -296,6 +297,7 @@ function scEventPlayer:notifyBAK(control)
 end 
 
 -----------------------Insert----------------------------
+
 Insert=scEventPlayer:new{name=nil,dontfree=true}
 function INS(insert,oscplayer,doinit)
 	local ins= Insert:new{name=insert[1],inst=insert[1],oscplayer=oscplayer,params={}}
@@ -443,14 +445,19 @@ end
 Channel=scEventPlayer:new{name=nil,dontfree=true}
 function CHN(channel,oscplayer,busout)
 	busout = busout or Master.busin
-	--prtable(oscplayer)
+
 	local chn= Channel:new{name="CHN"..(oscplayer.name or ""),oscplayer=oscplayer,params={}}
-	--prtable(channel)
+
 	channel.dur=channel.dur or math.huge
 	channel.inst=channel.inst or "channel"
 	channel.level=channel.level or 1
 	channel.unmute=channel.unmute or 1
 	channel.pan=channel.pan or 0.0
+	
+	--save initial params level,pan and unmute
+	chn.params.level = channel.level
+	chn.params.pan = channel.pan
+	chn.params.unmute = channel.unmute
 
 	chn.inst=channel.inst
 	--print("xxxxxxxxxxxxxxxchn bind")
@@ -465,10 +472,13 @@ function CHN(channel,oscplayer,busout)
 	
 	--prtable(chn)
 	chn:Init(true)
+	--set initial level,pan and unmute
+	chn:SendParams()
 	return chn
 end
 -------------------------------------------------
 function scEventPlayer:plot(secs,when)
+	when = when or 0
 	if self.init_done then
 		print("when1",when,theMetro:ppq2time(when))
 		PlotBus(self.busout,secs,when and theMetro:ppq2time(when))

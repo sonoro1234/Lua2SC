@@ -131,7 +131,7 @@ function InitRunMenu()
 			function(event)
 				if script_lane then
 					--local cancelled,reason=script_lane:cancel(0.1)
-					local cancelled,reason = ideCancelScript(0.1)
+					local cancelled,reason = ideCancelScript(1)
 					print("cancelled1",cancelled,reason);
 					if cancelled then
 						idlelinda:set("prout",{"softCANCEL!"})
@@ -256,7 +256,7 @@ end
 function ideCancelScript(time,forced,forced_timeout)
 		local tmplinda=lanes.linda()
 		mainlinda:send("CancelScript",{timeout=time,forced=forced,forced_timeout=forced_timeout,tmplinda=tmplinda})
-		local key,val=tmplinda:receive(3,"CancelScriptResp")
+		local key,val=tmplinda:receive(time*2,"CancelScriptResp")
 		if key then
 			return unpack(val)
 		else --timeout

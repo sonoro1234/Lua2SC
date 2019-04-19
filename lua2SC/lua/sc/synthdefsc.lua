@@ -1629,7 +1629,7 @@ function PlotSynth(synname,secs,outrate)
 
 end
 function SYNTHDef:plot(seg,rate)
-	self:send(true)
+	self:store(true) --self:send(true)
 	local outrate = rate or self.outputugens[1].calcrate
 	PlotSynth(self.name,seg,outrate)
 	return self

@@ -339,7 +339,7 @@ function ScriptRun(pars)
 	--DisplayOutput(ToStr(package))
 	local script_lane_gen=lanes.gen("*",--"base,math,os,package,string,table",
 		{
-		cancelstep=10000,
+		cancelstep=100,
 		required={},
 		globals={print=thread_print,
 				send_debuginfo=send_debuginfo,
@@ -391,6 +391,17 @@ end
 function CancelScript(timeout,forced,forced_timeout)
 	local cancelled,reason=script_lane:cancel(timeout,forced,forced_timeout)
 	io.write("CancelScript "..tostring(cancelled).." "..tostring(reason).."\n")
+	
+	local t0,st= os.time()
+	while os.time()-t0 < timeout do
+		st= script_lane.status
+		io.stderr:write( '.' )
+		if st~="running" then 
+			io.stderr:write( st..'\n' )
+			cancelled= true
+			break 
+		end
+	end
 	return {cancelled,reason}
 end
 function send_debuginfo(source,line,stack,vars,activate)
