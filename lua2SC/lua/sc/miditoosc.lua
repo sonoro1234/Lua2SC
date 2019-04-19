@@ -468,6 +468,7 @@ function MidiToOsc.midi2osc(midiEvent)
 			--OSCFunc.newfilter("/n_end",nodo,function(noty)
 			--	MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
 			--end,true)
+			print"new"
 		else
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
@@ -476,6 +477,7 @@ function MidiToOsc.midi2osc(midiEvent)
 				on ={"/n_set", { nodo, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
 			MidiToOsc.free_queue[ch][nodo] = nil
+			print"not new"
 		end
 		ValsToOsc(on[2],thisMidiOsc.params)
 		table.insert(on[2],"out")
@@ -502,16 +504,19 @@ function MidiToOsc.midi2osc(midiEvent)
 			end
 			--set freq from last key
 			local lastnote = thisMidiOsc.keylist[#thisMidiOsc.keylist]
+			if thisMidiOsc.oscfree then
 			if lastnote then
 				local freq = midi2freq(lastnote)
 				on ={"/n_set", { nodo, "freq", {"float" ,freq}}}
 				sendBundle(on)
+				print"off set"
 			else
 				local off = {"/n_set",{nodo,"gate",{"float",0}}}
 				sendBundle(off) --,lanes.now_secs())
 				thisMidiOsc.node = nil
+				print"off release"
 			end
-		
+			end
 		elseif thisMidiOsc.oscfree then
 			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
