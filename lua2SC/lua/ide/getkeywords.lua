@@ -57,6 +57,7 @@ local function bodyKeyWords()
 			s = sclua.Server()
 			local keyword_table = {}
             for index, value in pairs(_G) do
+				if index~="_G" then
 				if type(value)=="function" then
 					table.insert(keyword_table, index.." ")
 					local info = debug.getinfo(value)
@@ -79,14 +80,17 @@ local function bodyKeyWords()
 						end
 					end
 				end
+				end
             end
 			--LogFile(ToStr(sckeywordsSource),"keyword.txt")
             table.sort(keyword_table)
+			--prtable(keyword_table)
 			return table.concat(keyword_table),sckeywordsSource
 end
 
 function GetSCKeyWords()
 			local kw = lanegen(bodyKeyWords,{lua2scpath=lua2scpath},"keywords_lane")()
 			sckeywordsSource = kw[2]
+			--LogFile(ToStr(sckeywordsSource),"keyword.txt")
 			return kw[1]
 end
