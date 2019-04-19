@@ -237,7 +237,9 @@ function wxFuncGraph2(parent,name,label,id,co)
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	if not co.expand then
 	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	end
 	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
 	wxwindow:SetLabel(label)
 	
@@ -317,7 +319,14 @@ function wxFuncGraph2(parent,name,label,id,co)
 		end) 
     
 	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
+		if co.expand then
+			width,height  = wxwindow:GetClientSizeWH()
+			width,height = width-extra_w*2, height-label_height-name_height
+			GraphClass.SetValue(nil,GraphClass.value)
+			thread_print("funcgraph2",width,height)
+		else
 			wxwindow:Refresh();
+		end
 		end)
 	GraphClass.window=wxwindow
 	return GraphClass 
@@ -342,10 +351,10 @@ function wxFuncGraph3(parent,name,label,id,co)
 	local penwidth=1
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
-
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
+	if not co.expand then
 	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
-
+	end
 	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
 	wxwindow:SetLabel(label)
 	
@@ -500,13 +509,14 @@ function wxFuncGraph3(parent,name,label,id,co)
 		end) 
     
 	wxwindow:Connect(wx.wxEVT_SIZE,function (event)
-			if co.expand then
+		if co.expand then
 			width,height  = wxwindow:GetClientSizeWH()
 			width,height = width-extra_w*2, height-label_height-name_height
 			GraphClass.SetValue(nil,GraphClass.valf)
-			else
+			thread_print("funcgraph3",width,height)
+		else
 			wxwindow:Refresh();
-			end
+		end
 		end)
 	GraphClass.window=wxwindow
 	return GraphClass 
