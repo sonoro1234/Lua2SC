@@ -62,9 +62,9 @@ endif(UNIX)
 
 #########install
 if(Darwin)
-	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/lua51.so DESTINATION .)
+	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/libluajit.dylib DESTINATION .)
 elseif(UNIX)
-	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/lua51.so DESTINATION .)
+	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/libluajit.so DESTINATION .)
 else() #win
 	install(FILES ${ljsrc}/luajit.exe ${ljsrc}/lua51.dll DESTINATION .)
 endif()
