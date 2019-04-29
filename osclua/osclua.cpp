@@ -554,7 +554,8 @@ void parseOSCMessage(lua_State *state, osc::ReceivedMessage &m, int fulltype)
                     case osc::BLOB_TYPE_TAG:
                         strncpy(typestr, "blob", sizeof(typestr));
                         const void *ptr;
-                        long int len;
+                        //long int len;
+						osc::osc_bundle_element_size_t len;
                         arg->AsBlob(ptr,len);
                         lua_pushlstring(state, (char*)ptr, len);
                         break;

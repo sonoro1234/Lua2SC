@@ -10,9 +10,9 @@ if(WIN32)
 		set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.dll)
 	endif()
 elseif(Darwin)
-	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/libluajit.dylib)
+	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.dylib)
 else() ##linux
-	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/libluajit.so)
+	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.so)
 endif()
 set(CMAKE_INSTALL_PREFIX ${LUAJIT_BIN})
 

@@ -8,9 +8,10 @@ include(ExternalProject)
 set(ljpre ${CMAKE_CURRENT_BINARY_DIR}/luajit-2.1)
 set(ljdir ${ljpre}/project_luajit)
 set(ljsrc ${ljpre}/project_luajit/src)
-set(LUAJIT_INSTALL ${CMAKE_BINARY_DIR}/LuaJIT_install)
 
 #debug flags
+###dont use still
+#[[
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 if(${CMAKE_BUILD_TYPE_LOWER} STREQUAL "debug")
     message("== LuaJIT will be built in debug mode")
@@ -20,6 +21,7 @@ if(${CMAKE_BUILD_TYPE_LOWER} STREQUAL "debug")
 		set(DEBUG_FLAGS "CCDEBUG=-g")
 	endif()
 endif()
+]]
 
 set(LUAJIT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/LuaJIT)
 if(UNIX)
@@ -29,7 +31,7 @@ if(UNIX)
 	  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${LUAJIT_SOURCES} ${ljdir}
       BINARY_DIR ${ljdir}
       BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${DEBUG_FLAGS}
-      INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install PREFIX="${LUAJIT_INSTALL}"
+      INSTALL_COMMAND ""
     )
     set (ljname libluajit.a)
 else(UNIX)
@@ -62,9 +64,13 @@ endif(UNIX)
 
 #########install
 if(Darwin)
-	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/libluajit.dylib DESTINATION .)
+	install(FILES ${ljsrc}/luajit ${ljsrc}/libluajit.dylib 
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+  DESTINATION ${LUAJIT_BIN})
 elseif(UNIX)
-	install(FILES ${LUAJIT_INSTALL}/bin/luajit ${LUAJIT_INSTALL}/bin/libluajit.so DESTINATION .)
+	install(FILES ${ljsrc}/luajit ${ljsrc}/libluajit.so 
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+  DESTINATION ${LUAJIT_BIN})
 else() #win
 	install(FILES ${ljsrc}/luajit.exe ${ljsrc}/lua51.dll DESTINATION .)
 endif()

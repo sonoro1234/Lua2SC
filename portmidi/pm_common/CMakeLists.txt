@@ -88,9 +88,9 @@ else(UNIX)
     # /MD is multithread DLL, /MT is multithread. Change to static:
     include(../pm_win/static.cmake)
     
-    include(FindJNI)
+    #include(FindJNI)
 
-    set(JAVA_INCLUDE_PATHS ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+    #set(JAVA_INCLUDE_PATHS ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
     # message(STATUS "JAVA_INCLUDE_PATHS: " ${JAVA_INCLUDE_PATHS})
 
     set(WINSRC pmwin pmwinmm)
@@ -106,6 +106,7 @@ list(APPEND LIBSRC pmutil portmidi)
 
 # now add the shared files to make the complete list of library sources
 add_library(portmidi-static ${LIBSRC})
+target_compile_options(portmidi-static PRIVATE -fPIC)
 set_target_properties(portmidi-static PROPERTIES OUTPUT_NAME "portmidi_s")
 target_link_libraries(portmidi-static ${PM_NEEDED_LIBS})
 
@@ -119,9 +120,9 @@ target_link_libraries(portmidi-static ${PM_NEEDED_LIBS})
 
 # install the libraries (Linux and Mac OS X command line)
 if(UNIX)
-  INSTALL(TARGETS portmidi-static pmjni
-    LIBRARY DESTINATION /usr/local/lib
-    ARCHIVE DESTINATION /usr/local/lib)
+  # INSTALL(TARGETS portmidi-static pmjni
+    # LIBRARY DESTINATION /usr/local/lib
+    # ARCHIVE DESTINATION /usr/local/lib)
 # .h files installed by pm_dylib/CMakeLists.txt, so don't need them here
 #  INSTALL(FILES portmidi.h ../porttime/porttime.h
 #    DESTINATION /usr/local/include)
