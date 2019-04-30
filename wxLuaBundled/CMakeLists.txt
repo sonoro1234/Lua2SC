@@ -64,7 +64,7 @@ if(MSVC)
 	#add_compile_definitions(-D/EHsc)
 	SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 endif()
-add_subdirectory(wxLua/wxLua EXCLUDE_FROM_ALL)
+add_subdirectory(wxlua/wxLua EXCLUDE_FROM_ALL)
 
 #add_dependencies(SecondaryAllBuild wxLuaModule)
 
