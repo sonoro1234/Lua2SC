@@ -35,7 +35,7 @@ if(BUILD_WXLUA)
 endif()
 
 ############ install #######################
-INSTALL (DIRECTORY  Lua2SC DESTINATION .)
+INSTALL (DIRECTORY  lua2SC DESTINATION .)
 install(FILES luafilesystem/lfs_ffi.lua luafilesystem/lfs.lua DESTINATION ./lua)
 
 ##runtime libraries
