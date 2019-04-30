@@ -67,12 +67,12 @@ if(UNIX)
     message(STATUS "SYSROOT: " ${CMAKE_OSX_SYSROOT})
   else(APPLE)
     # LINUX settings...
-    include(FindJNI)
-    message(STATUS "JAVA_JVM_LIB_PATH is " ${JAVA_JVM_LIB_PATH})
-    message(STATUS "JAVA_INCLUDE_PATH is " ${JAVA_INCLUDE_PATH})
-    message(STATUS "JAVA_INCLUDE_PATH2 is " ${JAVA_INCLUDE_PATH2})
-    message(STATUS "JAVA_JVM_LIBRARY is " ${JAVA_JVM_LIBRARY})
-    set(JAVA_INCLUDE_PATHS ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+    # include(FindJNI)
+    # message(STATUS "JAVA_JVM_LIB_PATH is " ${JAVA_JVM_LIB_PATH})
+    # message(STATUS "JAVA_INCLUDE_PATH is " ${JAVA_INCLUDE_PATH})
+    # message(STATUS "JAVA_INCLUDE_PATH2 is " ${JAVA_INCLUDE_PATH2})
+    # message(STATUS "JAVA_JVM_LIBRARY is " ${JAVA_JVM_LIBRARY})
+    # set(JAVA_INCLUDE_PATHS ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
     # libjvm.so is found relative to JAVA_INCLUDE_PATH:
     set(JAVAVM_LIB ${JAVA_JVM_LIBRARY}/libjvm.so)
 
