@@ -46,7 +46,7 @@ if(WIN32)
 	endif()
 endif()
 if(UNIX)
-	set(wxWidgets_CONFIG_EXECUTABLE ${wxWidgets_install}/bin/wx-config)
+	set(wxWidgets_CONFIG_EXECUTABLE ${WX_BUILD}/wx-config)
 endif()
 
 set(BUILD_VERBOSELY TRUE)
