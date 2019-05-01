@@ -12,7 +12,7 @@ if(WIN32)
 elseif(Darwin)
 	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.dylib)
 else() ##linux build seems dont need LUA_LIBRAY?
-	set(LUA_LIBRARY)# ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.so)
+	set(LUA_LIBRARY "")# ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.so)
 endif()
 set(CMAKE_INSTALL_PREFIX ${LUAJIT_BIN})
 
@@ -25,16 +25,15 @@ add_subdirectory(luaportmidi)
 message("------------luasocket-------------------------")
 add_subdirectory(luasocket)
 message("------------lanes-----------------------------")
-if(UNIX)
-set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.so)
-endif()
+
+set(LUA_LIBRARIES 1)#to make skip FindLua51 in lanes
 set(INSTALL_CMOD ./lanes CACHE INTERNAL "cmod" FORCE)
 set(INSTALL_LMOD ./lua  CACHE INTERNAL "lmod" FORCE)
 set(INSTALL_DATA ${CMAKE_BINARY_DIR}/lanes_install  CACHE INTERNAL "lanes data" FORCE)
 add_subdirectory(lanes )
 
 if(BUILD_WXLUA)
-	set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)
+	set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)#wxLua dont like luajit headers
 	add_subdirectory(wxLuaBundled)
 endif()
 
@@ -55,8 +54,12 @@ include (InstallRequiredSystemLibraries)
 INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION .)
 
 ##launcher
-#TODO launchers for linux and osx
+#TODO launchers for osx
 if(WIN32)
 	INSTALL(FILES launcher/Lua2SC.bat DESTINATION .)
+else(WIN32)#linux
+	INSTALL(FILES launcher/Lua2SC.sh
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+	DESTINATION .)
 endif(WIN32)
 
