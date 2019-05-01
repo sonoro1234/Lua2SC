@@ -1,7 +1,7 @@
 PROJECT(Lua2SC C)
 cmake_minimum_required(VERSION 2.8)
 
-set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)
+set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT/src)
 #TODO check unix and osx
 if(WIN32)
 	if(MSVC)
@@ -34,6 +34,7 @@ set(INSTALL_DATA ${CMAKE_BINARY_DIR}/lanes_install  CACHE INTERNAL "lanes data" 
 add_subdirectory(lanes )
 
 if(BUILD_WXLUA)
+	set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)
 	add_subdirectory(wxLuaBundled)
 endif()
 
