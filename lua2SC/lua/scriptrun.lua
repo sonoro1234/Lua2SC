@@ -339,7 +339,7 @@ function ScriptRun(pars)
 	--DisplayOutput(ToStr(package))
 	local script_lane_gen=lanes.gen("*",--"base,math,os,package,string,table",
 		{
-		cancelstep=100,
+		--cancelstep=100,
 		required={},
 		globals={print=thread_print,
 				send_debuginfo=send_debuginfo,

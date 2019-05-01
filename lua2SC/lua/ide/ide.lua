@@ -517,7 +517,7 @@ wakeupidletimer:Start(30,false)
 	end
 	
 	--frame:SetIcon(wxLuaEditorIcon) --FIXME add this back
-	local bitmap = wx.wxBitmap(require"ide.LUA_xpm")
+	local bitmap = wx.wxBitmap(require"ide.lua_xpm")
     local icon = wx.wxIcon()
     icon:CopyFromBitmap(bitmap)
     frame:SetIcon(icon)

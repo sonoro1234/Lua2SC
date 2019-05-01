@@ -241,7 +241,7 @@ function SCTCP:init(settings,receivelinda)
 	
 	local tcp_lane_gen = lanes.gen("*",--"base,math,os,package,string,table",
 		{
-		cancelstep=10000,
+		--cancelstep=10000,
 		required={},
 		globals={print=thread_print,
 				prerror=thread_error_print,

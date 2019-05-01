@@ -58,7 +58,7 @@ local function ide_lane()
 	end
 	local process_gen=lanes.gen("*",--"base,math,os,package,string,table",
 		{
-		cancelstep=10000,
+		--cancelstep=10000,
 		required={},
 		globals={
 				path_sep = path_sep,
