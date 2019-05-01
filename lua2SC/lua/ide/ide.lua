@@ -383,7 +383,7 @@ function AppInit()
 
 	--wx.wxIdleEvent.SetMode(wx.wxIDLE_PROCESS_SPECIFIED)
 
-	frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, "Lua2SC",wx.wxDefaultPosition , wx.wxSize(800, 600),wx.wxBORDER_SIMPLE + wx.wxDEFAULT_FRAME_STYLE )
+	frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, "Lua2SC",wx.wxDefaultPosition , wx.wxSize(800, 600), wx.wxDEFAULT_FRAME_STYLE ) --wx.wxBORDER_SIMPLE
 	
 	--frame:SetExtraStyle(wx.wxWS_EX_PROCESS_IDLE)
 ---[[
