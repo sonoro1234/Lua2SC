@@ -3,7 +3,36 @@
 #################################################
 PROJECT(wxLuaBundled CXX)
 cmake_minimum_required(VERSION 3.13)
+
+set(WX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build_wx)
+file(MAKE_DIRECTORY ${WX_BUILD})
+
+if(UNIX)
 	
+	set(MAKEFLAGS "-j4")
+	set(WXWIDGETSDEBUG "--disable-debug")
+	set(WXWIDGETSLOC ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets)
+	set(EXECUTE_COMMAND	./configure --prefix="${WX_BUILD}" ${WXWIDGETSDEBUG} --disable-shared --enable-unicode \
+    --enable-compat28 \
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
+    --with-zlib=builtin --disable-richtext --with-gtk=2 \
+    CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC")
+	
+	file(COPY ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets DESTINATION ${WXWIDGETSLOC})
+	message("---------------------------- configuring wxWidgets -------------------------------")
+	message("EXECUTE_COMMAND is " "${EXECUTE_COMMAND}")	
+	execute_process(COMMAND ${EXECUTE_COMMAND} 
+        WORKING_DIRECTORY ${WXWIDGETSLOC}
+    )
+	message("---------------------------- making wxWidgets -------------------------------")
+	execute_process(COMMAND make ${MAKEFLAGS} 
+        WORKING_DIRECTORY ${WXWIDGETSLOC}
+    )
+	execute_process(COMMAND make install 
+        WORKING_DIRECTORY ${WXWIDGETSLOC}
+    )
+
+else(UNIX)	
 	set(setDEBUG_LEVEL true)
 	set(CPPFLAGS)
 	if(setDEBUG_LEVEL)
@@ -14,9 +43,6 @@ cmake_minimum_required(VERSION 3.13)
 		#SET(CPPFLAGS "${CPPFLAGS} /EHsc")
 	endif()
 	
-	set(WX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build_wx)
-	file(MAKE_DIRECTORY ${WX_BUILD})
-
 	#set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=2.8 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_EXPAT=OFF -DwxUSE_LIBTIFF=OFF -DwxUSE_UNICODE=ON -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
 	set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=2.8 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_UNICODE=ON -DwxUSE_EXPAT=builtin -DwxUSE_LIBTIFF=builtin -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
 	
@@ -35,6 +61,7 @@ cmake_minimum_required(VERSION 3.13)
 		RESULT_VARIABLE build_command_result
         )
 	message( "build_command_result " ${build_command_result} "---------------------------------")
+endif()
 ##wxLua
 add_custom_target(SecondaryAllBuild ALL DEPENDS wxLuaModule)
 
