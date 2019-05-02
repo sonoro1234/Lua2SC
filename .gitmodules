@@ -4,6 +4,7 @@
 [submodule "lanes"]
 	path = lanes
 	url = https://github.com/sonoro1234/lanes
+	branch = clean_cmake
 [submodule "LuaJIT"]
 	path = LuaJIT/LuaJIT
 	url = https://github.com/LuaJIT/LuaJIT.git
