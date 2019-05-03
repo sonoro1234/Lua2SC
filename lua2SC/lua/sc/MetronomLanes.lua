@@ -34,7 +34,7 @@ function theMetro:init()
 	self:play(120,-4,0,30)
 	self.oldppqPos = -4 ---self.frame
 	self.oldtimestamp = lanes.now_secs() --- self.period
-	self:start()
+	--self:start()
 end
 function theMetro:play(bpm,beat,run,rate)
 	if rate then self.rate=rate end

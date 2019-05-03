@@ -58,6 +58,13 @@ end
 function scale:init()
 	self.notenames = get_scale_notenames(self)
 end
+function scale:notes()
+	local ret = {}
+	for i,v in ipairs(self) do
+		ret[i] = v
+	end
+	return TA(ret)
+end
 function scale.__add(a,b)
 	if getmetatable(a)~=scale then a,b = b,a end
 	local res = {name=a.name}

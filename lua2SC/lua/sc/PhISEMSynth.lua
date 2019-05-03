@@ -174,7 +174,7 @@ freqs=Ref(t.freqs),sys_dec=t.sys_dec,sound_dec=t.sound_dec,amps=Ref(t.amps),deca
 	DetectSilence.ar(signal,0.001,0.1,2);
 	Out.ar(out, Pan2.ar(signal, pan));
 	-----------
-end):store()
+end):store(true)
 end
 
 --]]
@@ -211,14 +211,16 @@ end):store()
 --]]
 
 --[[
+PhISEM:MakeSynth("cascabeles","cascabeles")
 duras = TA{0.5,0.25,0.25,1,0.5,1,1,0.5,1,0.5,0.5,1.5,1}*4
-player=OscEP{inst="tambourine",mono=false,dontfree=true,sends={db2amp(-18)},channel={inst="channel",level=db2amp(-6)}}
+player=OscEP{inst="cascabeles",mono=false,dontfree=true,sends={db2amp(-18)},channel={inst="channel",level=db2amp(-6)}}
 player:Bind{
-	note=LOOP{LS{40}:rep(#duras-1),REST}, 
-	dur=LOOP(duras),
+	--note=LOOP{LS{40}:rep(#duras-1),REST}, 
+	--dur=LOOP(duras),
+	dur = 1,
 	velo=noisefStream{0.1,0.6},
-	pan = 0.5,
-	objects = 7 --LOOP{LS{60}:rep(4),LS{7}:rep(4)}
+	pan = 0,
+	--objects = 7 --LOOP{LS{60}:rep(4),LS{7}:rep(4)}
 }
 --]]
 -------------------------------------------------------------

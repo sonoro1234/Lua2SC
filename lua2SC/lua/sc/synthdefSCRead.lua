@@ -29,7 +29,7 @@ function writepstring(f,str)
     f:write(str)
 end
 function pstring(str)
-    assert(#str <31)
+    assert(#str <31,"string too long")
     local ret=int2str(#str,1)
     return ret..str
 end

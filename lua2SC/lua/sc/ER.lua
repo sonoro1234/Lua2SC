@@ -19,7 +19,7 @@ Toggle("Bypas",function(val) print(val);busBypass:set(val) end)
 local busEq
 if op.direct then
 	busEq = sc.Bus()
-	Slider("Eq",0,1,0,function(val) busEq:set(val) end)
+	Slider("Eq",0,1,op.Eq or 0,function(val) busEq:set(val) end)
 end
 local dec
 if op.atk then
@@ -31,8 +31,10 @@ local synname = op.direct and "earlypandir" or "earlypan"
 synname = synname .. (op.name or "")
 SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},function()
 	print("busB.busIndex",busB.busIndex)
-	local L=TA(op.L or {20,10,16})*In.kr(busSize.busIndex,1)
-	local Ps = Ref(op.Pr or {9,3,1.2}) --{9,5,1.2}
+	--local L=TA(op.L or {20,10,16})*In.kr(busSize.busIndex,1)
+	--local Ps = Ref(op.Pr or {9,3,1.2})
+	local L=TA(op.L or {10,20,16})*In.kr(busSize.busIndex,1)
+	local Ps = Ref(op.Pr or {4.5,5,1.2})
 	local Pr = Ps --Ref{3,3,1.2}
 	local B = In.kr(cbusB,1) --0.92 --0.72
 	dist = In.kr(busDist.busIndex,1)*dist

@@ -554,7 +554,7 @@ Tract.krate.X = 0
 Tract.gains.X = db2amp(10)
 copy_phoneme("_q"," ")
 Tract.rate._q = 0.0
-Tract.dur._q = 0.03
+Tract.dur._q = 0.01
 Tract.krate._q = 0.0
 
 copy_phoneme("Eq","Ae")
@@ -628,7 +628,7 @@ function Tract:doSpeak(syl,DURA,fade)
 		constpars = constpars or {0.5,4}
 
 		local ind,ra,co = unpack(self.thisv_coef)
-		local Ar,Di = CalcAreasPars(ind,ra,0.9)
+		local Ar,Di = CalcAreasPars(ind,ra,co)--0.9)
 		Di = Tract:add_constriction(constpars[1],constpars[2],Di)
 		for i=1,#Di do Ar[i]=Di[i]*Di[i] end
 
@@ -693,7 +693,8 @@ function Tract.syl2phon(syl,allvocals)
 	local is_vocal
 	local lastvocalpos = 0
 	for i,v in ipairs(syl) do
-		is_vocal = vowel_coefs[v] --Tract.vocals[v] --or v==" "
+		--is_vocal = vowel_coefs[v] --Tract.vocals[v] --or v==" "
+		is_vocal = Tract.vocals[v]
 		numvocals = numvocals + (is_vocal and 1 or 0)
 		lastvocalpos = is_vocal and i or lastvocalpos
 		dur = Tract.dur[v] or DEFDUR

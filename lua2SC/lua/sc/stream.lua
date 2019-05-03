@@ -279,7 +279,7 @@ function LS(t,r)
 		--error("ListStream Error: List should be a not stream table!!",2) 
 		t = {t}
 	end
-	assert(t[1],"first item is null!!")
+	assert(not (t[1]==nil),"first item is null!!")
 	return ListStream:new({reps=r,list=t})
 end
 --- Creates a ListStream from t with infinite repetitions
@@ -869,6 +869,28 @@ function REP(n,pat)
 	end
 --]]
 	return RepeaterSt:new{N=n,pat=pat}
+end
+-----AlternateSt
+--uses each time the next stream from a table
+AlternateSt = Stream:new{patindex=1}
+function AlternateSt:pnext(e)
+	local pat = self.patlist[self.patindex]
+	self.patindex = self.patindex + 1
+	if self.patindex > #self.patlist then self.patindex = 1 end
+	return pat:nextval(e)
+end
+function AlternateSt:reset()
+	self.patindex = 1
+end
+function AL(...)
+	local patlist={...}
+	for i,v in ipairs(patlist) do
+		if type(v) ~="table" or not v.isStream then --no es stream
+			patlist[i]=ConstantStream:new{value=v}
+		end
+	end
+
+	return AlternateSt:new{patlist=patlist}
 end
 -----StreamTuple
 StreamTuple = Stream:new{}

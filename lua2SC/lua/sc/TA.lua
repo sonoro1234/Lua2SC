@@ -169,6 +169,7 @@ function _TAmt:multiply()
 	return self:reduce(function(ac,v) return ac * v end,1)
 end
 function _TAmt.__concat(a,b)
+	assert(a and b,"a or b are nil")
 	return TA(concatTables(a,b))
 end
 function _TAmt.__tostring(a)

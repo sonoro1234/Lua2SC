@@ -282,7 +282,7 @@ function opengui()
 			if player.isOscEP then
 				for i2,insert in ipairs(player._inserts) do
 					panelInsertsOne=addPanel{type="collapse",name=insert.name,parent=panelInserts}
-					print("insert:",insert,insert.name,insert.params)
+					--print("insert:",insert,insert.name,insert.params)
 					openSynthdefGui(insert,panelInsertsOne,true,insert.usetext,1)
 				end
 			end

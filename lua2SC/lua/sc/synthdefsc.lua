@@ -735,6 +735,16 @@ function UGenArr:dumpInputs(tab,synthdef)
 		v:dumpInputs(tab.."\t",synthdef)
 	end
 end
+function UGenArr:ugenfunc(func,...)
+	local res=UGenArr:new()
+	for i,v in ipairs(self) do
+		res[i]=func(v,...)
+	end
+	return res
+end
+function UGenArr:linexp(inMin, inMax, outMin, outMax, clip)
+	return self:ugenfunc(UGen.linexp,inMin, inMax, outMin, outMax, clip)
+end
 function UGenArr:DoBinaryOp(op,b)
 	--local res=UGenArr:new()
 --	for i,v in ipairs(self) do
@@ -897,7 +907,7 @@ for file in lfs.dir(lua2scpath.."/lua/ugendefs/") do
 		end
 	end
 end
-require "sc.declareugens4"
+require "sc.declareugens5"
 --second to avoid definitions in declareugens4
 require"sc.handwrittenugens"
 

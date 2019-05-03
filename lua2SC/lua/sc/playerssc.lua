@@ -719,7 +719,7 @@ function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		--if not self.node then print("n_set without node") return end
 		on ={"/n_set", {self.node}}
 	else
-		if lista.type == "n_set" then prerror("n_set without node") end
+		if lista.type == "n_set" then prerror("n_set without node doing s_new",self.name) end
 		self.node = self:GetNode(beatTime)
 		self.havenode = true
 		on ={"/s_new", {inst, self.node, 0, self.instr_group}}

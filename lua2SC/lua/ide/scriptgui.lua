@@ -1490,7 +1490,7 @@ function CreateScriptGUI()
 		elseif co.typex=="button" then
 			control.control=wx.wxButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20))
 		elseif co.typex=="vslider" then
-			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxSL_VERTICAL )
+			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxSize(-1,100),wx.wxSL_VERTICAL ) --wxDefaultSize not working in GTK
 			if co.label then
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
 			end

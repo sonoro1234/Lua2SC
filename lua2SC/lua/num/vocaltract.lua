@@ -285,7 +285,7 @@ copy_phoneme("Mv","M")
 Tract.vocals = {A=true,Ae=true,E=true,I=true,I2=true,O=true,O1=true,O2=true,U1=true,U=true,Mv=true,Nv=true,[" "]=false,_v=true,Ate=true,Ete=true,Ite=true,Ote=true,Ute=true}
 -------------------------------------------------------------------------------------------
 copy_phoneme("_"," ")
-Tract.dur._ = 0.00
+Tract.dur._ = 0.02
 Tract.krate._ = 0.00
 copy_phoneme("Eq","E")
 Tract.rate.Eq = 0.0

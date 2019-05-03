@@ -643,7 +643,7 @@ function Tract:doSpeak(syl,DURA,fade)
 			self.thisv_coef = vowel_coefs[ph]
 		else
 			self.thisv_coef = vowel_coefs[syl[syl.lastpos][1]]
-			assert(self.thisv_coef)
+			--assert(self.thisv_coef)
 			--self.thisv_coef = self.thisv_coef or vowel_coefs["Ae"]
 			constpars = assert(self.cons[ph])
 		end
