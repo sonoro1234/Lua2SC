@@ -5,23 +5,25 @@ PROJECT(wxLuaBundled CXX)
 cmake_minimum_required(VERSION 3.13)
 
 set(WX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build_wx)
-file(MAKE_DIRECTORY ${WX_BUILD})
 
 if(UNIX)
-	
+    if(NOT EXISTS ${WX_BUILD})#only build if not done before
+	file(MAKE_DIRECTORY ${WX_BUILD})
 	set(MAKEFLAGS "-j4")
 	set(WXWIDGETSDEBUG "--disable-debug")
 	set(WXWIDGETSLOC ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets)
-	set(EXECUTE_COMMAND	./configure --prefix="${WX_BUILD}" ${WXWIDGETSDEBUG} --disable-shared --enable-unicode \
-    --enable-compat28 \
-    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
-    --with-zlib=builtin --disable-richtext --with-gtk=2 \
-    CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC")
-	
-	file(COPY ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets DESTINATION ${WXWIDGETSLOC})
+	set(EXECUTE_COMMAND	./configure)
+	set(EXECUTE_ARGS --prefix=${WX_BUILD} ${WXWIDGETSDEBUG} --disable-shared --enable-unicode 
+    --enable-compat28 
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no 
+    --with-zlib=builtin --disable-richtext --with-gtk=2 
+    "CFLAGS=-Os -fPIC" "CXXFLAGS=-Os -fPIC")
+	message("-----------------------copying wWidgets files")
+	file(MAKE_DIRECTORY ${WXWIDGETSLOC})
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets DESTINATION .)
 	message("---------------------------- configuring wxWidgets -------------------------------")
-	message("EXECUTE_COMMAND is " "${EXECUTE_COMMAND}")	
-	execute_process(COMMAND ${EXECUTE_COMMAND} 
+	message("EXECUTE_COMMAND is " "${EXECUTE_COMMAND} ${EXECUTE_ARGS}")	
+	execute_process(COMMAND ${EXECUTE_COMMAND} ${EXECUTE_ARGS}
         WORKING_DIRECTORY ${WXWIDGETSLOC}
     )
 	message("---------------------------- making wxWidgets -------------------------------")
@@ -31,8 +33,10 @@ if(UNIX)
 	execute_process(COMMAND make install 
         WORKING_DIRECTORY ${WXWIDGETSLOC}
     )
+    endif()
 
-else(UNIX)	
+else(UNIX)
+	file(MAKE_DIRECTORY ${WX_BUILD})	
 	set(setDEBUG_LEVEL true)
 	set(CPPFLAGS)
 	if(setDEBUG_LEVEL)
@@ -77,7 +81,7 @@ if(WIN32)
 	endif()
 endif()
 if(UNIX)
-	set(wxWidgets_CONFIG_EXECUTABLE ${WX_BUILD}/wx-config)
+	set(wxWidgets_CONFIG_EXECUTABLE ${WX_BUILD}/bin/wx-config)
 endif()
 
 set(BUILD_VERBOSELY TRUE)
@@ -86,12 +90,8 @@ set(wxLua_LUA_LIBRARY_USE_BUILTIN FALSE)
 set(wxLua_LUA_LIBRARY ${LUA_LIBRARY})
 set(wxLua_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
 
-#set(wxWidgets_COMPONENTS "stc;gl;html;aui;adv;core;net;base")
-#set(wxLuaBind_COMPONENTS "stc;gl;html;aui;adv;core;net;base")
-
-set(wxWidgets_COMPONENTS "stc;gl;aui;adv;core;net;base")
+set(wxWidgets_COMPONENTS "stc;gl;html;aui;adv;core;net;base")
 set(wxLuaBind_COMPONENTS ${wxWidgets_COMPONENTS})
-
 #set(wxWidgets_EXCLUDE_COMMON_LIBRARIES ON) #wxWidgets built without tiff, expat ...
 if(setDEBUG_LEVEL)
 	SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DwxDEBUG_LEVEL=0")
@@ -102,12 +102,10 @@ if(MSVC)
 	SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 endif()
 add_subdirectory(wxlua/wxLua EXCLUDE_FROM_ALL)
-
-#add_dependencies(SecondaryAllBuild wxLuaModule)
-
+set_target_properties(wxLuaModule PROPERTIES PREFIX "")
 
 INSTALL(TARGETS wxLuaModule     
     RUNTIME DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/trash
+    LIBRARY DESTINATION .
     ARCHIVE DESTINATION ${CMAKE_BINARY_DIR}/trash)
-#add_dependencies(install wxLuaModule)
+

@@ -1,18 +1,20 @@
 PROJECT(Lua2SC C)
 cmake_minimum_required(VERSION 2.8)
 
-set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/LuaJIT/LuaJIT/src)
-#TODO check unix and osx
+
+set(THIS_LUA_SRC ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/src)
+set(LUA_INCLUDE_DIR ${THIS_LUA_SRC})
+#TODO check osx
 if(WIN32)
 	if(MSVC)
-		set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.lib)
+		set(LUA_LIBRARY ${THIS_LUA_SRC}/lua51.lib)
 	else() #mingw
-		set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/lua51.dll)
+		set(LUA_LIBRARY ${THIS_LUA_SRC}/lua51.dll)
 	endif()
 elseif(Darwin)
-	set(LUA_LIBRARY ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.dylib)
-else() ##linux build seems dont need LUA_LIBRAY?
-	set(LUA_LIBRARY "")# ${CMAKE_BINARY_DIR}/LuaJIT/luajit-2.1/project_luajit/src/libluajit.so)
+	set(LUA_LIBRARY ${THIS_LUA_SRC}/libluajit.dylib)
+else() 
+	set(LUA_LIBRARY  ${THIS_LUA_SRC}/libluajit.so)
 endif()
 set(CMAKE_INSTALL_PREFIX ${LUAJIT_BIN})
 
@@ -20,20 +22,18 @@ add_subdirectory(LuaJIT)
 
 add_subdirectory(random)
 add_subdirectory(osclua)
-message("------------luaportmidi-----------------------")
 add_subdirectory(luaportmidi)
-message("------------luasocket-------------------------")
 add_subdirectory(luasocket)
 message("------------lanes-----------------------------")
 
-set(LUA_LIBRARIES 1)#to make skip FindLua51 in lanes
 set(INSTALL_CMOD ./lanes CACHE INTERNAL "cmod" FORCE)
 set(INSTALL_LMOD ./lua  CACHE INTERNAL "lmod" FORCE)
 set(INSTALL_DATA ${CMAKE_BINARY_DIR}/lanes_install  CACHE INTERNAL "lanes data" FORCE)
 add_subdirectory(lanes )
 
+
 if(BUILD_WXLUA)
-	set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src)#wxLua dont like luajit headers
+	set(LUA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lua-5.1.5/src) #wxLua dont like luajit headers
 	add_subdirectory(wxLuaBundled)
 endif()
 

@@ -23,8 +23,13 @@ endif()
 
 ADD_LIBRARY(pmidi SHARED luaportmidi.c )
 
+if(WIN32)
+set(LUA_LIBRARY_L ${LUA_LIBRARY})
+else()
+set(LUA_LIBRARY_L "")
+endif()
 
-TARGET_LINK_LIBRARIES(pmidi ${LUA_LIBRARY} portmidi-static ${LINK_LIBS})
+TARGET_LINK_LIBRARIES(pmidi ${LUA_LIBRARY_L} portmidi-static ${LINK_LIBS})
 SET_TARGET_PROPERTIES(pmidi PROPERTIES PREFIX "" OUTPUT_NAME core)
 
 INSTALL (TARGETS pmidi RUNTIME DESTINATION ./pmidi LIBRARY DESTINATION ./pmidi)
