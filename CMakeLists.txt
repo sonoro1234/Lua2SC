@@ -23,7 +23,7 @@ add_subdirectory(LuaJIT)
 add_subdirectory(random)
 add_subdirectory(osclua)
 add_subdirectory(luaportmidi)
-add_subdirectory(luasocket)
+add_subdirectory(luasocket_cmake)
 message("------------lanes-----------------------------")
 
 set(INSTALL_CMOD ./lanes CACHE INTERNAL "cmod" FORCE)

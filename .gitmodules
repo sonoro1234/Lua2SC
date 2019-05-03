@@ -10,7 +10,7 @@
 	url = https://github.com/LuaJIT/LuaJIT.git
 	branch = v2.1
 [submodule "luasocket"]
-	path = luasocket/luasocket
+	path = luasocket_cmake/luasocket
 	url = https://github.com/sonoro1234/luasocket.git
 [submodule "wxLua"]
 	path = wxLuaBundled/wxlua
