@@ -2,8 +2,6 @@ PROJECT(LuaJIT)
 #to allow install from subdirectory
 cmake_minimum_required(VERSION 3.6)
 
-include(ExternalProject)
-
 #luajit project
 set(ljpre ${CMAKE_CURRENT_BINARY_DIR}/luajit-2.1)
 set(ljsrc ${ljpre}/src)
@@ -33,8 +31,10 @@ if(NOT EXISTS ${LUAJIT_BUILD})#only build if not done before
 			WORKING_DIRECTORY ${ljsrc})
 		endif()
 	endif()
+else()
+message(">>>>>>>>>>>>>>LuaJIT was already built,\n delete " ${LUAJIT_BUILD} " folder before runing cmake to rebuild.")
 endif()
-
+message(">>>>>>>>>>>>>>LuaJIT done>>>>>>>>>>>>>>>>>>>>>>>>>")
 #########install
 if(Darwin)
 	install(FILES ${ljsrc}/luajit ${ljsrc}/libluajit.dylib 
