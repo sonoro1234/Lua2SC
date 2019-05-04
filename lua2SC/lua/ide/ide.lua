@@ -997,6 +997,13 @@ function LoadFile(filePath, editor, file_must_exist)
 end
 lastDirectory=""
 function OpenFile(event)
+	--try to open current document folder
+	local editor = GetEditor()
+	if editor then
+		local fn = wx.wxFileName(openDocuments[editor:GetId()].filePath)
+		fn:Normalize()
+		lastDirectory = fn:GetPath(wx.wxPATH_GET_VOLUME)
+	end
     local fileDialog = wx.wxFileDialog(frame, "Open file",
                                        lastDirectory,
                                        "",
