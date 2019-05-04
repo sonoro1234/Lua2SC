@@ -97,6 +97,9 @@ function file_settings:portable2abs()
     for i,v in ipairs(self.table.settings.SC_PLUGIN_PATH) do
         self.table.settings.SC_PLUGIN_PATH[i] = self:getabs(v)
     end
+	--take care of some nils
+	self.table.settings.SC_NOUTS = self.table.settings.SC_NOUTS or 0
+	self.table.settings.SC_NINS = self.table.settings.SC_NINS or 0
 end
 function file_settings:save_table(key,t)
 	self.table[key] = t

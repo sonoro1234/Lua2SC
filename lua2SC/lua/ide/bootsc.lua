@@ -35,7 +35,7 @@ function InitSCMenu()
                 if not IDESCSERVER.inited then
                     IDESCSERVER:init("tcp",file_settings:load_table("settings"),mainlinda)
                 end
-                udpsclinda:send("Detect",1)
+                --udpsclinda:send("Detect",1)
 				--IDESCSERVER:sync()
 				lanes.timer(idlelinda,"statusSC",1,0)
 			else
@@ -48,6 +48,7 @@ function InitSCMenu()
 	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(false) end)
     frame:Connect(ID_BOOTSC_tcp,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(true) end)
 	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
+		menuBar:Check(ID_AUTODETECTSC, false)
 		local this_file_settings = file_settings:load_table("settings")
 		if this_file_settings.SC_SYNTHDEF_PATH~="default" then
 			wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
@@ -60,6 +61,7 @@ function InitSCMenu()
 	frame:Connect(ID_QUITSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function(event)
 				IDESCSERVER:quit()
 				IDESCSERVER:close()
+				menuBar:Check(ID_AUTODETECTSC, false)
 				if SCProcess then
 					io.write("trying to join SCProcess\n")
 					local res,err = SCProcess:join(4)
@@ -100,6 +102,10 @@ function InitSCMenu()
 				event:Enable(IDESCSERVER.inited==nil)
 			end)
 	frame:Connect(ID_BOOTSC_internal, wx.wxEVT_UPDATE_UI,
+			function (event)
+				event:Enable(jit and IDESCSERVER.inited==nil)
+			end)
+	frame:Connect(ID_AUTODETECTSC, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(jit and IDESCSERVER.inited==nil)
 			end)
@@ -166,8 +172,14 @@ function SCProcess_Loop(cmd,bootedlinda)
 end		
 require"lanesutils"
 function BootSC(use_tcp) 
-	
+	menuBar:Check(ID_AUTODETECTSC, false)
 	local this_file_settings = file_settings:load_table("settings")
+	local scexe = this_file_settings.SCpath
+	if not wx.wxFileName.Exists(scexe) then 
+		thread_error_print("Cannot boot",scexe,"does not exist.")
+		return 
+	end
+	
 	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
 	wx.wxSetWorkingDirectory(path)
 	wx.wxSetEnv("SC_SYSAPPSUP_PATH",path) 
@@ -237,7 +249,7 @@ function BootSC(use_tcp)
         local typeserver = use_tcp and "tcp" or "udp"
         IDESCSERVER:init(typeserver,file_settings:load_table("settings"),mainlinda)
 		ClearLog(ScLog)
-		udpsclinda:send("Detect",1)
+		--udpsclinda:send("Detect",1)
 		--lanes.timer(idlelinda,"statusSC",1,0)
 	end
 	menuBar:Check(ID_DUMPOSC, false)
