@@ -303,10 +303,10 @@ function initinternal()
 	end
 	function t:close() end
 	local tb = {}
-	function tb:send(msg,done)--,path,templ)
-		done = done or "/done"
+	function tb:send(msg)
 		self.tmplinda = lanes.linda()
-		OSCFunc.newfilter(done,"ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
+		OSCFunc.newfilter("/done","ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
+		OSCFunc.newfilter("/synced","ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
 		mainlinda:send("sendsc",msg)
 		return true
 	end
@@ -314,6 +314,8 @@ function initinternal()
 	function tb:receive()
 		local key,val = self.tmplinda:receive("OSCReceive")
 		OSCFunc.handleOSCReceive(val)
+		OSCFunc.clearfilters("/done","ALL")
+		OSCFunc.clearfilters("/synced","ALL")
 		return toOSC(val)
 	end
 	return t,tb
@@ -357,7 +359,7 @@ end
 --table.insert(resetCbCallbacks,ResetUDP)
 function ResetUDP()
 	print("reset udps")
-	sendBlocked{"/sync",{1}}
+	--sendBlocked{"/sync",{1}}
 	--sendBundle{"/clearSched",{}}
 	--local ret,err=udp:send(toOSC({"/dumpOSC",{dumpOSC}}))
 	--if not ret then print(err) end
