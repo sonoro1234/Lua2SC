@@ -1,9 +1,16 @@
-local socket = require("socket")
 
 local SCUDP={}
-local function ReceiveUDPLoop(host,port,host1,port1)
+local function ReceiveTCPLoop(tcppars)
 	local listenudp
 	local lanes = require "lanes" --.configure()
+    --[=[ logging
+    local file  = io.open([[C:\LUA\lua2sc\logsctcp.txt]],"w+")
+    local function filelog(str)
+        file:write("line\n")
+        file:write(str)
+        file:write("\nendline\n")
+    end
+    --]=]
 	local function prstak(stk)
 		local str=""
 		for i,lev in ipairs(stk) do
@@ -13,6 +20,7 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 			end
 		end
 		prerror(str)
+        io.write(str)
 	end
 	
 	local function finalizer_func(err,stk)
@@ -21,22 +29,18 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 			prerror( "UDPSC: after error: "..tostring(err) )
 			prerror("UDPSC: finalizer stack table")
 			prstak(stk)
+            io.write("UDPSC: after error: "..tostring(err))
 		elseif type(err)=="userdata" then
 			print( "UDPSC: after cancel " )
 		else
 			print( "UDPSC: after normal return" )
 		end
-		--[[
-		local succes,e = pcall(listenudp.close,listenudp)
-		if not succes then 
-			print("UDPSC:error closing listenudp"..tostring(e))
-		else
-			print( "UDPSC: finalizer ended " )
+        --io.close(file) --logging
+		if listenudp then
+			print("closing listenudp",listenudp)
+			listenudp:close()
+			print"closed listenudp"
 		end
-		--]]
-		print("closing listenudp",listenudp)
-		listenudp:close()
-		print"closed listenudp"
 	end
 	
 	set_finalizer( finalizer_func ) 
@@ -45,115 +49,92 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 	
 	local socket = require("socket")
 	require("osclua")
-	toOSC=osclua.toOSC
-	fromOSC=osclua.fromOSC
-	
-	--local 
-	listenudp = assert(socket.udp(),"UDPSC: could not open listenudp")
-	
-	local function Detect()
-		while true do
-			print("Detect sending /status in loop")
-			listenudp:send(toOSC({"/status",{1}}))
-			print("sended /status in loop")
-			local dgram,status = listenudp:receive()
-			if dgram then -- detected
-				local msg = fromOSC(dgram)
-				print("UDPSC: "..prOSC(msg))
-				listenudp:send(toOSC({"/notify",{1}}))
-				lanes.timer(udpsclinda, "wait", 0) --stop
-				udpsclinda:receive(0, "wait" ) --clear
-				lanes.timer(idlelinda,"statusSC",1,0)
-				detected=true
-				break
-			elseif status=="closed" then -- closed, lets wait.
-				print("UDPSC: closed ")
-				lanes.timer( udpsclinda, "wait", 1, 0 )	--wait a second
-				local key,val=udpsclinda:receive("wait") 
-				print("UDPSC: ",key," ",val)
-				detected=false
-			else
-				print("UDPSC: ",status) --may be timeout?
-				lanes.timer( udpsclinda, "wait", 0) --stop
-				udpsclinda:receive (0, "wait" ) --clear
-			end	
-		end
-	end
-	
-	local success, msg = listenudp:setsockname(host, port) 
-	if not success then error("UDPSC: "..tostring(msg))end
-	
-	local ok,err=listenudp:setpeername(host1, port1)
-	if not ok then print("UDPSC: "..tostring(err)) return end
-	
-	local ip3, port3 = listenudp:getsockname()
-    print("UDPSC: args ",host,port,host1,port1)
-	print("UDPSC: listenudp sends to:"..host.." port:"..port.." receives as ip:"..ip3.." port"..port3)
-	listenudp:settimeout(1)
-	local detected=false
+	local toOSC=osclua.toOSC
+	local fromOSC=osclua.fromOSC
+
+    require"sc.number2string"
+
 	local Filters = {}
-	while true do
-		--print("SCUDP LOOP...")
-		local dgram,status = listenudp:receive()
-		-- if cancel_test() then
-			-- io.stderr:write("required to cancel\n")
-			-- break
-		-- end
-		local key,val = udpsclinda:receive(0,"clearFilter","addFilter","Detect")
+	local function lindaloop(timeout)
+		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","exit")
 		while val do
 			if key == "addFilter" then
-				--print("UDPSC: addFilter",val[1],val[2])
 				Filters[val[1]] = Filters[val[1]] or {}
 				Filters[val[1]][val[2]] = true
 				if val[3] then val[3]:send("addFilterResponse",1) end --for block
 			elseif key == "clearFilter" then
-				--print("UDPSC: clearFilter",val)
 				if Filters[val[1]]  then
 					Filters[val[1]][val[2]] = nil
 					if #Filters[val[1]] == 0 then
 						Filters[val[1]] = nil
 					end
 				end
-			elseif key == "Detect" then
-				Detect()
+            elseif key == "sendsc" then
+                listenudp:send(val)
+            elseif key == "exit" then
+                print("exit on udpsclinda")
+				return true
 			end
-			key,val = udpsclinda:receive(0,"addFilter","clearFilter","Detect")
+			key,val = udpsclinda:receive(0,"sendsc","addFilter","clearFilter","exit")
 		end
+	end
+	-----connect
+	listenudp = assert(socket.udp(),"UDPSC: could not open listenudp")
+	listenudp:setpeername(tcppars.host,tcppars.port)
+	local ip3, port3 =listenudp:getsockname()
+	print("UDPSC: listenudp sends to:"..tcppars.host.." port:"..tcppars.port.." receives as ip:"..ip3.." port"..port3)
+	listenudp:settimeout(0.01)
+	
+	while true do
+		listenudp:send(toOSC({"/status",{1}}))
+        local dgram,status = listenudp:receive()
+        if dgram then 
+			print("SCUDP: connected")
+			listenudp:send(toOSC({"/notify",{1}}))
+			lanes.timer(idlelinda,"statusSC",1,0)
+			break 
+		end
+        print("SCUDP waiting for server")
+		if lindaloop(1) then return end
+    end
+
+	listenudp:settimeout(0.01)
+	-----comm loop
+	while true do
+		local dgram,status = listenudp:receive()
+		if lindaloop(0) then return end
 		if dgram then
-			local msg = fromOSC(dgram)
+            --[[ for debugging tcp
+			local succ,msg = pcall(fromOSC,dgram)
+            if not succ then 
+                io.write(msg.."\n");io.write(dgram.."\n");io.write("status:"..tostring(status).."\n") 
+                --filelog(dgram)
+            end
+            --]]
+			-- normal version
+            local msg = fromOSC(dgram)
 			--print("UDPSC: "..prOSC(msg))
-			--print("SCUDP receives",msg[1])
 			if msg[1]=="/metronom" then
-				--prtable(msg)
-				--setMetronom(msg[2][2],msg[2][3])
 				scriptlinda:send("/metronom",msg[2])
 			elseif msg[1]=="/vumeter" then
-				--setVumeter(msg[2])
 				scriptguilinda:send("/vumeter",msg[2])
-			--elseif msg[1]=="/b_setn" then
-				--setVumeter(msg[2])
-				--scriptguilinda:send("/b_setn",msg[2])
 			elseif msg[1]=="/status.reply" then
 				idlelinda:send("/status.reply",msg[2])
-				--print("UDPSC: "..prOSC(msg))
 			--elseif msg[1]=="/n_go" or msg[1]=="/n_end" or msg[1]=="/n_on" or msg[1]=="/n_off" or msg[1]=="/n_move" or msg[1]=="/n_info" then
 				--printN_Go(msg)
 			elseif msg[1] == "/fail" then
 				idlelinda:send("OSCReceive",msg)
 			elseif Filters[msg[1]] then
 				for onelinda,_ in pairs(Filters[msg[1]]) do
-					--print("sending",msg[1],onelinda)
 					onelinda:send("OSCReceive",msg)
 				end
-			--else
+			else
 				--print("UDPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
-			print("UDPSC: error: "..status..". did you boot SC?")
-			--try to detect
-			Detect()
+			print("UDPSC: error: "..status)
+			return true
 		elseif status == "timeout" then
-			--print("UDPSC: timeout ")
 			if cancel_test() then
 				print("UDPSC:required to cancel\n")
 				return true
@@ -163,33 +144,22 @@ local function ReceiveUDPLoop(host,port,host1,port1)
 		end
 	end
 end	
+
 function SCUDP:close()
-	if SCUDP.udp then SCUDP.udp:close() end
-	SCUDP.udp = nil
-	if SCUDP.ReceiveUDPLoop_lane then
-		local cancelled,reason = SCUDP.ReceiveUDPLoop_lane:cancel(1)
-		if cancelled then
-			SCUDP.ReceiveUDPLoop_lane = nil
-		else
-			print("Unable to cancel ReceiveUDPLoop_lane",cancelled,reason)
-		end
+	if SCUDP.tcp then SCUDP.tcp:close() end
+	SCUDP.tcp = nil
+	if SCUDP.ReceiveTCPLoop_lane then
+        udpsclinda:send("exit",1)
 	end
 end	
 function SCUDP:init(settings,receivelinda)
 	print("initudp SCUDP")
-	SCUDP.host = "127.0.0.1"
-	SCUDP.port = settings.SC_UDP_PORT
-	--local hostt = socket.dns.toip(host)
-	assert(SCUDP.udp==nil,"udp not closed")
-	SCUDP.udp = socket.udp()
-	assert(SCUDP.udp,"could not create udp socket")
-	SCUDP.udp:setpeername(SCUDP.host, SCUDP.port)
-	local ip, port2 = SCUDP.udp:getsockname()
-	--SCUDP.udp:settimeout(0)
-	print("udp sends to ip:"..SCUDP.host.." port:"..SCUDP.port)
-	print("udp reveives as ip:"..tostring(ip).." port:"..tostring(port2))
-	
-	local udp_lane_gen = lanes.gen("*",--"base,math,os,package,string,table",
+	local options = {}
+	options.host = "127.0.0.1"
+	options.port = settings.SC_UDP_PORT
+	assert(SCUDP.tcp==nil,"tcp not closed")
+
+	local tcp_lane_gen = lanes.gen("*",
 		{
 		--cancelstep=10000,
 		required={},
@@ -201,14 +171,14 @@ function SCUDP:init(settings,receivelinda)
 				scriptguilinda = scriptguilinda
 				},
 		priority=0},
-		ReceiveUDPLoop)
-	SCUDP.ReceiveUDPLoop_lane = udp_lane_gen(ip,port2,SCUDP.host,SCUDP.port)
-	SCUDP.listen_ip = ip
-	SCUDP.listen_port = port2
+		ReceiveTCPLoop)
+    udpsclinda:set("exit") --delete previous exits
+	SCUDP.ReceiveTCPLoop_lane = tcp_lane_gen(options)
     return true
 end
-
+require"sc.number2string"
 function SCUDP:send(msg)
-	self.udp:send(msg)
+    udpsclinda:send("sendsc",msg)
 end
+
 return SCUDP

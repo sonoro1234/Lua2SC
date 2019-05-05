@@ -63,35 +63,6 @@ local function ReceiveTCPLoop(tcppars)
         if not len then return nil,stat end
         return listentcp:receive(str2int(len))
     end
-	local function Detect()
-		io.write("Detect\n")
-        listentcp:settimeout(1)
-		while true do
-			print("Detect sending /status in loop")
-			sendtcp(toOSC({"/status",{1}}))
-			local dgram,status = receivetcp()
-			if dgram then 
-				local msg = fromOSC(dgram)
-				print("TCPSC: Detected "..prOSC(msg))
-				sendtcp(toOSC({"/notify",{1}}))
-				lanes.timer(udpsclinda, "wait", 0) --stop
-				udpsclinda:receive(0, "wait" ) --clear
-				lanes.timer(idlelinda,"statusSC",1,0)
-				break
-			elseif status=="closed" then -- closed, lets wait.
-				print("TCPSC: closed ")
-				lanes.timer( udpsclinda, "wait", 1, 0 )	--wait a second
-				local key,val=udpsclinda:receive("wait") 
-				print("TCPSC: ",key," ",val)
-			else
-				print("TCPSC: ",status) --may be timeout?
-				lanes.timer( udpsclinda, "wait", 0) --stop
-				udpsclinda:receive (0, "wait" ) --clear
-			end	
-		end
-        listentcp:settimeout(0.01)
-	end
-
 	local Filters = {}
 	local function lindaloop(timeout)
 		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","exit")
@@ -120,7 +91,11 @@ local function ReceiveTCPLoop(tcppars)
 	local err 
 	while true do
         listentcp,err = socket.connect(tcppars.host,tcppars.port)
-        if listentcp then  break end
+        if listentcp then 
+			sendtcp(toOSC({"/notify",{1}}))
+			lanes.timer(idlelinda,"statusSC",1,0)
+			break 
+		end
         print("SCTCP waiting for server")
 		if lindaloop(1) then return end
     end
@@ -141,7 +116,7 @@ local function ReceiveTCPLoop(tcppars)
             --]]
 			-- normal version
             local msg = fromOSC(dgram)
-		   
+			--print("TCPSC: "..prOSC(msg))
 			if msg[1]=="/metronom" then
 				scriptlinda:send("/metronom",msg[2])
 			elseif msg[1]=="/vumeter" then
@@ -156,12 +131,12 @@ local function ReceiveTCPLoop(tcppars)
 				for onelinda,_ in pairs(Filters[msg[1]]) do
 					onelinda:send("OSCReceive",msg)
 				end
-			--else
+			else
 				--print("TCPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
-			print("TCPSC: error: "..status..". did you boot SC?")
-			Detect()
+			print("TCPSC: error: "..status)
+			return true
 		elseif status == "timeout" then
 			if cancel_test() then
 				print("TCPSC:required to cancel\n")
