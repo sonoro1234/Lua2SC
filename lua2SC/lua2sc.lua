@@ -78,7 +78,7 @@ function SetLuaPath(arg)
 	----_scscriptsdir = lua2scpath .."sc\\"
 	-- .. lua2scpath .. "lua\\?\\init.lua;"
 	local dllstr = is_windows and "dll" or "so"
-	package.path = lua2scpath .. "lua" .. sep .. "?.lua;"  .. package.path 
+	package.path = lua2scpath .. "lua" .. sep .. "?.lua;" .. lua2scpath .. "lua" .. sep .. "?/init.lua;"  .. package.path 
 	package.cpath = lua2scpath .. "luabin" .. sep .. "?." .. dllstr .. ";"  .. package.cpath
 	--print(package.path)
 	--print(package.cpath)
@@ -154,7 +154,7 @@ function MidiClose()
 	end
 end
 --require"sc.oscfunc"
-SCSERVER = require"scserver"
+SCSERVER = require"sc_comm_loop"
 
 local ide_lane = require"ide.ide_lane"
 print(ide_lane ,"is ide_lane")
