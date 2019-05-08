@@ -1,9 +1,10 @@
 -- ---------------------------------------------------------------------------
 local USE_PROFILE = false
 
+-----------------------------------------------------
 local function MsgLoop()
 	while true do
-		local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive","execstr")
+		local key,val= scriptlinda:receive("script_exit","metronomLanes","_midiEventCb","tempo","play","/metronom","beat","beatRequest","_valueChangedCb","OSCReceive","execstr","QueueAction")
 		if val then
 			--print("xxxxxxxxxxxxrequired linda: ",key," : ",val)
 			if key=="metronomLanes" then
@@ -45,6 +46,8 @@ local function MsgLoop()
 				else
 					print("error in exestr:",err)
 				end
+			elseif key == "QueueAction" then
+				doQueueAction(val)
 			end
 		end
 	end
@@ -379,7 +382,7 @@ function ScriptRun(pars)
 				typeshed = typeshed,
 				sc_comm_type = SCSERVER.type,
 				MsgLoop = MsgLoop,
-                lua2scpath = lua2scpath
+                lua2scpath = lua2scpath,
 				},
 		priority=0},
 		pmain)

@@ -27,6 +27,7 @@ require"sc.playersscgui"
 require"sc.ctrl_bus"
 require"sc.named_events"
 require"sc.routines"
+require"sc.queue_action"
 
 --theMetro:play(120,-4,0,30)
 theMetro:init()
