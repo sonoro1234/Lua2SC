@@ -272,6 +272,17 @@ function Slider(name,min,max,val,func)
 			end}
 	return addControl(newcontrol)
 end
+function Knob(name,min,max,val,func)
+	local min = min or 0
+	local max = max or 1
+	local name = name or ""
+	local newcontrol = {panel=curr_panel,value =val or min,min=min,max=max, typex="knob",label=0,name=name,
+			callback = function(value,str,c) 
+					c:setLabel(string.format("%.2f",value),0)
+					func(value)
+			end}
+	return addControl(newcontrol)
+end
 
 function Button(name,func)
 	local newcontrol = {panel=curr_panel,value =0, typex="button",clabel=name,name=name,
@@ -327,5 +338,50 @@ function PlotBus(bus,secs,when,rate)
 		s:makeBundle(when,function() syn2:set{run=1,trig=1} end)
 	end
 end
+function FScope(op)
+	op = op or {}
+	SynthDef("FScopesynth", {busin = 0,scopebufnum=1,smear=1,smooth=0.8 },function ()
+		local signal=In.ar(busin,1)
+		local chain = FFT(scopebufnum,signal)
+		PV_MagSmear(chain,smear)
+		PV_MagSmooth(chain,smooth)
+	end):store(true)
+	local co = {scopebufnum = GetBuffNum(),node = GetNode(),bins=op.bins or 512*4,busin=op.busin or 0}
+	local hbox = addPanel{type="hbox",name="FScope"}
+	local grafic = addControl{panel=hbox, typex="funcgraph3",width=600,height=300,miny=-100,maxy=0,minx=0,maxx=22050}
+	
+	local biasx = 1000
+	local smear = 1
+	local smooth = 0.8
+	curr_panel = addPanel{type="vbox",parent=hbox}
+	Knob("bi",1,2000,biasx,function(v) biasx=v end)
+	Knob("sme",0,16,smear,function(v) smear=v end)
+	Knob("smo",0,1,smooth,function(v) smooth=v end)
 
+	OSCFunc.newfilter("/b_setn",co.scopebufnum,function(msg)
+				local t = {}
+				local fac = 1/(co.bins)
+				for i=4,#msg[2],2 do
+					local mag = msg[2][i]
+					mag = mag*fac*2
+					mag = amp2db(mag)
+					table.insert(t,mag) 
+				end
+				--prtable(t)
+				grafic:val{biasx=biasx,funcs={function(i)
+					local bin = linearmap(0,22050,1,#t,i)
+					return t[math.floor(bin+0.5)] or 0
+				end}}
+				sendBundle{"/n_set",{co.node,"smooth",{"float",smooth},"smear",{"int32",smear}}}
+				QueueAction(0.1,{function() ThreadServerSend{"/b_getn",{co.scopebufnum,0,co.bins}} end})
+			end)
+	QueueAction(0.5,{function() 
+		ThreadServerSend{"/b_getn",{co.scopebufnum,0,co.bins}} 
+	end})
+
+
+	local msg ={"/s_new", {"FScopesynth", co.node, 1, 0,  "scopebufnum", {"int32",co.scopebufnum},"busin",{"int32",co.busin}}}
+	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
+	sendBundle(msg)
+end
 gui = {default_control = "knob"}

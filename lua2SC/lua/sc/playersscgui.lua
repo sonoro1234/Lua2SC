@@ -35,12 +35,13 @@ function vumet(parent)
 	end
 end
 
-function _FreqScope(panel,scopesynth,busin,maxfreq)
+function _FreqScope(panel,scopesynth,busin,maxfreq,opt)
 	scopesynth = scopesynth or "freqScopeLstLocal" 
 	panel=panel or panelMasterV
 	busin=busin or 0
 	maxfreq = maxfreq or 22050
-	return addControl{value={0,0}, typex="freqscope",width=512,height=400,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=512,rate=4,panel=panel,maxfreq=maxfreq}
+	opt = opt or {}
+	return addControl{value={0,0}, typex="freqscope",width=512,height=400,miny=-1,maxy=1,busin=busin,node=GetNode(),scope=scopesynth,scopebufnum = GetBuffNum(),bins=opt.bins or 512,rate=opt.rate or 4,panel=panel,maxfreq=maxfreq}
 end
 function FreqScopeSt(panel,scopesynth,busin,maxfreq)
 	busin = busin or 0
