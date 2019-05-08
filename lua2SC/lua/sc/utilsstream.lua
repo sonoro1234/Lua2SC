@@ -240,10 +240,7 @@ function mergeMissingList(a,b)
 end
 
 --------------------------------------------
--- clips val betwen min and maxi
-function clip(val,mini,maxi)
-	return math.max(mini,math.min(val,maxi))
-end
+
 --dif should be less than maxi - mini
 -- to avoid use clip before return or dif = dif%(max-min)
 function wrapclip(val,mini,maxi)

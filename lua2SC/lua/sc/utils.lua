@@ -7,6 +7,10 @@ function LogFile(str,filename)
 		file:close()
 	end
 end
+-- clips val betwen min and maxi
+function clip(val,mini,maxi)
+	return math.max(mini,math.min(val,maxi))
+end
 function linearmap(s,e,ds,de,v)
 	return ((de-ds)*(v-s)/(e-s)) + ds
 end
