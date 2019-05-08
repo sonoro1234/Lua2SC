@@ -103,19 +103,23 @@ local function ReceiveTCPLoop(tcppars)
 	print("TCPSC: listentcp sends to:"..tcppars.host.." port:"..tcppars.port.." receives as ip:"..ip3.." port"..port3)
 	listentcp:settimeout(0.01)
 	-----comm loop
+	local olddgram
 	while true do
 		local dgram,status = receivetcp()
 		if lindaloop(0) then return end
 		if dgram then
-            --[[ for debugging tcp
+			if #dgram%4~=0 then prerror("osc not 4 multiple");prerror(dgram) end
+            ---[[ for debugging tcp
 			local succ,msg = pcall(fromOSC,dgram)
             if not succ then 
-                io.write(msg.."\n");io.write(dgram.."\n");io.write("status:"..tostring(status).."\n") 
+                prerror(msg);prerror("olddgram",olddgram,"len",#olddgram);
+				prerror(dgram,"len",#dgram);prerror("status:",tostring(status)) 
                 --filelog(dgram)
             end
             --]]
 			-- normal version
-            local msg = fromOSC(dgram)
+            --local msg = fromOSC(dgram)
+			olddgram = dgram
 			--print("TCPSC: "..prOSC(msg))
 			if msg[1]=="/metronom" then
 				scriptlinda:send("/metronom",msg[2])
