@@ -120,15 +120,17 @@ function wxKnob(parent,name,label,id,radio)
 	return KnobClass 
 end
 ---------------------------wxVumeter
-function amp2db(amp)
+local function amp2db(amp)
 	return 20*math.log10(amp)
 end
+--[[
 function setVumeter(vumet)
 		--prtable(vumet)
 		for i=1,2 do
 			VUMETERS[i]:guiSetScaledValue({vumet[2+2*i],vumet[1+2*i]})
 		end
 	end
+--]]
 function wxVuMeter(parent,name,label,id,params)
 	id = id or wx.wxID_ANY
 	
@@ -400,7 +402,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 				vals[j] = vals[j] or {}
                 local ok,ret = pcall(funcs[j],x)
                 if ok then
-                    table.insert(vals[j],{i,ret})
+                    table.insert(vals[j],{i,ret or 0})
                 else
                     print("funcgraph3:",j,x,ret)
                     return
@@ -967,13 +969,10 @@ function wxFreqScope(parent,name,label,id,co)
 	co.maxfreq = co.maxfreq or 22050
 	local fftsize=co.rate * co.bins
 
-
 	local msg ={"/s_new", {co.scope, co.node, 1, 0, "in",{"int32",co.busin}, "busin",{"int32",co.busin},"rate",{"int32",co.rate},"phase",{"float",co.phase}, "scopebufnum", {"int32",co.scopebufnum},"fftsize", {"int32",fftsize},"maxfreq",{"float",co.maxfreq}}}
 
-	
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
 	IDESCSERVER:send(toOSC(msg))
-	
 	
 	local wxwindow = wx.wxControl(parent,id,wx.wxDefaultPosition,wx.wxDefaultSize,wx.wxNO_BORDER)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
@@ -984,7 +983,6 @@ function wxFreqScope(parent,name,label,id,co)
 	local FreqScopeClass={value={0,0},window=wx.wxNULL,customclass="FreqScopeClass"}
 	
 	function FreqScopeClass.SetValue(_,val)
-		--print("setet freqscope",FreqScopeClass)
 		FreqScopeClass.value={}
 		local j=1
 		--print(val[150])
@@ -992,19 +990,13 @@ function wxFreqScope(parent,name,label,id,co)
 			FreqScopeClass.value[j]=val[i]
 			j=j+1
 		end
-		--if not wxwindow.Refresh then
-		--	print(wxwindow)
-		--else
-			wxwindow:Refresh()
-		--end
+		wxwindow:Refresh()
 	end
 	function FreqScopeClass.SetLabel(_,val)
 		wxwindow:SetLabel(val)
 		wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
-		--wxwindow:RefreshRect()
 	end
 	
-
 	local function Draw(dc)
 		--local pen = TableToPen({ colour = { 0, 0, 0 }, width = penwidth, style = wx.wxSOLID })
 		--dc:SetPen(pen)
@@ -1096,7 +1088,7 @@ function wxFreqScope(parent,name,label,id,co)
 			print("wxEVT_DESTROY freqscope")
 			FreqScopeClass.notclosed=false
 			OSCFunc.clearfilters("/b_setn",co.scopebufnum)
-			--??QueAction 0.1 /b_free
+			--??QueAction 0.1 /b_free --script does it
 			event:Skip()
 		end)
 	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
@@ -1113,10 +1105,8 @@ function wxFreqScope(parent,name,label,id,co)
 		end)
 	FreqScopeClass.window=wxwindow
 
-	--OSCFunc.clearfilters("/b_setn",co.scopebufnum)
 	OSCFunc.newfilter("/b_setn",co.scopebufnum,function(msg)
 			if FreqScopeClass.notclosed then
-				--print("set freqscope",co.scopebufnum)
 				FreqScopeClass:SetValue(msg[2])
 				QueueAction(0.1,{function() IDESCSERVER:send(toOSC{"/b_getn",{co.scopebufnum,0,co.bins}}) end})
 			end

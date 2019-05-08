@@ -126,8 +126,8 @@ noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fA
 			dels[i] = dels[i]*fP2
 		end
 --]]
-		t_send = Impulse.kr(10)
-		SendReply.kr(t_send,"areas",Ar)
+		--t_send = Impulse.kr(10)
+		--SendReply.kr(t_send,"areas",Ar)
 		local signal 
 		if resamp then
 			signal = HumanVNdelO2.ar(exci,noise,noiseloc,lossF,lossG,-lossL,-lossN,lmix,nmix,area1len,dels,Ar,ArN)*env 

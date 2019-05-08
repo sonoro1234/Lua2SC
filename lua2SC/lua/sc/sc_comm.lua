@@ -25,24 +25,13 @@ function sendBundle(msg,time)
 end
 
 function sendMultiBundle(time,msg)
-		--print("send time",time)
 	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 	table.insert(msg,1,timestamp)
 	local dgram = toOSC(msg)
-	--strdatalens[#strdatalens + 1] = #dgram
-	--print(#dgram)
-    local ret,err,last = udp:send(dgram)
+    local ret,err = udp:send(dgram)
 	if not ret then
---		while not ret do
---		if err=='timeout' then
---			print("sendMultiBundle from byte:",last+1)
---			ret,err,last = udp:send(dgram,last+1)	
---		else
 			print("sendMultiBundle error:",err);
-			--prtable(strdatalens);
 			error(err)
---		end
---		end
 	end
 end
 function sendBlocked(msg)
@@ -359,7 +348,7 @@ end
 --table.insert(resetCbCallbacks,ResetUDP)
 function ResetUDP()
 	print("reset udps")
-	--sendBlocked{"/sync",{1}}
+	sendBlocked{"/sync",{1}}
 	--sendBundle{"/clearSched",{}}
 	--local ret,err=udp:send(toOSC({"/dumpOSC",{dumpOSC}}))
 	--if not ret then print(err) end
