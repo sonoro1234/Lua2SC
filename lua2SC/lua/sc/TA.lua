@@ -234,6 +234,20 @@ function _TAmt:rotate(delta)
 	end
 	return self:new(res)
 end
+function _TAmt:max()
+	local max = -math.huge
+	for i,v in ipairs(self) do
+		max = (max < v) and v or max
+	end
+	return max
+end
+function _TAmt:min()
+	local min = math.huge
+	for i,v in ipairs(self) do
+		min = (min > v) and v or min
+	end
+	return min
+end
 --[[
 ss=TA():series(12)
 print(ss)
