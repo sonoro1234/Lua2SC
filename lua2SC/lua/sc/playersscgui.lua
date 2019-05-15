@@ -110,6 +110,7 @@ end
 --GUIOPENED=false
 function opengui()
 	print("opengui\n")
+	if DONT_OPENGUI then return end
 	--if GUIOPENED then return end
 	-- ppqcounter=addControl({type=GUITypes.label,label="0.0.0"})
 	-- table.insert(onFrameCallbacks,function()
