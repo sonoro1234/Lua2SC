@@ -52,6 +52,7 @@ local function bodyKeyWords()
 			require("sc.oscfunc")
             require("sc.named_events")
 			require("sc.MetronomLanes")
+			require("sc.queue_action")
 			sclua = require("sclua.Server")
 			_run_options = {}
 			s = sclua.Server()
