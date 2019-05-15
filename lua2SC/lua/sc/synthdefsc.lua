@@ -824,6 +824,12 @@ UGenArr.__sub=function (a,b)
 	end
 	return res
 end
+UGenArr.__concat=function (a,b)
+	local res=UGenArr:new()
+	for i,v in ipairs(a) do res[i]=v end
+	for i,v in ipairs(b) do res[i+#a]=v end
+	return res
+end
 --[[
 function UGenArr:ampdb() return self:DoUnaryOp(UGen.ampdb) end
 function UGenArr:cubed() return self:DoUnaryOp(UGen.cubed) end
@@ -1436,6 +1442,7 @@ function SYNTHDef:writeDefFile()
 	local fout = assert(io.open(SynthDefs_path..self.name..".scsyndef", "wb"),"cannot open "..SynthDefs_path..self.name..".scsyndef")
 	fout:write(self.compiledStr)
 	fout:close()
+	self.saved_path = SynthDefs_path..self.name..".scsyndef"
 	return self
 end
 function SYNTHDef:makeDefStr(version)
@@ -1538,6 +1545,13 @@ function SYNTHDef:store(block)
 	self:send(block)
 	return self
 end
+function SYNTHDef:load()
+	self:writeDefFile()
+	local msg = {"/d_load",{self.saved_path}}
+	local res = sendBlocked(msg)
+	print(prOSC(res))
+	return self
+end
 function SYNTHDef:play(lista,tail)
 	lista = lista or {}
 	self:send(true)
@@ -1557,7 +1571,7 @@ function SYNTHDef:stop()
 end
 function SYNTHDef:guiplay(lista)
 	lista = lista or {}
-	self:store(true)
+	--self:store(true)
 	local node = GetNode()
 	local on = getMsgLista({"/s_new", {self.name, node, 0, 0}},lista)
 	sendBundle(on)
