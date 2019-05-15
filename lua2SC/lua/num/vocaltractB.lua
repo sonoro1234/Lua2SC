@@ -85,7 +85,7 @@ noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fA
 		--exci =   Decay2.ar(Dust.ar(8), 0.0005, 0.005)*4
 		--exci = Saw.ar(freq)
 		exci = exci*amp --*Gain
-		local env=EnvGen.ar(Env.asr(0.001, 1, 0.1), gate, nil,nil,nil,2);
+		local env=EnvGen.kr(Env.asr(0.001, 1, 0.1), gate, nil,nil,nil,2);
 		
 		---[[
 		local nsecs = math.floor(#Ar*0.5 + 0.5)
@@ -209,7 +209,8 @@ local function LFexci()
 		--local exci = VeldhuisGlot.ar(vibratoF,Tp,Te,Ta,namp,nwidth)*glot*3*Ee
 		exci =  WhiteNoise.ar()*plosive*Ee + exci
 		exci = Mix(exci)
-		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,vibdepth*vibampfac,1)
+		local ampvi = EnvGen.kr{Env({0,0,0,vibdepth*vibampfac},{0,vibdelay,0.01}),t_gate}
+		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,ampvi,1)
 		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 		return exci
 	end
@@ -229,10 +230,10 @@ local function InitSynths(Tract)
 	Tract:MakeCoralSynth("coralO2",freqs,true)
 
 
-	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci)
-	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.1,jitter=0.01,vibampfac=20},LFexci,true)
+	Tract:MakeSynth("sinteRd",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,vibdelay=0,rv=0.1,jitter=0.01,vibampfac=20},LFexci)
+	Tract:MakeSynth("sinteRdO2",{Rd=0.3,alpha=3.2,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,vibdelay=0,rv=0.1,jitter=0.01,vibampfac=20},LFexci,true)
 	Tract:MakeSynth("sinte_chen",{OQ=0.8,asym=0.6,Sop=0.4,Scp=0.12,vibrate=5,vibdepth=0.01,rv=0.1},function()
-		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
+		local vibratoF =  Vibrato.kr{freq, rate= vibrate, depth= vibdepth, delay= vibdelay, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 		local exci = ChenglottalU.ar(vibratoF,OQ,asym,Sop,Scp)*glot*3
 		exci = HPZ1.ar(exci)
 		exci = LPF.ar(exci,fexci)*30
@@ -462,13 +463,16 @@ function Tract.syl2phon(syl,allvocals)
 	end
 	local syl2 = {numvocals= allvocals and numvocals or 1,totdur=totdur,lastpos=lastvocalpos}
 	local timetillvoc = 0
+	local vocalendlastsyl = Tract.lastsyl and Tract.lastsyl[#Tract.lastsyl].is_vocal
 	for i,v in ipairs(syl) do
 		dur = 0
+		local dofade
 		local usetotdur = false
 		local rate = Tract.rate[v] or DEFRATE
 		is_vocal = Tract.vocals[v] --or v==" "
 		if is_vocal then
 			rate = Tract.krate[syl[i-1]] or rate
+			dofade = i>1 and syl2[i-1].is_vocal or i==1 and vocalendlastsyl
 			if allvocals or i == lastvocalpos then
 				--local DURA = beats2Time(DURAT)
 				--dur = (DURA - totdur +0.1) - rate
@@ -489,8 +493,9 @@ function Tract.syl2phon(syl,allvocals)
 		end
 		--dur = Time2beats(dur)
 		dur = math.max(0,dur)
-		syl2[i] = {v,rate,dur,Tract.krate[v],usetotdur=usetotdur}
+		syl2[i] = {v,rate,dur,Tract.krate[v],usetotdur=usetotdur,is_vocal=is_vocal,dofade=dofade}
 	end
+	Tract.lastsyl = syl2
 	return syl2
 end
 Tract.paramskey_speak = {"Ar","ArN","Gain","lenT","noiseloc","noisef","noisebw","glot","plosive","area1len","t_gate","advance"}
@@ -577,7 +582,8 @@ function Tract.doSpeak(syl,DURA,fade)
 	for i2,v in ipairs(syl) do
 		local ph = v[1]
 		local isN = Tract.nasal[ph]
-		local rate = v.usetotdur and fade and vocaldur  or v[2]
+		--local rate = v.usetotdur and fade and vocaldur  or v[2]
+		local rate = v.dofade and fade and vocaldur  or v[2]
 		local gain = Tract.gains[ph] or 1
 		local lenT = Tract.len[ph] or Tract.deflen
 
