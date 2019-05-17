@@ -33,9 +33,11 @@ SynthDef("violin",{out=Master.busin,freqN=400,velb=0.4,force=1,pos=0.14,c1=16,c3
 	son = LPF.ar(son,lpf)
 
 	Out.ar(out,son:dup())
-end):guiplay()
+end):store(true):guiplay()
 
 Scope()
 FreqScope()
+
+theMetro:start()
 
 

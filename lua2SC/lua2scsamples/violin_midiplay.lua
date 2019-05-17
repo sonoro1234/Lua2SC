@@ -29,7 +29,7 @@ SynthDef("violin",{out=0,freq=400,velb=0.4,force=1,pos=0.14,c1=16,c3=40,impZ=1,f
 	son = LPF.ar(son,lpf)
 
 	Out.ar(out,son:dup())
-end):store()
+end):store(true)
 
 Effects={FX("gverb",db2amp(0),nil,{revtime=1,roomsize=100})}
 
