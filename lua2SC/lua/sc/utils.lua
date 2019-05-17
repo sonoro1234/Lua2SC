@@ -15,7 +15,9 @@ function linearmap(s,e,ds,de,v)
 	return ((de-ds)*(v-s)/(e-s)) + ds
 end
 function linearmap_c(s,e,ds,de,v)
-	return clip(((de-ds)*(v-s)/(e-s)) + ds,ds,de)
+	local min,max = ds,de
+	if min > max then min,max = max,min end
+	return clip(((de-ds)*(v-s)/(e-s)) + ds,min,max)
 end
 function expinterpolation(s,e,ds,de,v)
 	return linearmap(math.exp(s),math.exp(e),ds,de,math.exp(v))
