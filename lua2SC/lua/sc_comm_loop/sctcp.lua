@@ -103,7 +103,7 @@ local function ReceiveTCPLoop(tcppars)
 	print("TCPSC: listentcp sends to:"..tcppars.host.." port:"..tcppars.port.." receives as ip:"..ip3.." port"..port3)
 	listentcp:settimeout(0.01)
 	-----comm loop
-	local olddgram
+	local olddgram = ""
 	while true do
 		local dgram,status = receivetcp()
 		if lindaloop(0) then return end
