@@ -999,7 +999,7 @@ lastDirectory=""
 function OpenFile(event)
 	--try to open current document folder
 	local editor = GetEditor()
-	if editor then
+	if editor and openDocuments[editor:GetId()].filePath then
 		local fn = wx.wxFileName(openDocuments[editor:GetId()].filePath)
 		fn:Normalize()
 		lastDirectory = fn:GetPath(wx.wxPATH_GET_VOLUME)
