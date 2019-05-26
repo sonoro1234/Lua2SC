@@ -198,6 +198,7 @@ function doAddPanel(constructor)
 	guiAddPanel(constructor)
 end
 
+--{type,parent,cols,rows,tag(auto),name,window}
 function addPanel(constructor)
 	constructor.tag = GetTagPanel()
 	guiPanelTable[constructor.tag] = constructor
@@ -338,6 +339,56 @@ function PlotBus(bus,secs,when,rate)
 		s:makeBundle(when,function() syn2:set{run=1,trig=1} end)
 	end
 end
+
+function PlotEnv(env,tim)
+	SynthDef("testEnv",{out=0},function() 
+			Out.kr(out,EnvGen.kr(env,1))
+	end):send(true)
+	PlotSynth("testEnv",tim,1)
+end
+
+function PlotBuffer(buffnum,ini,frames)
+	
+	local sclua = require"sclua.Server"
+	local s = sclua.Server()
+
+	local buff
+	if s.isBuffer(buffnum) then
+		buff = buffnum
+	else
+		buff = s.wrapbuffer(buffnum)
+	end
+	if not buff.frames then buff:query(true) end
+	
+	local window = addWindow{w=350,h=370,label="buffer"..tostring(buff.bufnum)}
+	--local panel = addPanel{type="vbox",window=window}
+	local grafics = {}
+	for i=1,buff.channels do
+		grafics[i] = addControl{window=window,panel=panelNO, typex="funcgraph2",width=300,height=300/buff.channels,expand=true}
+	end
+
+	ini = ini or 0
+	frames = frames or buff.frames
+	buff:getn(ini,frames*buff.channels,function(vals)
+			print"processing getn"
+			local t = {}
+			for ch=1,buff.channels do
+				t[ch] = t[ch] or {}
+			end
+			for i=1,#vals,buff.channels do
+				for ch=1,buff.channels do
+					local tt = t[ch]
+					local x = (i-1)/buff.channels
+					tt[#tt+1] = {x,vals[i+ch-1]}
+				end
+			end
+			for ch=1,buff.channels do
+				grafics[ch]:val(t[ch])
+			end
+			guiUpdate()
+		end)
+end
+
 function FScope(op)
 	op = op or {}
 	SynthDef("FScopesynth", {busin = 0,scopebufnum=1,smear=1,smooth=0.8 },function ()
