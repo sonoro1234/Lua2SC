@@ -13,7 +13,7 @@ local function MakeGlottalSynth(Tract, syname, args, excifunc)
 	for k,v in pairs(args) do
 		defargs[k]=v
 	end
-	Tract[syname] = SynthDef(syname,defargs,deffunc(excifunc)):store()
+	Tract[syname] = SynthDef(syname,defargs,deffunc(excifunc)):store(true)
 end
 local function MakeTractOnlySynth(Tract, syname, args,resamp)
 	local defargs = {busout=0,busin=0, gate=1,t_gate=1,amp=0.6,pan=0,lossG=0.97,lossL=0.97,lossN=0.95,lossF=1,area1len=Tract.area1len,Gain=1,lmix=1,nmix=1,fA0=1,Ar=Ref(TA():Fill(Tract.NN,1.5)),ArN=Ref(Tract.AreaNoseC),lenT = Tract.deflen,
@@ -66,7 +66,7 @@ noiseloc=0,noisef=Ref{2500,2500},noisebw=Ref{1.1,1},plosive=0,fA=1,fAc=1,fAc2=1,
 	for k,v in pairs(args) do
 		defargs[k]=v
 	end
-	Tract[syname] = SynthDef(syname..Tract.NN,defargs,deffunc(excifunc)):store()
+	Tract[syname] = SynthDef(syname..Tract.NN,defargs,deffunc(excifunc)):store(true)
 end
 local function MakeTractSynth(Tract,syname,args,excifunc,resamp)
 
@@ -146,7 +146,7 @@ noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fA
 	for k,v in pairs(args) do
 		defargs[k]=v
 	end
-	Tract[syname] = SynthDef(syname..Tract.NN,defargs,deffunc(excifunc)):store()
+	Tract[syname] = SynthDef(syname..Tract.NN,defargs,deffunc(excifunc)):store(true)
 end
 
 local function Rd2Times(Rd)
