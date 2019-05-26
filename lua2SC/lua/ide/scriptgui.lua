@@ -288,6 +288,12 @@ function wxFuncGraph2(parent,name,label,id,co)
 			local str=string.format("%.2f",miny + heighty*i/parts)
 			dc:DrawText(str,0,y1)
 		end
+		-- 0 level linea
+		if maxy*miny < 0 then
+			local y0 = linearmap(miny,maxy,height + name_height,name_height,0)
+			dc:DrawLine(extra_w, y0, width+extra_w,y0);
+			dc:DrawText("0",0,y0)
+		end
 		dc:SetPen(wx.wxGREEN_PEN)
 		dc:SetBrush(wx.wxGREEN_BRUSH)
 		local maxbin=#GraphClass.value
@@ -1891,7 +1897,7 @@ function CreateScriptGUI()
 		ScriptWindows[win.tag]:Show()
 	end
 	--]]
-	--{type,parent,cols,rows,tag(auto),name}
+	--{type,parent,cols,rows,tag(auto),name,window}
 	function AddPanel(pan)
 		local ScriptGUI = ScriptWindows[pan.window] or ScriptGUI
 		--pan.parent = pan.parent or (pan.window and Sizers[ScriptWindows[pan.window]]) or "main"
