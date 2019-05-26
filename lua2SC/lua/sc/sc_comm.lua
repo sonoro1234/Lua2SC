@@ -316,7 +316,17 @@ function ThreadServerSend(msg)
 	--prtable(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
 end
---dumpOSC=0
+
+local UniqueID = IDGenerator(0)
+local syncedlinda = lanes.linda()
+function Sync()
+	local id = UniqueID()
+	OSCFunc.newfilter("/synced",id,function(msg) end,true,true,syncedlinda)
+	ThreadServerSend{"/sync",{id}}
+	local key,val = syncedlinda:receive("OSCReceive") -- wait
+	OSCFunc.handleOSCReceive(val) -- clean responder
+end
+
 function InitSCCOMM()
 	print("InitSCCOMM")
 	if sc_comm_type == "udp" then
