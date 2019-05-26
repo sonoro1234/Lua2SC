@@ -70,7 +70,19 @@ local function Server(IP, port)
 	smet.__index = smet
 	setmetatable(s.Synth,smet)
 	
+	s.wrapbuffer = function(bufnum) 
+		local bufferTab = setmetatable({
+			type = "buffer",
+   			bufnum = bufnum,
+   			server = s
+   		}, Buffer_metatable)
+		return bufferTab
+	end
 
+	s.isBuffer = function(obj)
+		return type(obj)=="table" and getmetatable(obj)==Buffer_metatable
+	end
+	
 	s.Buffer = function(path)
    		local bufferTab = setmetatable({
 			type = "buffer",
