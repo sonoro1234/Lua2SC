@@ -1602,7 +1602,7 @@ function PlotSynth(synname,secs,outrate)
 	print("outrate",outrate)
 	outrate = outrate or 2
 	local window = addWindow{w=350,h=370}
-	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300}
+	local grafic = addControl{window=window, typex="funcgraph2",width=300,height=300,expand=true}
 
 	local bus = outrate==2 and GetBus() or GetCtrlBus(1)
 	local nsamples = outrate==2 and 44100*secs or 44100*secs/64
@@ -1614,7 +1614,7 @@ function PlotSynth(synname,secs,outrate)
 	local buff = s.Buffer()
 
 	buff:alloc(nsamples,1)
-	local msg = receiveBundle()
+	--local msg = receiveBundle()
 	--prtable(msg)
 	local bufwr
 	if outrate == 1 then

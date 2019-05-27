@@ -316,7 +316,7 @@ function PlotBus(bus,secs,when,rate)
 	local buff = s.Buffer()
 
 	buff:alloc(nsamples,1)
-	local msg = receiveBundle()
+	--local msg = receiveBundle()
 	--prtable(msg)
 	local bufwr = rate==2 and "bufferwriter" or "bufferwriter_k"
 	

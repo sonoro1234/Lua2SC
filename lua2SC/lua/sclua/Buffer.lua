@@ -7,6 +7,7 @@ Buffer_metatable.__index = Buffer_metatable
 function Buffer_metatable:alloc(numframes, numchannels)
 	numchannels = numchannels or 1
 	self.server:sendMsg('/b_alloc', self.bufnum, numframes, numchannels)
+	return receiveBundle()
 end
 
 function Buffer_metatable:allocRead(path,start,numframes)
@@ -51,7 +52,7 @@ function Buffer_metatable:set(index, value)
 end
 
 function Buffer_metatable:setn(index, numsamples, value) -- not ready perphas ... instead of value or use unpack
-	self.server:sendMsg('/b_setn', self.bufnum, index, numsamples, value)
+	self.server:sendMsg('/b_setn', self.bufnum, index, numsamples, unpack(value))
 end
 
 function Buffer_metatable:fill(index, numsamples, value)
