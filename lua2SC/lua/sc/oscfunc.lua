@@ -60,7 +60,7 @@ return function(linda)
 	OSCFuncLinda = linda 
 	table.insert(resetCbCallbacks,
 		function()
-			print"clear OSCFunc"
+			print"reset clear OSCFunc"
 			OSCFunc.clearall() 
 		end)
 end

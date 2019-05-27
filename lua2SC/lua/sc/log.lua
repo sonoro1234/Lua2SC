@@ -12,4 +12,4 @@ function prfile(d)
 end
 table.insert(initCbCallbacks,function() io.close(file) end)
 file=io.open("logsc.txt","w+")
-table.insert(resetCbCallbacks,function() io.close(file) end)
+table.insert(resetCbCallbacks,function() print"reset log";io.close(file) end)

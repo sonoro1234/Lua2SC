@@ -294,18 +294,21 @@ function initinternal()
 	local tb = {}
 	function tb:send(msg)
 		self.tmplinda = lanes.linda()
-		OSCFunc.newfilter("/done","ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
-		OSCFunc.newfilter("/synced","ALL",function(msg) print"sending to tmplinda";end,true,false,self.tmplinda)
+		OSCFunc.newfilter("/done","ALL",function(msg) print"/done sending to tmplinda";end,true,false,self.tmplinda)
+		OSCFunc.newfilter("/synced","ALL",function(msg) print"/sync sending to tmplinda";end,true,false,self.tmplinda)
 		mainlinda:send("sendsc",msg)
 		return true
 	end
 	function tb:close() end
 	function tb:receive()
-		local key,val = self.tmplinda:receive("OSCReceive")
-		OSCFunc.handleOSCReceive(val)
+		--print"tb internal receive wait linda"
+		local key,val = self.tmplinda:receive(6,"OSCReceive")
+		--print("tb internal received",key,val)
+		--prtable(val)
+		if val then OSCFunc.handleOSCReceive(val) end
 		OSCFunc.clearfilters("/done","ALL")
 		OSCFunc.clearfilters("/synced","ALL")
-		return toOSC(val)
+		return val and toOSC(val) or nil
 	end
 	return t,tb
 end
@@ -313,7 +316,6 @@ GetNode=IDGenerator(1001)
 GetBus=IDGenerator(16) --first after audio busses
 
 function ThreadServerSend(msg)
-	--prtable(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
 end
 
@@ -335,6 +337,9 @@ function InitSCCOMM()
 	elseif sc_comm_type == "internal" then
 		SERVER_CLOCK_LATENCY = 0.07
 		udp ,udpB = initinternal()
+		function ThreadServerSend(msg)
+			mainlinda:send("sendsc",toOSC(msg))
+		end
 		print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY)
 	elseif sc_comm_type == "tcp" then
 		SERVER_CLOCK_LATENCY = 0.2
@@ -358,7 +363,8 @@ end
 --table.insert(resetCbCallbacks,ResetUDP)
 function ResetUDP()
 	print("reset udps")
-	sendBlocked{"/sync",{1}}
+	--sendBlocked{"/sync",{1}}
+	Sync()
 	--sendBundle{"/clearSched",{}}
 	--local ret,err=udp:send(toOSC({"/dumpOSC",{dumpOSC}}))
 	--if not ret then print(err) end
@@ -366,7 +372,8 @@ function ResetUDP()
 	sendBundle({"/g_deepFree",{0}})
 	sendBundle{"/error",{{"int32",1}}}
 	sendBundle{"/g_dumpTree",{0,1}}
-	sendBlocked{"/sync",{1}}
+	--sendBlocked{"/sync",{1}}
+	Sync()
 	print("closing udps")
 	if sc_comm_type == "tcp" then
 		udp.tcp:shutdown()

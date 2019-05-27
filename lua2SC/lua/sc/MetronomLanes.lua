@@ -206,6 +206,7 @@ table.insert(initCbCallbacks,function()
 end)
 resetCbCallbacks = resetCbCallbacks or {}
 table.insert(resetCbCallbacks,function() 
+	print"reset Metro"
 	theMetro:stop() 
 	for i,v in ipairs(TIMS) do
 		--print(string.format("%4.3f",v))
