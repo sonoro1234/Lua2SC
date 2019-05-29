@@ -59,6 +59,7 @@ local function Server(IP, port)
 		return smet.__call(nil, defName, args, aNode, 4)
 	end
 	smet.wrapnode = function(node)
+		assert(node)
 		return  setmetatable({
 			type = "synth",
 			server = s,
@@ -90,8 +91,9 @@ local function Server(IP, port)
    			server = s
    		}, Buffer_metatable)
    		if path ~= nil then -- if user provides a filepath (else s/he might want to allocate an empty buf)
-			s:sendMsg('/b_allocRead', bufferTab.bufnum, path)
-			receiveBundle()
+			--s:sendMsg('/b_allocRead', bufferTab.bufnum, path)
+			--receiveBundle()
+			bufferTab:allocRead(path)
    		end
    		return bufferTab
 	end
@@ -173,21 +175,28 @@ function Server_metatable:Msg(...)
 	return self.oscout:Msg(...)
 end
 
-local BUNDLE = {}
+
 function Server_metatable:MsgBundler(...)
-	table.insert(BUNDLE,self.oscout:Msg(...))
+	table.insert(self.BUNDLE,self.oscout:Msg(...))
 end
 
 function Server_metatable:notify(arg)
 	self.oscout:send('/notify', arg)
 end
 
-function Server_metatable:sync(id)
+function Server_metatable:sync(id,dontblock)
 	id = id or math.random(2^10)
-	self.oscout:send('/sync', id)
-	local msg = receiveBundle()
-	assert(msg[1] == "/synced" and msg[2][1] == id)
-	--prtable(msg)
+	if not dontblock then
+	local syncedlinda = lanes.linda()
+	OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true,true,syncedlinda)
+	ThreadServerSendT{{"/sync",{id}}}
+	local key,val = syncedlinda:receive("OSCReceive") -- wait
+	OSCFunc.handleOSCReceive(val) -- clean responder and print
+	else
+		OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true)
+		ThreadServerSendT{{"/sync",{id}}}
+	end
+	OSCFunc.process_all()
 end
 
 function Server_metatable:status()
@@ -195,11 +204,11 @@ function Server_metatable:status()
 end
 
 function Server_metatable:makeBundle(time,func) --,bundle)
-	BUNDLE = {}
+	self.BUNDLE = {}
 	local oldf = Server_metatable.sendMsg
 	Server_metatable.sendMsg = Server_metatable.MsgBundler
 	local ret = func()
-	sendMultiBundle(time,BUNDLE)
+	sendMultiBundle(time,self.BUNDLE)
 	Server_metatable.sendMsg = oldf
 	return ret
 end

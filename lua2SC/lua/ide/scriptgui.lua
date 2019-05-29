@@ -331,7 +331,7 @@ function wxFuncGraph2(parent,name,label,id,co)
 			width,height  = wxwindow:GetClientSizeWH()
 			width,height = width-extra_w*2, height-label_height-name_height
 			GraphClass.SetValue(nil,GraphClass.value)
-			thread_print("funcgraph2",width,height)
+			--thread_print("funcgraph2",width,height)
 		else
 			wxwindow:Refresh();
 		end
@@ -521,7 +521,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 			width,height  = wxwindow:GetClientSizeWH()
 			width,height = width-extra_w*2, height-label_height-name_height
 			GraphClass.SetValue(nil,GraphClass.valf)
-			thread_print("funcgraph3",width,height)
+			--thread_print("funcgraph3",width,height)
 		else
 			wxwindow:Refresh();
 		end

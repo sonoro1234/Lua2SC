@@ -37,11 +37,12 @@ function Group_metatable:dumpTree(flag)
 	self.server:sendMsg('/g_dumpTree', self.nodeID, flag )
 end
 
-function Group_metatable:queryTree(flag)
-	flag = flag or 0
+function Group_metatable:queryTree(action,include_ctrl_vals)
+	action = action or function(msg) end
+	include_ctrl_vals = include_ctrl_vals or 0
 	-- Replies to the sender with a /g_queryTree.reply message
-	self.server:sendMsg('/g_queryTree', self.nodeID, flag )
-	return receiveBundle()
+	OSCFunc.newfilter("/g_queryTree.reply",self.bufnum,action,true)
+	ThreadServerSend(self.server:Msg('/g_queryTree', self.nodeID, include_ctrl_vals ))
 end
 
 -- support garbage collection:

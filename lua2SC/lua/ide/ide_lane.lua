@@ -37,7 +37,7 @@ local function ide_main()
 	--dofile(lua2scpath .."lua"..path_sep .. "ide" ..path_sep .. "ide.lua")
 	
 	IDESCSERVER = require"ide.ide_server"
-	require"sc.oscfunc"
+	require"sc.oscfunc"(idlelinda)
 	
 	require"pmidi"
 	require("osclua")

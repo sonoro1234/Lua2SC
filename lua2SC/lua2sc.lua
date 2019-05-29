@@ -88,7 +88,7 @@ SetLuaPath(arg)
 require("pmidi")
 --print("pmidi",pmidi,pmidi.core)
 require("sc.utils")
-require("random") 	--not nedded here but to avoid lanes wx crash
+--require("random") 	--not nedded here but to avoid lanes wx crash
 
 require("osclua")
 toOSC=osclua.toOSC

@@ -358,6 +358,8 @@ function PlotBuffer(buffnum,ini,frames)
 	else
 		buff = s.wrapbuffer(buffnum)
 	end
+
+	--in case it is wrapped
 	if not buff.frames then buff:query(true) end
 	
 	local window = addWindow{w=350,h=370,label="buffer"..tostring(buff.bufnum)}

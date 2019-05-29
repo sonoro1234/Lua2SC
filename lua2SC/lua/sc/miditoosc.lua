@@ -459,8 +459,8 @@ function MidiToOsc.midi2osc(midiEvent)
 		local on
 		if snew then
 			if thisMidiOsc.on_maker then
-				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
 				thisMidiOsc:on_maker(freq,amp)
+				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
 			else
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end

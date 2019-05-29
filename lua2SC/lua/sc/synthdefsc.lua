@@ -1614,8 +1614,8 @@ function PlotSynth(synname,secs,outrate)
 	local buff = s.Buffer()
 
 	buff:alloc(nsamples,1)
-	--local msg = receiveBundle()
-	--prtable(msg)
+	OSCFunc.process_all(0.5)
+	assert(buff.channels,"should increase process_all!!")
 	local bufwr
 	if outrate == 1 then
 		bufwr = "bufferwriter_k"

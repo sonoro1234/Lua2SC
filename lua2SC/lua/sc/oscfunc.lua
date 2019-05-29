@@ -1,5 +1,5 @@
 -----------------------------------------------------------
-local OSCFuncLinda = idlelinda
+local OSCFuncLinda 
 OSCFunc={filters={}}
 function OSCFunc.newfilter(path,template,func,runonce,block,alt_linda)
 	template = template or "ALL"
@@ -37,6 +37,16 @@ function OSCFunc.clearall(alt_linda)
 		OSCFunc.clearfilters(path)
 	end
 end
+local function CheckTemplate(msg,template)
+	if type(template)=="table" then
+		for i,v in ipairs(template) do
+			if msg[i]~=v then return false end
+		end
+		return true
+	else
+		return msg[1]==template
+	end
+end
 function OSCFunc.handleOSCReceive(msg)
 	--print("OSCFunc.handleOSCReceive",msg[1])
 	if msg[1]=="/fail" then
@@ -44,7 +54,7 @@ function OSCFunc.handleOSCReceive(msg)
 	end
 	if OSCFunc.filters[msg[1]] then
 		for i,filter in pairs(OSCFunc.filters[msg[1]]) do
-			if (filter.template=="ALL") or (msg[2][1]==filter.template) then
+			if (filter.template=="ALL") or CheckTemplate(msg[2],filter.template) then
 				filter.func(msg)
 				if filter.runonce then
 					OSCFunc.filters[msg[1]][i]=nil
@@ -53,15 +63,28 @@ function OSCFunc.handleOSCReceive(msg)
 		end
 	end
 end
-
+function OSCFunc.process_all(timeout)
+	timeout = timeout or 0.2
+	while true do
+	local key,val = OSCFuncLinda:receive(timeout,"OSCReceive")
+	if key == "OSCReceive" then
+		OSCFunc.handleOSCReceive(val)
+	elseif val==nil then
+		--timeout
+		break
+	end
+end
+end
 --this is called from scriptrun
 --but not from ide
 return function(linda) 
 	OSCFuncLinda = linda 
+	if linda==scriptlinda then
 	table.insert(resetCbCallbacks,
 		function()
 			print"reset clear OSCFunc"
 			OSCFunc.clearall() 
 		end)
+	end
 end
 ------------------------------------------

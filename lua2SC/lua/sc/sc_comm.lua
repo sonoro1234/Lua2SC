@@ -275,6 +275,7 @@ function dumpTree(on)
 	udp:send(toOSC({"/g_dumpTree",{0,on}}))
 end
 --]]
+
 function IDGenerator(ini)
 	local index = ini or 0
 	return function(inc)
@@ -317,6 +318,12 @@ GetBus=IDGenerator(16) --first after audio busses
 
 function ThreadServerSend(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
+end
+function ThreadServerSendT(msg,time)
+	time = time or lanes.now_secs()
+	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
+	table.insert(msg,1,timestamp)
+	ThreadServerSend(msg)
 end
 
 local UniqueID = IDGenerator(0)

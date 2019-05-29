@@ -4,26 +4,29 @@ local Buffer_metatable = {}
 Buffer_metatable.__index = Buffer_metatable
 
 
-function Buffer_metatable:alloc(numframes, numchannels)
+function Buffer_metatable:alloc(numframes, numchannels,cmplMsg)
 	numchannels = numchannels or 1
-	self.server:sendMsg('/b_alloc', self.bufnum, numframes, numchannels)
-	return receiveBundle()
+	OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true)
+	ThreadServerSendT{{'/b_alloc', {self.bufnum, numframes, numchannels}},{"/b_query",{self.bufnum}}}
 end
 
 function Buffer_metatable:allocRead(path,start,numframes)
 	start = start or 0
 	numframes = numframes or -1
-	self.server:sendMsg('/b_allocRead', self.bufnum, path, start, numframes)
-	return receiveBundle()
+	OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true)
+	--ThreadServerSendT{{'/b_allocRead', {self.bufnum, path, start, numframes}},{"/b_query",{self.bufnum}}}
+	ThreadServerSend{'/b_allocRead', {self.bufnum, path, start, numframes,{"blob",toOSC({"/b_query",{self.bufnum}})}}}
 end
 
 function Buffer_metatable:allocReadChannel(path,start,numframes,channels)
 	start = start or 0
 	numframes = numframes or -1
 	channels = channels or {0}
-	channels[#channels+1] = {"blob",""} --supernova needs that
-	self.server:sendMsg('/b_allocReadChannel', self.bufnum, path, start, numframes,unpack(channels))
-	return receiveBundle()
+	--channels[#channels+1] = {"blob",""} --supernova needs that no more
+	OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true)
+	local msg = {'/b_allocReadChannel', {self.bufnum, path, start, numframes,unpack(channels)}}
+	table.insert(msg[2],{"blob",toOSC({"/b_query",{self.bufnum}})})
+	ThreadServerSend(msg)
 end
 
 function Buffer_metatable:read(path,start,numframes,bufstart,leaveopen)
@@ -31,8 +34,8 @@ function Buffer_metatable:read(path,start,numframes,bufstart,leaveopen)
 	numframes = numframes or -1
 	bufstart = bufstart or 0
 	leaveopen = leaveopen or 0
-	self.server:sendMsg('/b_read', self.bufnum, path, start, numframes,bufstart,leaveopen)
-	return receiveBundle()
+	OSCFunc.newfilter("/done",{"/b_read",self.bufnum},function(msg) prtable(msg) end,true)
+	ThreadServerSend(self.server:Msg('/b_read', self.bufnum, path, start, numframes,bufstart,leaveopen))
 end
 
 function Buffer_metatable:write(path)
@@ -63,20 +66,25 @@ function Buffer_metatable:close()
 	self.server:sendMsg('/b_close', self.bufnum)
 end
 
-function Buffer_metatable:query(block)
-	if block then
-		self.server:sendMsg('/b_query', self.bufnum)
-		local msg = receiveBundle()
-		print("buffer:",msg[2][1]," frames:",msg[2][2]," channels:",msg[2][3]," samprate:",msg[2][4])
-		self.frames = msg[2][2]
-		self.channels = msg[2][3]
-	else
-		OSCFunc.newfilter("/b_info",self.bufnum,function(msg)
+function Buffer_metatable:queryresponse()
+	return function(msg)
+			print("bufnum",self.bufnum)
 			print("buffer:",msg[2][1]," frames:",msg[2][2]," channels:",msg[2][3]," samprate:",msg[2][4])
 			self.frames = msg[2][2]
 			self.channels = msg[2][3]
-			end,true)
+			end
+end
+function Buffer_metatable:query(block)
+	if block then
+		print("blockin on b_query",self.bufnum)
+		local tmplinda = lanes.linda()
+		OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true,true,tmplinda)
 		ThreadServerSend(self.server:Msg('/b_query', self.bufnum))
+		local key,val = tmplinda:receive("OSCReceive") -- wait
+		OSCFunc.handleOSCReceive(val) -- clean responder and print
+	else
+	OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true)
+	ThreadServerSend(self.server:Msg('/b_query', self.bufnum))
 	end
 end
 
@@ -85,7 +93,6 @@ function Buffer_metatable:get(index)
 end
 
 function Buffer_metatable:getn(index, numsamples,action)
-	--self.server:sendMsg('/b_getn', self.bufnum, index, numsamples)
 	assert(numsamples)
 	if action then
 		OSCFunc.newfilter("/b_setn",self.bufnum,function(msg2)
