@@ -68,7 +68,6 @@ end
 
 function Buffer_metatable:queryresponse()
 	return function(msg)
-			print("bufnum",self.bufnum)
 			print("buffer:",msg[2][1]," frames:",msg[2][2]," channels:",msg[2][3]," samprate:",msg[2][4])
 			self.frames = msg[2][2]
 			self.channels = msg[2][3]

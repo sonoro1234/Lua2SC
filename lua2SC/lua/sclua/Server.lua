@@ -190,8 +190,13 @@ function Server_metatable:sync(id,dontblock)
 	local syncedlinda = lanes.linda()
 	OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true,true,syncedlinda)
 	ThreadServerSendT{{"/sync",{id}}}
-	local key,val = syncedlinda:receive("OSCReceive") -- wait
-	OSCFunc.handleOSCReceive(val) -- clean responder and print
+	--local key,val = syncedlinda:receive("OSCReceive") -- wait
+	--OSCFunc.handleOSCReceive(val) -- clean responder and print
+	while true do
+		local key,val = syncedlinda:receive(0,"OSCReceive") -- wait
+		if val then OSCFunc.handleOSCReceive(val);break end -- clean responder and print
+		OSCFunc.process_all(0)
+	end
 	else
 		OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true)
 		ThreadServerSendT{{"/sync",{id}}}

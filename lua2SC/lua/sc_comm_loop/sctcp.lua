@@ -2,9 +2,11 @@
 local SCTCP={}
 local function ReceiveTCPLoop(tcppars)
 	local listentcp
+	local trace = false
+	local tracestatus = false
 	local lanes = require "lanes" --.configure()
-    --[=[ logging
-    local file  = io.open([[C:\LUA\lua2sc\logsctcp.txt]],"w+")
+    ---[=[ logging
+    local file  = io.open([[C:\supercolliderrepos\build_Lua2SC\install\logsctcp.txt]],"w+")
     local function filelog(str)
         file:write("line\n")
         file:write(str)
@@ -35,7 +37,7 @@ local function ReceiveTCPLoop(tcppars)
 		else
 			print( "TCPSC: after normal return" )
 		end
-        --io.close(file) --logging
+        io.close(file) --logging
 		if listentcp then
 			print("closing listentcp",listentcp)
 			listentcp:close()
@@ -64,8 +66,9 @@ local function ReceiveTCPLoop(tcppars)
         return listentcp:receive(str2int(len))
     end
 	local Filters = {}
+	require"sc.utils"
 	local function lindaloop(timeout)
-		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","exit")
+		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","trace","exit")
 		while val do
 			if key == "addFilter" then
 				Filters[val[1]] = Filters[val[1]] or {}
@@ -80,6 +83,10 @@ local function ReceiveTCPLoop(tcppars)
 				end
             elseif key == "sendsc" then
                 sendtcp(val)
+			elseif key == "trace" then
+                trace = val[1]
+				tracestatus = val[2]
+				prtable(Filters)
             elseif key == "exit" then
                 print("exit on udpsclinda")
 				return true
@@ -114,25 +121,32 @@ local function ReceiveTCPLoop(tcppars)
             if not succ then 
                 prerror(msg);prerror("olddgram",olddgram,"len",#olddgram);
 				prerror(dgram,"len",#dgram);prerror("status:",tostring(status)) 
-                --filelog(dgram)
+                filelog("olddgram"..olddgram);filelog(dgram)
             end
             --]]
 			-- normal version
             --local msg = fromOSC(dgram)
 			olddgram = dgram
-			--print("TCPSC: "..prOSC(msg))
+			if trace then
+				if msg[1]~="/status.reply" or tracestatus then
+					print("TCPSC: "..prOSC(msg))
+				end
+			end
 			if msg[1]=="/metronom" then
 				scriptlinda:send("/metronom",msg[2])
 			elseif msg[1]=="/vumeter" then
 				scriptguilinda:send("/vumeter",msg[2])
 			elseif msg[1]=="/status.reply" then
 				idlelinda:send("/status.reply",msg[2])
-			--elseif msg[1]=="/n_go" or msg[1]=="/n_end" or msg[1]=="/n_on" or msg[1]=="/n_off" or msg[1]=="/n_move" or msg[1]=="/n_info" then
-				--printN_Go(msg)
 			elseif msg[1] == "/fail" then
 				idlelinda:send("OSCReceive",msg)
 			elseif Filters[msg[1]] then
 				for onelinda,_ in pairs(Filters[msg[1]]) do
+					onelinda:send("OSCReceive",msg)
+				end
+			elseif Filters.ALL then
+				msg[1] = "ALL"
+				for onelinda,_ in pairs(Filters.ALL) do
 					onelinda:send("OSCReceive",msg)
 				end
 			else

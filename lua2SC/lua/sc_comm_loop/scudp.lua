@@ -2,6 +2,8 @@
 local SCUDP={}
 local function ReceiveTCPLoop(tcppars)
 	local listenudp
+	local trace = false
+	local tracestatus = false
 	local lanes = require "lanes" --.configure()
     --[=[ logging
     local file  = io.open([[C:\LUA\lua2sc\logsctcp.txt]],"w+")
@@ -55,8 +57,9 @@ local function ReceiveTCPLoop(tcppars)
     require"sc.number2string"
 
 	local Filters = {}
+	require"sc.utils"
 	local function lindaloop(timeout)
-		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","exit")
+		local key,val = udpsclinda:receive(timeout,"sendsc","clearFilter","addFilter","trace","exit")
 		while val do
 			if key == "addFilter" then
 				Filters[val[1]] = Filters[val[1]] or {}
@@ -71,6 +74,10 @@ local function ReceiveTCPLoop(tcppars)
 				end
             elseif key == "sendsc" then
                 listenudp:send(val)
+			elseif key == "trace" then
+                trace = val[1]
+				tracestatus = val[2]
+				prtable(Filters)
             elseif key == "exit" then
                 print("exit on udpsclinda")
 				return true
@@ -113,19 +120,26 @@ local function ReceiveTCPLoop(tcppars)
             --]]
 			-- normal version
             local msg = fromOSC(dgram)
-			--print("UDPSC: "..prOSC(msg))
+			if trace then
+				if msg[1]~="/status.reply" or tracestatus then
+					print("TCPSC: "..prOSC(msg))
+				end
+			end
 			if msg[1]=="/metronom" then
 				scriptlinda:send("/metronom",msg[2])
 			elseif msg[1]=="/vumeter" then
 				scriptguilinda:send("/vumeter",msg[2])
 			elseif msg[1]=="/status.reply" then
 				idlelinda:send("/status.reply",msg[2])
-			--elseif msg[1]=="/n_go" or msg[1]=="/n_end" or msg[1]=="/n_on" or msg[1]=="/n_off" or msg[1]=="/n_move" or msg[1]=="/n_info" then
-				--printN_Go(msg)
 			elseif msg[1] == "/fail" then
 				idlelinda:send("OSCReceive",msg)
 			elseif Filters[msg[1]] then
 				for onelinda,_ in pairs(Filters[msg[1]]) do
+					onelinda:send("OSCReceive",msg)
+				end
+			elseif Filters.ALL then
+				msg[1] = "ALL"
+				for onelinda,_ in pairs(Filters.ALL) do
 					onelinda:send("OSCReceive",msg)
 				end
 			else
