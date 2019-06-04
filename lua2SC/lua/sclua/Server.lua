@@ -9,15 +9,29 @@ local Server_metatable = {}
 Server_metatable.__index = Server_metatable
 
 local BASE_NODE = 0
+
+local allServers = {}
 local function Server(IP, port)
 	assert(_run_options,"no _run_options")
 	assert(not IP and not port,"conecting server not implemented")
+	IP = IP or '127.0.0.1'
+	port = port or _run_options.SC_UDP_PORT
+	--look for alredy existent
+	local olds = allServers[IP] and allServers[IP][port]
+	if olds then return olds end
+
 	local s = setmetatable({
-		IP = IP or '127.0.0.1',
-		port = port or _run_options.SC_UDP_PORT,
-		options = _run_options,
-		defaultGroup = { nodeID = 1 } -- assimilate the behaviour of SC-lang
-	}, Server_metatable)
+			IP = IP or '127.0.0.1',
+			port = port or _run_options.SC_UDP_PORT,
+			options = _run_options,
+			defaultGroup = { nodeID = 1 }, -- assimilate the behaviour of SC-lang
+			allbuffers = {}
+		}, Server_metatable)
+	-- keep it
+	allServers[IP] = allServers[IP] or {}
+	assert(not allServers[IP][port])
+	allServers[IP][port] = s
+	-----------------------------------
 	s.oscout = osc.Send(s.IP, s.port)
 	-- s.oscin  = osc.Recv(57180) -- I need a two directional OSC port
 
@@ -77,6 +91,7 @@ local function Server(IP, port)
    			bufnum = bufnum,
    			server = s
    		}, Buffer_metatable)
+		s.allbuffers[bufferTab] = true
 		return bufferTab
 	end
 
@@ -95,9 +110,16 @@ local function Server(IP, port)
 			--receiveBundle()
 			bufferTab:allocRead(path)
    		end
+		s.allbuffers[bufferTab] = true
    		return bufferTab
 	end
-
+	s.used_memory = function()
+		local mem = 0
+		for k,v in pairs(s.allbuffers) do
+			mem = mem + k.frames*k.channels*4
+		end
+		return mem/1024
+	end
 	s.Bus = function(Nchannels)
 		local busTab = setmetatable({
 			type = "bus",

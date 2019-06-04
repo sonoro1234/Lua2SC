@@ -44,6 +44,7 @@ end
 
 function Buffer_metatable:free()
 	self.server:sendMsg('/b_free', self.bufnum)
+	self.server.allbuffers[self] = nil
 end
 
 function Buffer_metatable:zero()

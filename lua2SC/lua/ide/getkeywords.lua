@@ -54,7 +54,7 @@ local function bodyKeyWords()
 			require("sc.MetronomLanes")
 			require("sc.queue_action")
 			sclua = require("sclua.Server")
-			_run_options = {}
+			_run_options = {SC_UDP_PORT=57000}
 			s = sclua.Server()
 			local keyword_table = {}
             for index, value in pairs(_G) do
