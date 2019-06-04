@@ -340,9 +340,11 @@ function PlotBus(bus,secs,when,rate)
 	end
 end
 
-function PlotEnv(env,tim)
-	SynthDef("testEnv",{out=0},function() 
-			Out.kr(out,EnvGen.kr(env,1))
+function PlotEnv(env,tim,holdtime)
+	holdtime = holdtime or tim
+	SynthDef("testEnv",{out=0},function()
+		local tr = Trig1.kr(1,holdtime)
+		Out.kr(out,EnvGen.kr(env,tr))
 	end):send(true)
 	PlotSynth("testEnv",tim,1)
 end
