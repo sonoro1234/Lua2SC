@@ -57,11 +57,11 @@ function ValsToOsc(msg,lista)
 		pos = pos + 1
 		--msg[#msg + 1] = name
 		msg[pos] = name
-		if type(value) ~= "table" then
-			--msg[#msg + 1] = {"float",value}
+		local typeval = type(value)
+		if typeval == "number" then
 			pos = pos + 1
 			msg[pos] = {"float",value}
-		else
+		elseif typeval == "table" then
 			--msg[#msg + 1] = {"["}
 			pos = pos + 1
 			msg[pos] = {"["}
@@ -74,6 +74,9 @@ function ValsToOsc(msg,lista)
 			--msg[#msg + 1] = {"]"}
 			pos = pos + 1
 			msg[pos] = {"]"}
+		else
+			pos = pos + 1
+			msg[pos] = val
 		end
 	end
 	return msg
