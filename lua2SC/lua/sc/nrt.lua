@@ -68,6 +68,8 @@ function NRT:close()
 	self.closed = true
 end
 function NRT:Gen(endppq,test)
+	USING_LILYPOND = true --not doing /sync
+	require"sc.oscfunc"(scriptlinda,true)
 	NRT.test = test
 	local function pathnoext(P)
 		return P:match("([^%.]+)")
@@ -78,8 +80,10 @@ function NRT:Gen(endppq,test)
 		NRT.sendMultiBundle = NRT.sendMultiBundleTable
 	end
 	theMetro:play(nil,0,0,25)
+	theMetro.oldtimestamp = 0
 	local lastt = 0
     sendBundle = function(msg,ti)
+		if ti then assert(ti>=lastt) end
 		ti = ti or lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
@@ -87,6 +91,7 @@ function NRT:Gen(endppq,test)
 		NRT:sendBundle(msg,ti)
 	end
 	sendMultiBundle = function(ti,msg)
+		if ti then assert(ti>=lastt) end
 		ti = ti or lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
@@ -102,16 +107,28 @@ function NRT:Gen(endppq,test)
 		--end
 		return {"/done",{}}
 	end
+	ThreadServerSend = function(msg)
+		sendBundle(msg)
+	end
+	ThreadServerSendT = function(msg,tim)
+		sendMultiBundle(tim,msg)
+	end
+	--setting oldtimestamp to 0
+	table.insert(initCbCallbacks,1,function()
+		theMetro:play(nil,0,0,25)
+		theMetro.oldppqPos = 0
+		theMetro.oldtimestamp = 0
+	end)
     table.insert(initCbCallbacks,function()
 		print"NRT work"
 		theMetro:play(nil,0,0,25)
 		theMetro.oldtimestamp = 0 -- -theMetro.period
 		while theMetro.ppqPos < endppq do
 -- cancelstep already does the work
---			if cancel_test() then 
---				print("NRT:required to cancel\n")
---				return true
---			end
+			if cancel_test() then 
+				print("NRT:required to cancel\n")
+				return true
+			end
 			theMetro.timestamp = theMetro.oldtimestamp + theMetro.period
 			theMetro.oldppqPos = theMetro.ppqPos
 			theMetro.ppqPos = theMetro.ppqPos + theMetro.frame
@@ -128,21 +145,23 @@ function NRT:Gen(endppq,test)
 			NRT:SaveTable(pathnoext(scriptname)..".osc")
 			print"osc table saved"
 		end
----[=[
+
 	if not test then
 		-- call sc NRT
 		local is_windows = package.config:sub(1,1) == '\\'
 		local sep = is_windows and '\\' or '/'
+		local plugpathsep = is_windows and ";" or ":"
 		local scpath = (_run_options.SCpath):match("(.+"..sep..")([^"..sep.."]+)")
 		local plugpath = [["]]..scpath..[[plugins"]]
 		for i,v in ipairs(_run_options.SC_PLUGIN_PATH) do
 			if(v=="default") then
 			else	
-				plugpath = plugpath..[[;"]]..v..[["]]
+				plugpath = plugpath..plugpathsep..[["]]..v..[["]]
 			end
 		end
 		local cmd = string.format("\"\"%s\" -N \"%s\" _ \"%s\" 44100 wav float -U %s -o 2 -i 2 -V 2 -m 65536 2>&1\"",_run_options.SCpath, NRT.filepath, pathnoext(scriptname)..".wav",plugpath)
 		print(cmd)
+---[=[
 		--print(os.execute(cmd))
 		local exe,err = io.popen(cmd)
 		if not exe then
@@ -152,10 +171,10 @@ function NRT:Gen(endppq,test)
 			exe:setvbuf("no")
 		end
 		repeat
---			if cancel_test() then
---				print("NRT:required to cancel\n")
---				return true
---			end
+			if cancel_test() then
+				print("NRT:required to cancel\n")
+				return true
+			end
 			--print(stdout:read("*all") or stderr:read("*all") or "nil")
 			exe:flush()
 			--io.write("reading line bootsc\n")
@@ -166,12 +185,14 @@ function NRT:Gen(endppq,test)
 			else
 				--io.write("server finished\n")
 				print("nrt server finished")
-				return true
+				--return true
+				break
 			end
 		until false
-	end
-	scriptlinda:send("script_exit",1)
 --]=]
+	end
+
+	scriptlinda:send("script_exit",1)
     end)
 end
 return NRT
