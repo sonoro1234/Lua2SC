@@ -1,9 +1,9 @@
 local LILY = {}
-function LILY:Gen() end
+function LILY:Gen() prerror"Use run plain lua (F7) for lilypond." end
 if typerun==1 then return LILY end
-
+USING_LILYPOND = true
 require"sc.callback_wrappers"
-require"sc.oscfunc"(scriptlinda)
+require"sc.oscfunc"(scriptlinda,true)
 require"sc.sc_comm"
 --InitSCCOMM()
 require"sc.gui"
@@ -28,7 +28,7 @@ elseif typeshed then
 else
 	error("typeshed is nil")
 end
-
+theMetro:init()
     sendBundle = function(msg,ti)
 	end
 	sendMultiBundle = function(ti,msg)
@@ -36,6 +36,8 @@ end
 	sendBlocked = function(msg)
 		return {"/done",{}}
 	end
+	ThreadServerSend = function() end
+	ThreadServerSendT = function() end
 --MASTER_INIT1()
 table.insert(initCbCallbacks,1,MASTER_INIT1)
 -------------------------------------
@@ -423,6 +425,8 @@ function LILY:Gen(inippq,endppq,players,args)
 	sendBlocked = function(msg)
 		return {"/done",{}}
 	end
+	ThreadServerSend = function() end
+	ThreadServerSendT = function() end
 	EventPlayer.playEvent = LILYplayEvent
 	curHostTime = theMetro
 	_initCb()
@@ -457,10 +461,10 @@ function LILY:Gen(inippq,endppq,players,args)
 		local exestr = string.format([[""C:\Program Files (x86)\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s"]],pathnoext(scriptname),lilyfile)
 		print(exestr)
 
-		--local retcode = os.execute(exestr)
-		--print(retcode,"pdf done")
+		local retcode = os.execute(exestr)
+		print(retcode,"pdf done")
 		--os.execute(pathnoext(scriptname)..".pdf")
-		--io.popen(pdffile)
+		io.popen(pdffile)
     --end)
 end
 return LILY

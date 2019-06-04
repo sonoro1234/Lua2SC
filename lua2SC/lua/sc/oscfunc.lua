@@ -15,6 +15,25 @@ function OSCFunc.newfilter(path,template,func,runonce,block,alt_linda)
 	end
 end
 
+function OSCFunc.fake_newfilter(path,template,func,runonce,block,alt_linda)
+	template = template or "ALL"
+	local handleOSCFuncLinda = alt_linda or OSCFuncLinda
+	OSCFunc.filters[path] = OSCFunc.filters[path] or {} 
+	OSCFunc.filters[path][#OSCFunc.filters[path]+1] ={template=template,func=func,runonce=runonce}
+--[[
+	if block then -- TODO: it is too slow, may be having a dedicated linda for that ...
+		local tmplinda = lanes.linda()
+		udpsclinda:send("addFilter",{path,handleOSCFuncLinda,tmplinda})
+		tmplinda:receive("addFilterResponse")
+	else
+		udpsclinda:send("addFilter",{path,handleOSCFuncLinda})
+	end
+--]]
+	if handleOSCFuncLinda then
+	handleOSCFuncLinda:send("OSCReceive",{"/done",{path}})
+	end
+end
+
 local function CheckTemplate(msg,template)
 	if not template or template=="ALL" then
 		return true
@@ -32,7 +51,7 @@ end
 function OSCFunc.clearfilters(path,template,alt_linda)
 	local handleOSCFuncLinda = alt_linda or OSCFuncLinda
 	--print("OSCFunc.clearfilters ",path," ",template)
-	
+	if type(template)~="table" then template = {template} end
 	if OSCFunc.filters[path] then
 		for i,filter in pairs(OSCFunc.filters[path]) do
 			if CheckTemplate(template,filter.template) then
@@ -86,8 +105,12 @@ function OSCFunc.trace(doit,status)
 	udpsclinda:send("trace",{doit,status})
 end
 --this is called from scriptrun
---but not from ide
-return function(linda) 
+--and from ide
+return function(linda,fake) 
+	if fake then --for LILY
+		OSCFunc.newfilter = OSCFunc.fake_newfilter
+		--return
+	end
 	OSCFuncLinda = linda 
 	if linda==scriptlinda then
 	table.insert(resetCbCallbacks,
