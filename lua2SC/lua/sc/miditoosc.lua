@@ -427,6 +427,18 @@ table.insert(onFrameCallbacks,function()
 		end
 	end
 end)
+
+local function NodesOFF(nodo)
+	if type(nodo)=="table" then
+		for ii=1,#nodo do
+			local off = {"/n_set",{nodo[ii],"gate",{"float",0}}}
+			sendBundle(off)
+		end
+	else
+		local off = {"/n_set",{nodo,"gate",{"float",0}}}
+		sendBundle(off)
+	end
+end
 function MidiToOsc.midi2osc(midiEvent) 
 	--prtable(midiEvent)
 	local ch = midiEvent.channel
@@ -457,19 +469,38 @@ function MidiToOsc.midi2osc(midiEvent)
 		--thisMidiOsc.node = nodo
 		--print(amp)
 		local on
+		local multipars, multinode, multion
 		if snew then
 			if thisMidiOsc.on_maker then
-				thisMidiOsc:on_maker(freq,amp)
-				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group}}
-			else
+				multipars = thisMidiOsc:on_maker(freq,amp)
+				if not multipars then
+					local inst = thisMidiOsc.params.inst or thisMidiOsc.inst
+					thisMidiOsc.params.inst = nil
+					on ={"/s_new", {inst, nodo, 0, thisMidiOsc.instr_group}}
+				else
+					multion = {}
+					for ii=1,#multipars do
+						local inst = multipars[ii].inst or thisMidiOsc.inst
+						multipars[ii].inst = nil
+						if ii==1 then
+							multinode = {nodo}
+						else
+							table.insert(multinode,GetNode())
+						end
+						table.insert(multion ,{"/s_new", {inst, multinode[ii], 0, thisMidiOsc.instr_group}})
+					end
+					nodo = multinode
+				end
+			else -- not on_maker
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+			thisMidiOsc.node = nodo --for mono
 			--OSCFunc.newfilter("/n_end",nodo,function(noty)
 			--	MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
 			--end,true)
 			print"new"
-		else
+		else --not snew
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
 				thisMidiOsc:on_maker(freq,amp)
@@ -479,16 +510,22 @@ function MidiToOsc.midi2osc(midiEvent)
 			MidiToOsc.free_queue[ch][nodo] = nil
 			print"not new"
 		end
-		ValsToOsc(on[2],thisMidiOsc.params)
-		table.insert(on[2],"out")
-		table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
-		sendBundle(on)
 		
-		--if not MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] then
-			--sendBundle(on) --,lanes.now_secs())
-			--MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
-		--end
-
+		if not multipars then
+			ValsToOsc(on[2],thisMidiOsc.params)
+			table.insert(on[2],"out")
+			table.insert(on[2],{"int32",thisMidiOsc.channel.busin})
+			sendBundle(on)
+		else
+			for ii=1,#multipars do
+				local onii = multion[ii]
+				ValsToOsc(onii[2],multipars[ii])
+				table.insert(onii[2],"out")
+				table.insert(onii[2],{"int32",thisMidiOsc.channel.busin})
+				sendBundle(onii)
+			end
+		end
+	
     elseif midiEvent.type==midi.noteOff then
 		
 		if mono then
@@ -511,8 +548,7 @@ function MidiToOsc.midi2osc(midiEvent)
 				sendBundle(on)
 				print"off set"
 			else
-				local off = {"/n_set",{nodo,"gate",{"float",0}}}
-				sendBundle(off) --,lanes.now_secs())
+				NodesOFF(nodo)
 				thisMidiOsc.node = nil
 				print"off release"
 			end
@@ -521,9 +557,7 @@ function MidiToOsc.midi2osc(midiEvent)
 			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
 			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
 			if nodo then
-				local off = {"/n_set",{nodo,"gate",{"float",0}}}
-				sendBundle(off)
-
+				NodesOFF(nodo)
 			else
 				print"off without on"
 			end
