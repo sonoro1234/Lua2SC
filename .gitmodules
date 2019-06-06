@@ -17,3 +17,6 @@
 [submodule "wxWidgets"]
 	path = wxLuaBundled/wxWidgets
 	url = https://github.com/sonoro1234/wxWidgets
+[submodule "LuaJIT-libsndfile"]
+	path = LuaJIT-libsndfile
+	url = https://github.com/sonoro1234/LuaJIT-libsndfile.git

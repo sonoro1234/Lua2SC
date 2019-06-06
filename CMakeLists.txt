@@ -16,18 +16,22 @@ elseif(Darwin)
 else() 
 	set(LUA_LIBRARY  ${THIS_LUA_SRC}/libluajit.so)
 endif()
-set(CMAKE_INSTALL_PREFIX ${LUAJIT_BIN})
+#set(CMAKE_INSTALL_PREFIX ${LUAJIT_BIN})
 
 add_subdirectory(LuaJIT)
 
 add_subdirectory(random)
 add_subdirectory(osclua)
 add_subdirectory(luaportmidi)
+
+set(CDIR ${LUAJIT_BIN})
+set(LDIR ${LUAJIT_BIN}/lua)
 add_subdirectory(luasocket_cmake)
+add_subdirectory(LuaJIT-libsndfile)
 message("------------lanes-----------------------------")
 
-set(INSTALL_CMOD ./lanes CACHE INTERNAL "cmod" FORCE)
-set(INSTALL_LMOD ./lua  CACHE INTERNAL "lmod" FORCE)
+set(INSTALL_CMOD ${LUAJIT_BIN}/lanes CACHE INTERNAL "cmod" FORCE)
+set(INSTALL_LMOD ${LUAJIT_BIN}/lua  CACHE INTERNAL "lmod" FORCE)
 set(INSTALL_DATA ${CMAKE_BINARY_DIR}/lanes_install  CACHE INTERNAL "lanes data" FORCE)
 add_subdirectory(lanes )
 
@@ -38,8 +42,8 @@ if(BUILD_WXLUA)
 endif()
 
 ############ install #######################
-INSTALL (DIRECTORY  lua2SC DESTINATION .)
-install(FILES luafilesystem/lfs_ffi.lua luafilesystem/lfs.lua DESTINATION ./lua)
+INSTALL (DIRECTORY  lua2SC DESTINATION ${LUAJIT_BIN} PATTERN "*.bak" EXCLUDE  PATTERN "*.WinMerge" EXCLUDE)
+install(FILES luafilesystem/lfs_ffi.lua luafilesystem/lfs.lua DESTINATION ${LUAJIT_BIN}/lua)
 
 ##runtime libraries
 if( MINGW )
@@ -51,15 +55,15 @@ if( MINGW )
 endif( MINGW )
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
 include (InstallRequiredSystemLibraries)
-INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION .)
+INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION ${LUAJIT_BIN})
 
 ##launcher
 #TODO launchers for osx
 if(WIN32)
-	INSTALL(FILES launcher/Lua2SC.bat DESTINATION .)
+	INSTALL(FILES launcher/Lua2SC.bat DESTINATION ${LUAJIT_BIN})
 else(WIN32)#linux
 	INSTALL(FILES launcher/Lua2SC.sh
     PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-	DESTINATION .)
+	DESTINATION ${LUAJIT_BIN})
 endif(WIN32)
 

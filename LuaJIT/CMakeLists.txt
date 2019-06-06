@@ -39,13 +39,13 @@ message(">>>>>>>>>>>>>>LuaJIT done>>>>>>>>>>>>>>>>>>>>>>>>>")
 if(Darwin)
 	install(FILES ${ljsrc}/luajit ${ljsrc}/libluajit.dylib 
   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-  DESTINATION .)
+  DESTINATION ${LUAJIT_BIN})
 elseif(UNIX)
 	install(FILES ${ljsrc}/luajit ${ljsrc}/libluajit.so 
   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-  DESTINATION .)
+  DESTINATION ${LUAJIT_BIN})
 else() #win
-	install(FILES ${ljsrc}/luajit.exe ${ljsrc}/lua51.dll DESTINATION .)
+	install(FILES ${ljsrc}/luajit.exe ${ljsrc}/lua51.dll DESTINATION ${LUAJIT_BIN})
 endif()
 
-install(DIRECTORY ${ljsrc}/jit DESTINATION ./lua FILES_MATCHING PATTERN "*.lua")
+install(DIRECTORY ${ljsrc}/jit DESTINATION ${LUAJIT_BIN}/lua FILES_MATCHING PATTERN "*.lua")
