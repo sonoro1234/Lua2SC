@@ -6,21 +6,25 @@ Dist = Dist or 2.5
 Size = Size or 1
 local sc = require"sclua.Server".Server()
 local busB = sc.Bus()
-curr_panel = addPanel{type="hbox"}
+curr_panel = addPanel{type="hbox",name="ER"}
 Slider("B",0,1,B,function(val) busB:set(val) end)
 local busDist = sc.Bus()
 Slider("Dist",0,8,Dist,function(val) busDist:set(val) end)
 local busSize = sc.Bus()
 Slider("Size",0,8,Size,function(val) busSize:set(val) end)
---[[
-local busBypass = sc.Bus()
-Toggle("Bypas",function(val) print(val);busBypass:set(val) end)
---]]
+
+local busBypass
+if op.bypass then
+	busBypass = sc.Bus()
+Toggle("Bypas",function(val) busBypass:set(val) end)
+end
+
 local busEq
 if op.direct then
 	busEq = sc.Bus()
 	Slider("Eq",0,1,op.Eq or 0,function(val) busEq:set(val) end)
 end
+curr_panel = nil
 local dec
 if op.atk then
 	require"sc.atk"
@@ -85,10 +89,15 @@ else
 	early = EarlyRef.ar(monoin,Psmod,Pr,L,HW,-B,N,In.kr(busEq.busIndex,1),nil,op.allpass)
 end
 	if op.compensation then early = early*dist end
+	
+	local sig
+	if op.bypass then
+		--local sig = Select.ar(bypass,{early,input})
+		sig = Select.ar(In.kr(busBypass.busIndex),{early,Pan2.ar(monoin,angle)})
+	else
+		sig = early
+	end
 
-	local sig = Select.ar(bypass,{early,input})
-	--local sig = Select.ar(In.kr(busBypass.busIndex),{early,Pan2.ar(monoin,angle)})
-	--local sig = early
 	ReplaceOut.ar(busout,sig);
 end):store()
 	local M = {}
