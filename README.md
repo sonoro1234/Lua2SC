@@ -41,5 +41,5 @@ run: Lua2SC.bat or Lua2SC.sh
 
 ------------Using Non real time---------------
 
-1. Set as first line in script: NRT = require"sc":Gen(number of beats to render)
+1. Set as first line in script: NRT = require"sc.nrt":Gen(number of beats to render)
 2. Run script with Run Lua2SC (F6)
