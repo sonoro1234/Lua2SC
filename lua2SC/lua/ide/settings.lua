@@ -1,3 +1,4 @@
+local is_windows = package.config:sub(1,1) == '\\'
 Settings={
 --[[
 	options={
@@ -14,6 +15,7 @@ Settings={
 	ID_SAVE_BUTTON=NewID(),
 	ID_RESET_MIDI_BUTTON=NewID(),
 	ID_SC_BUTTON=NewID(),
+	ID_LILY_BUTTON=NewID(),
 	ID_SYNTHPATH_BUTTON=NewID(),
 	ID_PLUGINS_BUTTON=NewID(),
 	ID_PLUGINS_DELETE_BUTTON=NewID()
@@ -38,10 +40,25 @@ function Settings:ConfigRestore(config)
 end
 function Settings:FindSC(event)
 	local exepath
-    local fileDialog = wx.wxFileDialog(frame, "Find scsynth.exe",
+	local filepat = is_windows and "Exe files (*.exe)|*.exe|All files (*)|*" or "All files (*)|*"
+    local fileDialog = wx.wxFileDialog(frame, "Find scsynth",
                                        "",
 									   self.options.SCpath or "",
-                                       "Exe files (*.exe)|*.exe|All files (*)|*",
+                                       filepat,
+                                       wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST)
+    if fileDialog:ShowModal() == wx.wxID_OK then
+       exepath=fileDialog:GetPath()
+	end
+	fileDialog:Destroy()
+	return exepath
+end
+function Settings:FindLILY(event)
+	local exepath
+	local filepat = is_windows and "Exe files (*.exe)|*.exe|All files (*)|*" or "All files (*)|*"
+    local fileDialog = wx.wxFileDialog(frame, "Find lilypond",
+                                       "",
+									   self.options.LILYpath or "",
+                                       filepat,
                                        wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST)
     if fileDialog:ShowModal() == wx.wxID_OK then
        exepath=fileDialog:GetPath()
@@ -122,10 +139,16 @@ function Settings:Create(parent)
 	grid_sizer:Add(botplugsizer,wx.wxGBPosition(row,2))
 	
 	row = row + 1
-	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"ScSynth.exe path:"),wx.wxGBPosition(row,0))
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"scsynth path:"),wx.wxGBPosition(row,0))
 	local scTC=wx.wxTextCtrl(this, wx.wxID_ANY,self.options.SCpath or "")
 	grid_sizer:Add(scTC,wx.wxGBPosition(row,1),wx.wxGBSpan(1,1),wx.wxEXPAND)
 	grid_sizer:Add(wx.wxButton( this, self.ID_SC_BUTTON, "Browse"),wx.wxGBPosition(row,2))
+	
+	row = row + 1
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"lilypond path:"),wx.wxGBPosition(row,0))
+	local lilyTC=wx.wxTextCtrl(this, wx.wxID_ANY,self.options.LILYpath or "")
+	grid_sizer:Add(lilyTC,wx.wxGBPosition(row,1),wx.wxGBSpan(1,1),wx.wxEXPAND)
+	grid_sizer:Add(wx.wxButton( this, self.ID_LILY_BUTTON, "Browse"),wx.wxGBPosition(row,2))
 	
 	row = row + 1
 	self.MIDIdev=pmidi.GetMidiDevices()
@@ -171,6 +194,13 @@ function Settings:Create(parent)
 			local path=self:FindSC()
 			if path then
 				scTC:SetValue(path)
+			end
+		end)
+	this:Connect(self.ID_LILY_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
+		function(event)
+			local path=self:FindLILY()
+			if path then
+				lilyTC:SetValue(path)
 			end
 		end)
 	this:Connect(self.ID_SYNTHPATH_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
@@ -244,10 +274,14 @@ function Settings:Create(parent)
 			--checkend(midilane)
 			--assert(midilane,"midilane could not be created")
 		end)
+	local function strip(cad)
+		return cad:gsub("^%s*(.-)%s*$","%1") --remove initial and final spaces
+	end
 	this:Connect(self.ID_SAVE_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
 		function(event)
 			GetMidiOptions(self)
 			self.options.SCpath=scTC:GetValue()
+			self.options.LILYpath=strip(lilyTC:GetValue())
 			self.options.SC_SYNTHDEF_PATH=synthTC:GetValue()
 			
 			self.options.SC_PLUGIN_PATH={}

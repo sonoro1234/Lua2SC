@@ -22,7 +22,7 @@ this directory can be copied anywhere.
 
 --------------To first try---------------------
 
-run: lua lua2sc.lua
+run: Lua2SC.bat or Lua2SC.sh
 
 1. set Debug/settings
 2. Supercollider/BootSC (wait until booted)
@@ -31,3 +31,15 @@ run: lua lua2sc.lua
 5. Debug/Cancel run (F5)
 
 ![Alt text](lua2sc_.jpg )
+
+------------Using lillypond--------------------
+
+1. Find location of lilypond executable in Debug->Settings
+2. Set as first line in script: LILY = require"sc.lilypond"
+3. Set as last line in script: LILY:Gen(initial beat,last beat)
+4. Run as plain lua script with F7
+
+------------Using Non real time---------------
+
+1. Set as first line in script: NRT = require"sc":Gen(number of beats to render)
+2. Run script with Run Lua2SC (F6)

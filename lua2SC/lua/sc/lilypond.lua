@@ -1,5 +1,5 @@
 local LILY = {}
-function LILY:Gen() prerror"Use run plain lua (F7) for lilypond." end
+function LILY:Gen() prerror"Use run plain lua (F7) for lilypond.";error("lilypond needs F7",2) end
 if typerun==1 then return LILY end
 USING_LILYPOND = true
 require"sc.callback_wrappers"
@@ -454,11 +454,16 @@ function LILY:Gen(inippq,endppq,players,args)
 		local pdffile = pathnoext(scriptname)..".pdf"
 		self:SaveStr(lilyfile)
 		print"osc table saved"
+		local lilyexe = _run_options.LILYpath
+		if not lilyexe or lilyexe == "" then
+			prerror("lilypond executable not found. Set it with Debug->Settings!!")
+			return
+		end
 		--require"lfs"
 		--print(lfs.currentdir())
 		--os.execute([[C:\Program Files\LilyPond\usr\bin\lilypond.exe -fpdf ]].. lilyfile)
 		os.remove(pdffile)
-		local exestr = string.format([[""C:\Program Files (x86)\LilyPond\usr\bin\lilypond" -V -fpdf -o%s %s"]],pathnoext(scriptname),lilyfile)
+		local exestr = string.format([[""]]..lilyexe..[[" -V -fpdf -o%s %s"]],pathnoext(scriptname),lilyfile)
 		print(exestr)
 
 		local retcode = os.execute(exestr)
