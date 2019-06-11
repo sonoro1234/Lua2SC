@@ -160,7 +160,7 @@ function M.make_player(sfz)
 		for i,v in ipairs(nota) do
 			local pars = getParams(sfz,v,amp)
 			if not pars then
-				print("note:",v,"out of range for sfz player:",sfz.inst)
+				print("note:",v,"out of range for sfz player:",sfz.inst,amp)
 				print("range:",sfz.minkey,sfz.maxkey)
 				error"out of range"
 			end
@@ -333,15 +333,29 @@ function M.read(fpath,options)
 		elseif v:match"<group>" then
 			local r = getopcodes(v)
 			table.insert(sfz.groups,r)
+		elseif v:match"<global>" then
+			local r = getopcodes(v)
+			assert(not sfz.global)
+			sfz.global = r
+		else
+			prerror"unknown header"
+			prerror(v:match"(<[^<>]+>)")
+			error"unknown header"
 		end
 	end
-	--copy group to regions and add defaults
+	--copy group and global to regions and add defaults
 	for i,r in ipairs(sfz.regions) do
 		local g = sfz.groups[r.group]
 		if g then
-		for k,v in pairs(g) do
-			r[k]=v
+			for k,v in pairs(g) do
+				r[k]=v
+			end
 		end
+		--global
+		if sfz.global then
+			for k,v in pairs(sfz.global) do
+				r[k]= r[k] or v
+			end
 		end
 		--defaults
 		r.lovel = r.lovel or 0
@@ -349,8 +363,8 @@ function M.read(fpath,options)
 		r.lorand = r.lorand or 0
 		r.hirand = r.hirand or 1
 		if r.key then
-			r.lokey = r.key
-			r.hikey = r.key
+			r.lokey = r.lokey or r.key
+			r.hikey = r.hikey or r.key
 			r.pitch_keycenter = r.key
 		end
 		for op,val in pairs(ampeg_def) do
