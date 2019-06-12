@@ -53,20 +53,21 @@ function OSCFunc.clearfilters(path,template,alt_linda)
 	--print("OSCFunc.clearfilters ",path," ",template)
 	if type(template)~="table" then template = {template} end
 	if OSCFunc.filters[path] then
-		for i,filter in pairs(OSCFunc.filters[path]) do
+		for i,filter in ipairs(OSCFunc.filters[path]) do
 			if CheckTemplate(template,filter.template) then
-			--if (template==nil) or (template==filter.template) then
-				OSCFunc.filters[path][i]=nil
-				print(" is done OSCFunc.clearfilters ",path," ",template)
+				table.remove(OSCFunc.filters[path],i)
+				print(" is done OSCFunc.clearfilters ",path," ",template[1])
 			end
 		end
 	end
+	--if OSCFunc.filters[path] then print("#OSCFunc.filters[path]",#OSCFunc.filters[path],path) end
 	if #OSCFunc.filters[path] == 0 then
 		udpsclinda:send("clearFilter",{path,handleOSCFuncLinda})
 		OSCFunc.filters[path] = nil
 	end
 end
 function OSCFunc.clearall(alt_linda)
+	print"OSCFunc.clearall"
 	local handleOSCFuncLinda = alt_linda or OSCFuncLinda
 	for path,v in pairs(OSCFunc.filters) do
 		OSCFunc.clearfilters(path)
@@ -79,11 +80,12 @@ function OSCFunc.handleOSCReceive(msg)
 		print(tb2st(msg))
 	end
 	if OSCFunc.filters[msg[1]] then
-		for i,filter in pairs(OSCFunc.filters[msg[1]]) do
+		for i,filter in ipairs(OSCFunc.filters[msg[1]]) do
 			if CheckTemplate(msg[2],filter.template) then
 				filter.func(msg)
 				if filter.runonce then
-					OSCFunc.filters[msg[1]][i]=nil
+					--print("filter.runonce",msg[1],filter.template)
+					table.remove(OSCFunc.filters[msg[1]],i)
 				end
 			end
 		end
