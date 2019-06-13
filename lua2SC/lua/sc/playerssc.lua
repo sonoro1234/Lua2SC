@@ -1169,3 +1169,28 @@ function copyplayer(player)
 	OSCPlayers[#OSCPlayers+1]=player2
 	return player2
 end
+
+function fadeout(ppq1,ppq2,...)
+	for k,player in ipairs{...} do
+		player.channel.Filters = player.channel.Filters or {}
+		player.channel.Filters.level = function(list)
+			return list.level * db2amp(linearmap_c(ppq1,ppq2,0,-120,player.channel.ppqPos))
+		end
+		player.channel:MergeBind{dur = ConstSt(0.1)}
+		player.channel:Reset()
+		player.channel.ppqPos=ppq1
+	end
+end
+
+function fadein(ppq1,ppq2,...)
+	for k,player in ipairs{...} do
+		player.channel.Filters = player.channel.Filters or {}
+		player.channel.Filters.level = function(list)
+			return list.level * db2amp(linearmap_c(ppq1,ppq2,-120,0,player.channel.ppqPos))
+		end
+		player.channel:MergeBind{dur = ConstSt(0.1)}
+		player.channel:Reset()
+		player.channel.ppqPos=ppq1
+	end
+end
+

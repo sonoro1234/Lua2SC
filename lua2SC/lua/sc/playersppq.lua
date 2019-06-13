@@ -412,7 +412,7 @@ function EventPlayer:findMyName()
 	end
 	return "unnamed"
 end
-function EventPlayer:ccPlayBAK()end
+
 ActionPlayers={}
 function initplayers()
 	for i,v in ipairs(ActionPlayers) do
@@ -446,7 +446,8 @@ end
 function StopPlayer(...)
 	for k,player in ipairs{...} do
 		print("stop ",player.name)
-		player:Reset()
+		--player:Reset()
+		player:Release(theMetro:ppq2time(player.ppqPos))
 		player.playing=false
 	end
 end
@@ -475,22 +476,6 @@ end
 function GOTO(ppq,pos)
 	return {ppq=ppq,theMetro.GOTO,{theMetro,pos}}
 end
-function FADEOUTBAK(ppq1,ppq2,...)
-	local function fadeseveral(...)
-		for k,player in ipairs{...} do
-			local level1 = player.channel.oldparams.level
-			local steps = (ppq2 - ppq1)/0.1
-			local step = level1 / steps
-			player.channel:MergeBind{level = FS(function(arg) 
-								return math.max(0,player.channel.oldparams.level - step )
-							end,steps,{player.channel}),
-							dur = ConstSt(0.1)}
-			player.channel:Reset()
-			player.channel.ppqPos=ppq1
-		end
-	end
-	return {ppq=ppq1,fadeseveral,{...}}
-end
 
 function FADEOUT(ppq1,ppq2,...)
 	local function fadeseveral(...)
@@ -516,21 +501,6 @@ function FADEIN(ppq1,ppq2,...)
 					return list.level * clip(linearmap(ppq1,ppq2,0,1,player.channel.ppqPos),0,1)
 				end
 			player.channel:MergeBind{dur = ConstSt(0.1)}
-			player.channel:Reset()
-			player.channel.ppqPos=ppq1
-		end
-	end
-	return {ppq=ppq1,fadeseveral,{...}}
-end
-function FADEINBAK(ppq1,ppq2,level,...)
-	local function fadeseveral(...)
-		for k,player in ipairs{...} do
-			local steps = (ppq2 - ppq1)/0.1
-			local step = level / steps
-			player.channel:MergeBind{level = FS(function(arg) 
-								return math.min(level,player.channel.oldparams.level + step )
-							end,steps,{player.channel}),
-							dur = ConstSt(0.1)}
 			player.channel:Reset()
 			player.channel.ppqPos=ppq1
 		end
