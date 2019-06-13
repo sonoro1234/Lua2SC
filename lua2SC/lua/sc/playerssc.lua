@@ -596,7 +596,8 @@ function OscEventPlayer:Reset(all)
 			insert:Reset()
 		end
 	end
-	self:FreeNode(true)
+	self:Release(theMetro:ppq2time(self.ppqPos))
+	self:FreeNode()--true)
 	self:FreeInstrGroup()
 	EventPlayer.Reset(self)
 end
