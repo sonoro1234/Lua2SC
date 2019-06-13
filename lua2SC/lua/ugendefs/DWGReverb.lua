@@ -61,11 +61,10 @@ function EarlyRefGen.kr(bufL,bufR,Ps,Pr,L,HW,B,N,Hangle)
 	Ps = Ps or {0,0,0};Pr = Pr or {0,0,0};L = L or {1,1,1};HW = HW or 0.2;B= B or 0.97;N = N or 0; Hangle = Hangle or 0
 	return EarlyRefGen:MultiNew(concatTables({1,bufL,bufR},Ps,Pr,L,{HW,B,N,Hangle}))
 end
-EarlyRef27Gen = UGen:new{name='EarlyRef27Gen'}
-function EarlyRef27Gen.kr(bufL,bufR,Ps,Pr,L,HW,B,N)
-	bufL = bufL or 0;bufR = bufR or 0
-	Ps = Ps or {0,0,0};Pr = Pr or {0,0,0};L = L or {1,1,1};HW = HW or 0.2;B= B or 0.97;N = N or 0
-	return EarlyRef27Gen:MultiNew(concatTables({1,bufL,bufR},Ps,Pr,L,{HW,B,N}))
+EarlyRef27 = UGen:new{name='EarlyRef27'}
+function EarlyRef27.kr(inp,Ps,Pr,L,HW,B)
+	Ps = Ps or {0,0,0};Pr = Pr or {0,0,0};L = L or {1,1,1};HW = HW or 0.2;B= B or 0.97;
+	return EarlyRef27:MultiNew(concatTables({2,2,inp},Ps,Pr,L,{HW,B}))
 end
 
 EarlyRefAtkGen = UGen:new{name='EarlyRefAtkGen'}
