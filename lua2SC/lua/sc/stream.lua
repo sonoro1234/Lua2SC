@@ -609,8 +609,16 @@ end
 PairsStream = Stream:new{stlist=nil}
 PairsStream.isPairsStream=true
 function PairsStream:pnext(e)
-	local list= e.tmplist or {}
-	--local list= {}
+	
+	e.inPS = (e.inPS or 0) + 1
+	--prerror("e.inPS",e.inPS)
+	assert(e.inPS > 0)
+	local list
+	if e.inPS==1 then 
+		list = {} --reset for outer PS
+	else
+		list = e.tmplist or {} --dont reset in inner PS
+	end
 	e.tmplist = list
 	for i,t in ipairs(self.stlist) do
 		local list2 = {}
@@ -620,6 +628,7 @@ function PairsStream:pnext(e)
 			list2 = t:nextval(e)
 			if not list2 then
 				self:reset()
+				e.inPS = e.inPS - 1
 				return nil
 			end
 		else -- simple table
@@ -627,6 +636,7 @@ function PairsStream:pnext(e)
 				list2[k]=v:nextval(e)
 				if list2[k] == nil then
 					self:reset()
+					e.inPS = e.inPS - 1
 					return nil
 				end
 				-- convert arrays of streams
@@ -644,6 +654,7 @@ function PairsStream:pnext(e)
 --		print(list.delta)
 --	end
 	list.delta = list.delta or list.dur
+	e.inPS = e.inPS - 1
 	return list
 	--return setmetatable(list,event_mt)
 end
@@ -1105,6 +1116,7 @@ function SSkip:reset()
 	self.pos=0
 	Stream.reset(self)
 end
+--SKIP events from ini event to endp event
 function SKIP(ini,endp,pat)
 	return SSkip:new{pat=pat,ini=ini,endp=endp}
 end
