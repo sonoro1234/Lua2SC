@@ -443,11 +443,11 @@ function StartPlayer(beatTime,...)
 		player:Reset()
 	end
 end
-function StopPlayer(...)
+function StopPlayer(ppq,...)
 	for k,player in ipairs{...} do
-		print("stop ",player.name)
+		print("stop ",player.name,ppq)
 		--player:Reset()
-		player:Release(theMetro:ppq2time(player.ppqPos))
+		player:Release(theMetro:ppq2time(ppq))
 		player.playing=false
 	end
 end
@@ -471,7 +471,7 @@ function START(ppq,...)
 	return {ppq=ppq,StartPlayer,{ppq,...}}
 end
 function STOP(ppq,...)
-	return {ppq=ppq,StopPlayer,{...}}
+	return {ppq=ppq,StopPlayer,{ppq,...}}
 end
 function GOTO(ppq,pos)
 	return {ppq=ppq,theMetro.GOTO,{theMetro,pos}}

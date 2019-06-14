@@ -86,7 +86,7 @@ if not op.direct then
 		early = {sigL,sigR} --*dist
 	end
 else	
-	early = EarlyRef.ar(monoin,Psmod,Pr,L,HW,-B,N,In.kr(busEq.busIndex,1),nil,op.allpass)
+	early = EarlyRef.ar(monoin,Psmod,Pr,L,HW,-B,N,In.kr(busEq.busIndex,1),op.l,op.allpass)
 end
 	if op.compensation then early = early*dist end
 	
@@ -105,6 +105,10 @@ end):store()
 	function M:setER(pl,val,dist)
 		pl.inserts = pl.inserts or {}
 		table.insert(pl.inserts,{synname,{angle = val,dist=dist}})
+	end
+	function M:set(pl,pars)
+		pl.inserts = pl.inserts or {}
+		table.insert(pl.inserts,{synname,pars})
 	end
 	return M
 end

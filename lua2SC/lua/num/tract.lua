@@ -61,7 +61,7 @@ noiseloc=0,glot=1,noisef=Ref{2500,7500},noisebw=Ref{1,1},plosive=0,fA=1,fAc=1,fA
 	for k,v in pairs(args) do
 		defargs[k]=v
 	end
-	Tract[syname] = SynthDef(syname..Tract.NN,defargs,deffunc(excifunc)):store()
+	Tract[syname] = SynthDef(syname..Tract.NN.."tr",defargs,deffunc(excifunc)):store()
 end
 
 local function Rd2Times(Rd)
@@ -442,6 +442,22 @@ function Tract.phon.get(ph)
 	local plosive = Tract.plosive[ph] or MINIMAL --0
 	
 	return {{Tract.areas[ph]},isN and {Tract.AreaNose} or {Tract.AreaNoseC},gain,lenT,noiseloc,{noisefreq},{noisebw},glot,plosive,Tract.area1len,1}
+end
+function Tract.phon.getArgs(ph)
+	local res = {}
+	local isN = Tract.nasal[ph]
+	local gain = Tract.gains[ph] or 1
+	local lenT = Tract.len[ph] or Tract.deflen
+
+	local noise = Tract.noise[ph]
+	local noiseloc = noise and noise.pos or MINIMAL --0
+	local noisefreq = noise and noise.freqs or {2500,7500}
+	local noisebw = noise and noise.bw or {0.1,0.1}
+
+	local glot = Tract.glot[ph] or 1
+	local plosive = Tract.plosive[ph] or MINIMAL --0
+	
+	return {Ar=Tract.areas[ph],ArN = ((isN and Tract.AreaNose) or Tract.AreaNoseC),Gain=gain,lenT=lenT,noiseloc=noiseloc,noisef=noisefreq,noisebw=noisebw,glot=glot,plosive=plosive,area1len=Tract.area1len,t_gate=1}
 end
 local function makeenv(t,name,val,rate,dur)
 	local first = not t[name]
