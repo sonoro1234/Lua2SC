@@ -188,7 +188,7 @@ function ScriptRun(pars)
 		if profiling then
 			--ProFi = require 'ProFi'
 			--ProFi:start()
-			--[[
+			---[[
 			profile = require("jit.profile")
 			pr = {}
 			profile.start("f", function(th, samples, vmmode)
@@ -196,7 +196,7 @@ function ScriptRun(pars)
 				pr[d] = (pr[d] or 0) + samples
 			end)
 			--]]
-			require("jit.p").start("3vfsi4m1",lua2scpath..'profReport.txt')
+			--require("jit.p").start("3vfsi4m1",lua2scpath..'profReport.txt')
 		end
 
 		MsgLoop()
@@ -204,13 +204,13 @@ function ScriptRun(pars)
 		if profiling then
 			--ProFi:stop()
 			--ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
-			--[[
+			---[[
 			profile.stop()
 			print"luaJIT profiler:-----------------------"
 			for d,v in pairs(pr) do print(v, d) end
 			print"luaJIT profiler end:-----------------------"
 			--]]
-			require("jit.p").stop()
+			--require("jit.p").stop()
 		end
 
 		if _resetCb then
