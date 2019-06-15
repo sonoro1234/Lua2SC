@@ -1,4 +1,13 @@
 -- several utility functions
+function asc_codes(str)
+	local asc,str2 = {},{}
+	for i=1,#str do
+		asc[i] = string.format("\\%03d",str:byte(i))
+		str2[i] = str:sub(i,i).."   "
+	end
+	return table.concat(asc).."\n"..table.concat(str2)
+end
+
 function LogFile(str,filename)
 	filename = filename or "logsc.txt"
 	file = io.open(lua2scpath..filename,"w+")
