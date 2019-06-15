@@ -14,12 +14,13 @@ function CreateTopPanel()
 	--posSlider:SetFont(wx.wxFont(6, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, "Andale Mono"))wx.wxNORMAL_FONT
 	toppanel.timeStText = wx.wxStaticText(panel, wx.wxID_ANY," 00:00",wx.wxDefaultPosition, wx.wxDefaultSize)
 	local label="0 UGens.\t0 Synths.\n0.00-AvgCPU\t0.00-PeakCPU\n0 Groups.\t0 SynthDefs."
-	local SCStatusText=wx.wxStaticText(panel, wx.wxID_ANY,label,wx.wxDefaultPosition, wx.wxDefaultSize
+	local w,h=panel:GetTextExtent("0.00-AvgCPU\t0.00-PeakCPU")
+	local SCStatusText=wx.wxStaticText(panel, wx.wxID_ANY,label,wx.wxDefaultPosition, wx.wxSize(w+20,h*4)
 		--,wx.wxBORDER_SIMPLE+wx.wxALIGN_CENTRE  
 		)
 	toppanel.SCStatusText = SCStatusText
 	SCStatusText:Wrap(-1)
-	local w,h=SCStatusText:GetTextExtent("0.00-AvgCPU\t0.00-PeakCPU\n")
+	
 	SCStatusText:SetSize(w+20,h*4)
 	toppanel.posSlider:SetFont(wx.wxSMALL_FONT)
 	
@@ -36,7 +37,7 @@ function CreateTopPanel()
 	--panelSizer:Add( buttonSizer, 1, wx.wxGROW + wx.wxALL, 0 )
 	--panelSizer:Add( SCStatusText, 0, wx.wxFIXED_MINSIZE +wx.wxALIGN_CENTER+wx.wxALL, 0 )
 	panelSizer:Add( buttonSizer, 1,  wx.wxALL, 0 )
-	panelSizer:Add( SCStatusText, 0, wx.wxFIXED_MINSIZE +wx.wxALL, 0 )
+	panelSizer:Add( SCStatusText, 0, wx.wxFIXED_MINSIZE, 0 )
 	
 	--mainSizer:Add( buttonSizer, 0, wx.wxGROW+wx.wxALIGN_CENTER+wx.wxALL, 0 )
 	panel:SetSizer(panelSizer)
@@ -79,7 +80,7 @@ function CreateTopPanel()
 		str = str.."\n"..string.format("%0.2f",msg[6]).." AvgCPU".."\t"..string.format("%0.2f",msg[7]).." PeakCPU"
 		str = str.."\n"..msg[4].." Groups.".."\t"..msg[5].." SynthDefs."
 		str=str.."\n"..msg[8].." S.Rate"
-		str=str.."\t"..msg[9].." Nom S.Rate"
+		str=str.."\t"..string.format("%0.3f",msg[9])--.." Nom S.Rate"
 		SCStatusText:SetLabel(str)
 		local w,h =SCStatusText:GetTextExtent(str)
 		--print(w," ",h)
