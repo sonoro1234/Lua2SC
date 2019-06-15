@@ -293,14 +293,16 @@ function M.read(fpath,options)
 	local function getopcodes(v)
 		local r = {}
 		--opcodes that allow spaces
-		local k,va = v:match("(sample)=([^\n]+)")
+		local k,va = v:match("(sample)=([^\n\r]+)")
 		if k then 
 			va = va:gsub("([^%s]+=[^%s]+)","") --clean other opcodes
+			va = va:gsub("\\","/")
 			r[k]=va 
 		end
-		local k,va = v:match("(default_path)=([^\n]+)")
+		local k,va = v:match("(default_path)=([^\n\r]+)")
 		if k then 
 			va = va:gsub("([^%s]+=[^%s]+)","") --clean other opcodes
+			va = va:gsub("\\","/")
 			r[k]=va 
 		end
 		--others
