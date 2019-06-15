@@ -59,6 +59,7 @@ function ScriptRun(pars)
 	local Debuggerbp = pars.Debuggerbp
 	local script = pars.script
 	local debugging = pars.debugging
+	local profiling = pars.profiling
 	local typeshed = pars.typeshed
 	
 	local function prstak(stk)
@@ -184,32 +185,32 @@ function ScriptRun(pars)
 		_initCb()
 		
 		local profile,pr
-		if USE_PROFILE then
-			ProFi = require 'ProFi'
-			ProFi:start()
-			
-			-- profile = require("jit.profile")
-			-- pr = {}
-			-- profile.start("f", function(th, samples, vmmode)
-				-- local d = profile.dumpstack(th, "f", 1)
-				-- pr[d] = (pr[d] or 0) + samples
-			-- end)
-			
-			--require("jit.p").start("3vfsi4m1")--,lua2scpath..'profReport.txt')
+		if profiling then
+			--ProFi = require 'ProFi'
+			--ProFi:start()
+			--[[
+			profile = require("jit.profile")
+			pr = {}
+			profile.start("f", function(th, samples, vmmode)
+				local d = profile.dumpstack(th, "f", 1)
+				pr[d] = (pr[d] or 0) + samples
+			end)
+			--]]
+			require("jit.p").start("3vfsi4m1",lua2scpath..'profReport.txt')
 		end
 
 		MsgLoop()
 		
-		if USE_PROFILE then
-			ProFi:stop()
-			ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
-			
-			-- profile.stop()
-			-- print"luaJIT profiler:-----------------------"
-			-- for d,v in pairs(pr) do print(v, d) end
-			-- print"luaJIT profiler end:-----------------------"
-			
-			--require("jit.p").stop()
+		if profiling then
+			--ProFi:stop()
+			--ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+			--[[
+			profile.stop()
+			print"luaJIT profiler:-----------------------"
+			for d,v in pairs(pr) do print(v, d) end
+			print"luaJIT profiler end:-----------------------"
+			--]]
+			require("jit.p").stop()
 		end
 
 		if _resetCb then

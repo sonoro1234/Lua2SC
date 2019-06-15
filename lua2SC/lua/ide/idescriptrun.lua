@@ -1,6 +1,7 @@
 -- ---------------------------------------------------------------------------
 	local ID_RUN              = NewID()
 	local ID_DEBUG              = NewID()
+	local ID_PROFILE            = NewID()
 	--local ID_DEBUGPLAIN              = NewID()
 	local ID_CONTINUE              = NewID()
 	local ID_STEPINTO              = NewID()
@@ -25,6 +26,7 @@ function InitRunMenu()
 		{ ID_RUN3,              "&Run custom",               "Execute current file" },
 		{ ID_RUN_SELECTED,              "&Run selected text\tF8",               "Run selected text" },
 		{ ID_DEBUG,              "&Debug",               "Debug mode", wx.wxITEM_CHECK},
+		{ ID_PROFILE,              "&Profile",               "Profiling", wx.wxITEM_CHECK},
 		{ ID_PREMETRO,              "&SCHMETRO",               "SCHMETRO mode", wx.wxITEM_CHECK},
 		--{ ID_DEBUGPLAIN,              "&Debug plain lua",               "Debug the current file" },
 		{},
@@ -53,6 +55,7 @@ function InitRunMenu()
 	menuBar:Append(debugMenu, "&Debug")
 	menuBar:Check(ID_CLEAROUTPUT, true)
 	menuBar:Check(ID_DEBUG, false)
+	menuBar:Check(ID_PROFILE, false)
 	EnableDebugCommands(false,false)
 	local ID_TIMERBEATREQUEST = 2
 	--[[
@@ -74,6 +77,11 @@ function InitRunMenu()
 				event:Enable((editor ~= nil) and (not script_lane))
 			end)
 	frame:Connect(ID_DEBUG, wx.wxEVT_UPDATE_UI,
+			function (event)
+				local editor = GetEditor()
+				event:Enable((editor ~= nil) and (not script_lane))
+			end)
+	frame:Connect(ID_PROFILE, wx.wxEVT_UPDATE_UI,
 			function (event)
 				local editor = GetEditor()
 				event:Enable((editor ~= nil) and (not script_lane))
@@ -215,6 +223,7 @@ function ideScriptRun(typerun)
         ClearLog(errorLog)
     end
 	local debugging = menuBar:IsChecked(ID_DEBUG)
+	local profiling = menuBar:IsChecked(ID_PROFILE)
 	local typeshedpremetro = menuBar:IsChecked(ID_PREMETRO)
 	local editor = GetEditor()
 	local id = editor:GetId()
@@ -244,7 +253,7 @@ function ideScriptRun(typerun)
 	
 	ClearScriptGUI()
 		
-	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,script=openDocuments[id].filePath,typeshed=typeshedpremetro})
+	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,profiling=profiling,script=openDocuments[id].filePath,typeshed=typeshedpremetro})
 	----------------------------------------
 	--if typerun == 1 then
 		---timer:Start(300,wx.wxTIMER_ONE_SHOT)
