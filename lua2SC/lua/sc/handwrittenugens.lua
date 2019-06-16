@@ -126,12 +126,26 @@ function Klank:init(input, freqscale, freqoffset,decayscale,arrRef)
 	return self
 end
 DynKlank = nil
-DynKlank={}
+DynKlank=UGen:new({name="DynKlank"})
 function DynKlank.ar(spec, input, freqscale, freqoffset,decayscale)
 	freqscale =freqscale or 1.0; freqoffset =freqoffset or 0.0; decayscale = decayscale or 1.0
-	--return Mix(Ringz:MultiNew{2,input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]})
-	return Mix(Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]))
+	assert(spec[1],"must have freqs array")
+	for i=1,3 do
+		spec[i] = spec[i] or TAU():Fill(#spec[1],1)
+		local t = spec[i]
+		assert(#spec[i]==#spec[1],"spec arrays must have same size")
+		if isSimpleTable(t) then t = UGenArr:new(t) end
+	end
+	return DynKlank:MultiNew{2,spec, input, freqscale, freqoffset,decayscale}
 end
+function DynKlank:new1(rate,spec, input, freqscale, freqoffset,decayscale)
+	if rate==2 then
+		return Mix(Ringz.ar(input, freqscale*spec[1]+freqoffset, spec[3]*decayscale, spec[2]))
+	else
+		error("DynKlank.kr not implemented")
+	end
+end
+
 DynKlankS = nil
 DynKlankS={}
 function DynKlankS.ar(spec, input, freqscale, freqoffset,decayscale)
