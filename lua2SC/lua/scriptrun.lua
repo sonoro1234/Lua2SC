@@ -163,7 +163,45 @@ function ScriptRun(pars)
 	local function guiGetValue(tag)
 		assert(false)
 	end
-
+	------------------------------------------------
+	local function profileStart()
+		--[[
+		local ProFi = require 'ProFi'
+		ProFi:start()
+		--]]
+		--[[
+		local profile = require("jit.profile")
+		local pr = {}
+		profile.start("f", function(th, samples, vmmode)
+			local d = profile.dumpstack(th, "f", 1)
+			pr[d] = (pr[d] or 0) + samples
+		end)
+		--]]
+		--require("jit.p").start("3vfsi4m1",lua2scpath..'profReport.txt')
+		require("luajit_p").start("3vfsi4m1")
+		return {profile,pr}
+	end
+	local function profileStop(data)
+		--[[
+		local ProFi = require 'ProFi'
+		ProFi:stop()
+		ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
+		--]]
+		--[[
+		local profile,pr = data[1],data[2]
+		profile.stop()
+		print"luaJIT profiler:-----------------------"
+		for d,v in pairs(pr) do print(v, d) end
+		print"luaJIT profiler end:-----------------------"
+		--]]
+		--require("jit.p").stop()
+		---[[
+			local pstr = require("luajit_p").stop()
+			print"luaJIT profiler:-----------------------"
+			print(pstr)
+			print"luaJIT profiler end:-----------------------"
+		--]]
+	end
 	--------------------------------------------------------
 	local function main_lanes(script)
 
@@ -184,33 +222,15 @@ function ScriptRun(pars)
 		
 		_initCb()
 		
-		local profile,pr
+		local profiledata
 		if profiling then
-			--ProFi = require 'ProFi'
-			--ProFi:start()
-			---[[
-			profile = require("jit.profile")
-			pr = {}
-			profile.start("f", function(th, samples, vmmode)
-				local d = profile.dumpstack(th, "f", 1)
-				pr[d] = (pr[d] or 0) + samples
-			end)
-			--]]
-			--require("jit.p").start("3vfsi4m1",lua2scpath..'profReport.txt')
+			profiledata = profileStart()
 		end
 
 		MsgLoop()
 		
 		if profiling then
-			--ProFi:stop()
-			--ProFi:writeReport( lua2scpath..'MyProfilingReport.txt' )
-			---[[
-			profile.stop()
-			print"luaJIT profiler:-----------------------"
-			for d,v in pairs(pr) do print(v, d) end
-			print"luaJIT profiler end:-----------------------"
-			--]]
-			--require("jit.p").stop()
+			profileStop(profiledata)
 		end
 
 		if _resetCb then
@@ -238,7 +258,14 @@ function ScriptRun(pars)
 	end
 	
 	local function main_lanes_plain(script)
+		local profiledata
+		if profiling then
+			profiledata = profileStart()
+		end
 		dofile(script)
+		if profiling then
+			profileStop(profiledata)
+		end
 		return true
 	end
 	
