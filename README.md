@@ -5,6 +5,11 @@ Lua client for supercollider scsynth and supernova.
 Pure lua implementation based on standard portable modules: lualanes, wxlua, luasocket, 
 plus some custom modules: osclua, pmidi, random.
 
+------Lua learning resources--------
+
+* https://www.lua.org/manual/5.1/   (Lua specification)
+* https://www.lua.org/pil/contents.html  (Online book for Lua 5.0, but great Lua introduction)
+* http://luajit.org/  (LuaJIT additions to Lua 5.1 as ffi.)
 
 ------Building-----------
 
