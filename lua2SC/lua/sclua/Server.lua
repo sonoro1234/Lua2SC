@@ -106,8 +106,6 @@ local function Server(IP, port)
    			server = s
    		}, Buffer_metatable)
    		if path ~= nil then -- if user provides a filepath (else s/he might want to allocate an empty buf)
-			--s:sendMsg('/b_allocRead', bufferTab.bufnum, path)
-			--receiveBundle()
 			bufferTab:allocRead(path)
    		end
 		s.allbuffers[bufferTab] = true
