@@ -1528,9 +1528,8 @@ function SYNTHDef:send(block)
 	if not self.compiledStr then self:makeDefStr() end
 	if block==nil then block=false end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}
-	if block then
-		--sendBundle(msg)
-		--local res = receiveBundle()
+	--if block then
+	if false then
 		local res = sendBlocked(msg)
 		print(prOSC(res))
 		--assert(res[2][1]=="/d_recv")
@@ -1548,8 +1547,9 @@ end
 function SYNTHDef:load()
 	self:writeDefFile()
 	local msg = {"/d_load",{self.saved_path}}
-	local res = sendBlocked(msg)
-	print(prOSC(res))
+	--local res = sendBlocked(msg)
+	--print(prOSC(res))
+	sendBundle(msg)
 	return self
 end
 function SYNTHDef:play(lista,tail)
