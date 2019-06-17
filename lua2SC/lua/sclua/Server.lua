@@ -235,7 +235,8 @@ function Server_metatable:makeBundle(time,func) --,bundle)
 	local oldf = Server_metatable.sendMsg
 	Server_metatable.sendMsg = Server_metatable.MsgBundler
 	local ret = func()
-	sendMultiBundle(time,self.BUNDLE)
+	--sendMultiBundle(time,self.BUNDLE)
+	ThreadServerSendT(self.BUNDLE, time)
 	Server_metatable.sendMsg = oldf
 	return ret
 end

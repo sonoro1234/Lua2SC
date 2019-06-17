@@ -85,7 +85,8 @@ function oscout:send(...)
 			end
 		end
 	end
-	sendBundle({addr,msg})--,lanes.now_secs())
+	--sendBundle({addr,msg})--,lanes.now_secs())
+	ThreadServerSend({addr,msg})
 end
 local M = {}
 function M.Send()
