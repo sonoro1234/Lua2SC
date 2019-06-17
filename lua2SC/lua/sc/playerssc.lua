@@ -125,6 +125,13 @@ function scEventPlayer:Release(time)
 	self.node = nil
 	self.havenode = false
 end
+function scEventPlayer:FreeGroup()
+	if self.group then
+	sendBundle({"/g_freeAll",{self.group}}) --,lanes.now_secs())
+	sendBundle({"/g_deepFree",{self.group}}) --,lanes.now_secs())
+	self.group = nil
+	end
+end
 function scEventPlayer:FreeNode(now)
 	--print("Freenode",self.name,self.node)
 	
@@ -1144,9 +1151,9 @@ function initOSCplayers()
 end
 function resetOSCplayers()
 	print("resetOSCplayers")
-	-- for i,v in ipairs(Effects) do
-		-- v:FreeGroup()
-	-- end
+	for i,v in ipairs(Effects) do
+		v:FreeGroup()
+	end
 	for i,v in ipairs(OSCPlayers) do
 		v:FreeGroup()
 	end
