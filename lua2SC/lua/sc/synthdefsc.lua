@@ -1555,6 +1555,7 @@ end
 function SYNTHDef:play(lista,tail)
 	lista = lista or {}
 	self:send(true)
+	Sync()
 	self.playnode = GetNode()
 	local on = {"/s_new", {self.name, self.playnode, tail and 1 or 0, 0}}
 	
@@ -1571,7 +1572,8 @@ function SYNTHDef:stop()
 end
 function SYNTHDef:guiplay(lista)
 	lista = lista or {}
-	--self:store(true)
+	self:store(true)
+	Sync()
 	local node = GetNode()
 	local on = getMsgLista({"/s_new", {self.name, node, 0, 0}},lista)
 	sendBundle(on)
