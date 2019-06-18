@@ -1,6 +1,7 @@
 local M = {}
 
 local known_opcodes = {hikey=0,lokey=0,hivel=0,lovel=0,key=0,group=0,pan=0,pitch_keycenter=0,tune=0,sample=0,volume=0,loop_start=0,loop_end=0,offset=0,pitch_random=0,xfin_hikey=0,xfin_hivel=0,xfin_lokey=0,xfin_lovel=0,xfout_hikey=0,xfout_hivel=0,xfout_lokey=0,xfout_lovel=0,seq_length=0,seq_position=0,transpose=0,default_path=0,hirand=0,lorand=0}
+M.known_opcodes = known_opcodes
 
 local xf_opcodes = {xfin_hikey=0,xfin_hivel=0,xfin_lokey=0,xfin_lovel=0,xfout_hikey=0,xfout_hivel=0,xfout_lokey=0,xfout_lovel=0}
 
@@ -89,20 +90,21 @@ local function getParams(sfz,nota,amp)
 		local params = {}
 		local ri = dati.region
 		local reg = sfz.regions[ri]
-	
-		params.bufnum = sfz.buffers[ri].bufnum
+		local buffer = sfz.buffers[reg.bufindex]
+
+		params.bufnum = buffer.bufnum
 		if reg.loop_start then --looped
 			params.stloop = reg.loop_start
 			params.endloop = reg.loop_end
 	
-			if sfz.buffers[ri].channels == 1 then
+			if buffer.channels == 1 then
 				params.inst = "sfzloopbuf1"
 			else
 				params.inst = "sfzloopbuf2"
 			end
 	
 		else
-			if sfz.buffers[ri].channels == 1 then
+			if buffer.channels == 1 then
 				params.inst = "sfzplayer1"
 			else
 				params.inst = "sfzplayer2"
@@ -177,6 +179,8 @@ function M.free_buffers(sfz)
 		buf:free()
 	end
 end
+
+local bufbyname = {}
 function M.load_buffers(sfz)
 	-------load buffers get wav info
 	local s = require"sclua.Server".Server()
@@ -184,7 +188,7 @@ function M.load_buffers(sfz)
 	local ffi = require"ffi"
 	local buffers = {}
 	for i,r in ipairs(sfz.regions) do
-		local buf = s.Buffer()
+
 		local default_path = sfz.control and sfz.control.default_path or ""
 		local path = sfz.folder.."/"..default_path..r.sample
 		
@@ -200,9 +204,15 @@ function M.load_buffers(sfz)
 			end
 			sf:close()
 		end
-
-		buf:allocRead(path,0,-1)
-		buffers[i] = buf
+		if not bufbyname[path] then
+			local buf = s.Buffer()
+			buf:allocRead(path,0,-1)
+			table.insert(buffers, buf)
+			r.bufindex = #buffers
+			bufbyname[path] = r.bufindex
+		else --alredy have this sample
+			r.bufindex = bufbyname[path]
+		end
 	end
 	sfz.buffers = buffers
 	if not (sfz.options.dontsync or USING_LILYPOND) then
