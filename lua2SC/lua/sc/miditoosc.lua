@@ -7,10 +7,11 @@ table.insert(initCbCallbacks,function() SynthDef("ClickSynth",{out=0,freq=200,ga
 	local sig = env*SinOsc.ar(freq)
 	Out.ar(out,sig:dup())
 end):store() end)
-function Click(beats,transpose)
+function Click(beats,precount,transpose)
 	local beats = beats or 4
 	local transpose = transpose or 0
 	click = OscEP{inst="ClickSynth"}
+	click.MUSPOS = precount and -precount or 0
 	click:Bind{note=LOOP{72,LS{60}:rep(beats-1)} + transpose,delta=1,dur=0.03,amp=0.1}
 end
 function MIDIRecord(instgui,ini,endr)
