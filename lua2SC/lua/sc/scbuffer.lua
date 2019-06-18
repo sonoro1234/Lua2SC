@@ -102,15 +102,16 @@ function SCBuffer:read()
 end
 --"aiff", "next", "wav", "ircam", "raw"
 --"int8", "int16", "int24", "int32", "float", "double", "mulaw", "alaw"
-function SCBuffer:write()
+function SCBuffer:write(when)
 
 	local msg = {"/b_write",{{"int32",self.buffnum},self.filename,self.header_format,self.samples_format,
 	{"int32",-1}, --frames to write
 	{"int32",0}, --start buffer
 	{"int32",self.leaveopen} --leave open 0 1 for DiskIn
 	}}
-	local res = sendBlocked(msg)
-    printDone(res)
+	--local res = sendBlocked(msg)
+    --printDone(res)
+	sendBundle(msg,when)
 	-- if dgram then
 		-- msg=fromOSC(dgram)
 		-- printDone(msg)
@@ -206,11 +207,12 @@ function SCBuffer:Init(block)
 			self:queryinfo(true)
 		end
 	elseif self.isDiskOutBuffer then
+		--local when = theMetro:ppq2time(5)
 		self:alloc(true)
-		self:write(true)
+		self:write(nil)
 		self.DiskOutNode = GetNode()
 		assert(Master.node)
-		sendBundle({"/s_new",{ "DiskoutSt", self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}});
+		sendBundle({"/s_new",{ "DiskoutSt", self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}})--,when);
 		print("init disk out")
 		prtable(self)
 		self:queryinfo(true)
@@ -242,5 +244,10 @@ end
 			print("end free disk")
 		end
 		v:free(true)
+	end
+	--liberar los de sclua
+	local s = require"sclua.Server".Server()
+	for k,v in pairs(s.allbuffers) do
+		k:free()
 	end
  end)
