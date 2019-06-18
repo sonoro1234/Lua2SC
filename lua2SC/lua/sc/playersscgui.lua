@@ -1,4 +1,4 @@
---require("sc.playerssc")
+
 require("sc.synthdefSCgui")
 
 
@@ -111,18 +111,7 @@ end
 function opengui()
 	print("opengui\n")
 	if DONT_OPENGUI then return end
-	--if GUIOPENED then return end
-	-- ppqcounter=addControl({type=GUITypes.label,label="0.0.0"})
-	-- table.insert(onFrameCallbacks,function()
-		-- if ppqcounter.tag then
-			-- guiSetLabel(ppqcounter.tag,string.format("beat:%3u",math.floor(curHostTime.ppqPos)))
-		-- end
-	-- end)
-	--restoreBut=addControl{x=50,y=5,type=GUITypes.onOffButton,label="Restore controls",
---	value=globalPersistence.restoreBut,function(value,str,c)
---		if value==1 then restoregui() end
---	end}
-	--local newcontrol
+
 	----------------------------------------------
 	local function pan2gui(val)
 		return linearmap(1,-1,1,0,val)
@@ -214,37 +203,6 @@ function opengui()
 				player.channel:RegisterControl(cont)
 			end
 		end
-
-		--fx={}
-		--[[
-		panelfxS=addPanel{type="hbox",name="Effects",parent=panelMixer}
-		for i,fx in ipairs(Effects) do
-			panelfx=addPanel{type="hbox",name=fx.name,parent=panelfxS}
-			panelVolfx=addPanel{type="vbox",parent=panelfx}
-			local newcontrol = {
-				name="fxvolume",
-				panel=panelVolfx,
-				value=db2faderPos(amp2db(fx.channel.params.level or 1)),
-				variable={"level"},
-				type=GUITypes.vSlider,
-				label=string.format("%.2f",amp2db(fx.channel.params.level or 1)),
-				Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
-				Value2Gui=function(val) return db2faderPos(amp2db(val)) end,
-                FormatLabel=function(val) return string.format("%.2f",amp2db(val)) end,
-				callback=function(value,str,c)
-						--fx.channel.params.level =value
-						--fx.channel:SendParam("level")   
-					end
-				,notify={fx.channel}
-			}
-			local cont=addControl(newcontrol)
-			GUIControls[#GUIControls +1] = cont
-			fx.channel:RegisterControl(cont)
-			
-			panelParamfx=addPanel{type="flexi",cols=3,parent=panelfx}
-			openSynthdefGui(fx,panelParamfx,true,false,3)
-		end
-		--]]
 
 		--sends={}
 		for i2,fx in ipairs(Effects) do
@@ -455,4 +413,3 @@ function opengui()
 	guiUpdate()
 end
 table.insert(initCbCallbacks,opengui)
-
