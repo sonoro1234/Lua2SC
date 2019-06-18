@@ -132,7 +132,7 @@ local function ReceiveTCPLoop(tcppars)
 			elseif msg[1]=="/status.reply" then
 				idlelinda:send("/status.reply",msg[2])
 			elseif msg[1] == "/fail" then
-				idlelinda:send("OSCReceive",msg)
+				scriptlinda:send("OSCReceive",msg)
 			elseif Filters[msg[1]] then
 				for onelinda,_ in pairs(Filters[msg[1]]) do
 					onelinda:send("OSCReceive",msg)
@@ -182,7 +182,8 @@ function SCUDP:init(settings,receivelinda)
 				prOSC=prOSC,
 				idlelinda = idlelinda,
 				udpsclinda = receivelinda,
-				scriptguilinda = scriptguilinda
+				scriptguilinda = scriptguilinda,
+				scriptlinda = scriptlinda
 				},
 		priority=0},
 		ReceiveTCPLoop)

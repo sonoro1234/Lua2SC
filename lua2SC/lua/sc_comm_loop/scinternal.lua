@@ -105,7 +105,7 @@ function lanebody(linda)
 		--elseif msg[1]=="/n_go" or msg[1]=="/n_end" or msg[1]=="/n_on" or msg[1]=="/n_off" or msg[1]=="/n_move" or msg[1]=="/n_info" then
 			--printN_Go(msg)
 		elseif msg[1] == "/fail" then
-			idlelinda:send("OSCReceive",msg)
+			scriptlinda:send("OSCReceive",msg)
 		elseif Filters[msg[1]] then
 			for onelinda,_ in pairs(Filters[msg[1]]) do
 				--print("SCFFIsending",msg[1],onelinda)
@@ -195,7 +195,8 @@ function SCFFI:init(options,linda)
 				prerror=thread_error_print,
 				prOSC=prOSC,
 				idlelinda = idlelinda,
-				scriptguilinda = scriptguilinda
+				scriptguilinda = scriptguilinda,
+				scriptlinda = scriptlinda
 				}
 	------------------------------------
 	---[[

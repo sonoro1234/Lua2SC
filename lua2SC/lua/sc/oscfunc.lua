@@ -77,7 +77,7 @@ end
 function OSCFunc.handleOSCReceive(msg)
 	--print("OSCFunc.handleOSCReceive",msg[1])
 	if msg[1]=="/fail" then
-		print(tb2st(msg))
+		prerror(tb2st(msg))
 	end
 	if OSCFunc.filters[msg[1]] then
 		for i,filter in ipairs(OSCFunc.filters[msg[1]]) do
