@@ -239,28 +239,28 @@ SynthDef("sfzloopbuf2",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endlo
 function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = LoopBuf.ar(2,bufnum,rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
+	local sig = LoopBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
 SynthDef("sfzloopbuf1",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endloop=0,amp=1,volume=0,pan=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = LoopBuf.ar(1,bufnum,rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
+	local sig = LoopBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
 SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=0,rate=1,amp=1,volume=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(2,bufnum,rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
 SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=0,rate=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(1,bufnum,rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
