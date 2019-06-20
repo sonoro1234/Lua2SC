@@ -166,7 +166,7 @@ scaleneg, clip2, excess, <!, rrand, exprand, rotate, dist, bitAnd, bitOr, bitXor
 **
 ////////////operators binary
 (
-~binops=['+','-','*','/','div','%','**','min','max','<','<=','>','>=','&','|','lcm','gcd',
+~binops=['==','+','-','*','/','div','%','**','min','max','<','<=','>','>=','&','|','lcm','gcd',
 'round','trunc','atan2','hypot','hypotApx','>>','+>>','fill','ring1','ring2','ring3',
 'ring4','difsqr','sumsqr','sqrdif','absdif','amclip','scaleneg','clip2','excess',
 '<!','rrand','exprand','rotate','dist','bitAnd','bitOr','bitXor','bitHammingDistance','@'];
