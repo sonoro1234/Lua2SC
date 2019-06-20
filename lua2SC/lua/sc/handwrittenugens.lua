@@ -523,3 +523,15 @@ function FFTPeak.kr(...)
 	local   buffer, freqlo, freqhi   = assign({ 'buffer', 'freqlo', 'freqhi' },{ nil, 0, 50000 },...)
 	return FFTPeak:MultiNew{1,2,buffer,freqlo,freqhi}
 end
+
+--pseudo ugen
+PulseDPW = {}
+function PulseDPW.ar(freq,width,mul,add)
+	freq = freq or 440; width = width or 0.5;mul = mul or 1; add = add or 0
+	return (SawDPW.ar(freq,0) - SawDPW.ar(freq, Wrap.kr(width+width,-1, 1))):madd(mul,add)
+end
+function PulseDPW.kr(freq,width,mul,add)
+	freq = freq or 440; width = width or 0.5;mul = mul or 1; add = add or 0
+	return (SawDPW.kr(freq,0) - SawDPW.kr(freq, Wrap.kr(width+width,-1, 1))):madd(mul,add)
+end
+ 
