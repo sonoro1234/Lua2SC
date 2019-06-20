@@ -438,7 +438,7 @@ function MASTER_INS(insert)
 	ins.busin=Master.busin
 	ins.busout=ins.busin
 	---------------------------
-	ins:Init()
+	ins:Init(true)
 	return ins
 end
 function Master:Play()
