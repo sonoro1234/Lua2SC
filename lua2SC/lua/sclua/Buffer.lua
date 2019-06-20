@@ -42,14 +42,14 @@ end
 --"aiff", "next", "wav", "ircam"", "raw"
 --Sample format is one of:
 --"int8", "int16", "int24", "int32", "float", "double", "mulaw", "alaw"
-function Buffer_metatable:write(path,headerf,samplef, numframes, bufstart, leaveopen)
+function Buffer_metatable:write(path,headerf,samplef, numframes, bufstart, leaveopen, cmplMsg)
 	headerf = headerf or "wav"
 	samplef = samplef or "float"
 	numframes = numframes or -1
 	bufstart = bufstart or 0
 	leaveopen = leaveopen or 0
-	OSCFunc.newfilter("/done",{"/b_write",self.bufnum},function(msg) prtable(msg) end,true)
-	ThreadServerSend(self.server:Msg('/b_write', self.bufnum, path, headerf, samplef, numframes, bufstart, leaveopen))
+	OSCFunc.newfilter("/done",{"/b_write",self.bufnum},function(msg)  end,true)
+	ThreadServerSend(self.server:Msg('/b_write', self.bufnum, path, headerf, samplef, numframes, bufstart, leaveopen,cmplMsg))
 end
 
 function Buffer_metatable:free()
