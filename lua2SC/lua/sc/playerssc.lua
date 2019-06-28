@@ -592,14 +592,14 @@ function OscEventPlayer:FreeInstrGroup()
 	if self.instr_group then
 	sendBundle({"/g_freeAll",{self.instr_group}}) --,lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.instr_group}}) --,lanes.now_secs())
-	self.instr_group = nil
+	--self.instr_group = nil
 	end
 end
 function OscEventPlayer:FreeGroup()
 	if self.group then
 	sendBundle({"/g_freeAll",{self.group}}) --,lanes.now_secs())
 	sendBundle({"/g_deepFree",{self.group}}) --,lanes.now_secs())
-	self.group = nil
+	--self.group = nil
 	end
 end
 function OscEventPlayer:Reset(all)
