@@ -306,11 +306,17 @@ function EventPlayer:Play()
 		end
 	end
 end
+function MidiEP(t)
+	local res = MidiEventPlayer:new(t)
+	--Players[#Players +1] = res
+	rawset(Players,#Players +1,res)
+	return res
+end
 MidiEventPlayer = EventPlayer:new({})
-function MidiEventPlayer:playMidiNote(nv,vel,chan,beatTime, beatLen) 
+function MidiEventPlayer:playMidiNote(nv,vel,chan,beatTime, beatLen,outPort) 
 	--print("beattime "..beatTime.." beatlen"..beatLen.."\n")
-	on = noteOn(nv,vel,chan,beatTime)
-	off = noteOff(nv, chan,beatTime + beatLen)
+	on = noteOn(nv,vel,chan,beatTime,outPort)
+	off = noteOff(nv, chan,beatTime + beatLen,outPort)
 	--prtable(on)
 	--prtable(off)
 	scheduleEvent(on)
@@ -392,15 +398,16 @@ function MidiEventPlayer:playOneEvent(lista,beatTime, beatLen)
 	nota = nota or 69
 	velo = lista.velo or 64
 	chan = lista.chan or 0
+	local outPort = lista.outPort or 0
 	--if self.volumen then velo = velo * self.volumen end
 	if IsREST(nota) or IsNOP(nota) then return end
-	if type(nota) == "table" then
-		for i,v in ipairs(nota) do
-			self:playMidiNote(v,velo,chan,beatTime,beatLen)
-		end
-	else
-		self:playMidiNote(nota,velo,chan,beatTime,beatLen)
-	end
+--	if type(nota) == "table" then
+--		for i,v in ipairs(nota) do
+--			self:playMidiNote(v,velo,chan,beatTime,beatLen, outPort)
+--		end
+--	else
+		self:playMidiNote(nota,velo,chan,beatTime,beatLen, outPort)
+	--end
 end
 function EventPlayer:Init()
 	self.name = self.name or self:findMyName()

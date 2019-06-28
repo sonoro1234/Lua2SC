@@ -34,7 +34,7 @@ allSoundOff=120, resetAllControllers=121, localOnOff=122, allNotesOff=123, omniO
 omniOn=125, monoOn=126, polyOn=127
 }
 function sendMidi(event) 
-	print("sendMidi")
+	print("sendMidi",tb2st(event))
     --record which notes are currently down
     if event.type==midi.noteOn then
         outputNotesDown[event.byte2+128*event.channel] = event.byte3
@@ -283,14 +283,14 @@ function sysexMsg(sysex)
     return completeMidiFields({type=midi.sysex, sysex=sysex})
 end
 
-function noteOn(note, velocity, channel, delta)
+function noteOn(note, velocity, channel, delta, outPort)
     delta = delta or 0
-    return completeMidiFields({type=midi.noteOn, channel=channel, byte2=note, byte3=velocity, delta=delta})
+    return completeMidiFields({type=midi.noteOn, channel=channel, byte2=note, byte3=velocity, delta=delta, outPort=outPort})
 end
 
-function noteOff(note, channel, delta)
+function noteOff(note, channel, delta, outPort)
     delta = delta or 0
-    return completeMidiFields({type=midi.noteOff, channel=channel, byte2=note, byte3=0, delta=delta})
+    return completeMidiFields({type=midi.noteOff, channel=channel, byte2=note, byte3=0, delta=delta, outPort=outPort})
 end
 
 function setCC(cc, value, channel, delta)
