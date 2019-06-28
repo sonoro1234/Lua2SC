@@ -145,12 +145,15 @@ function M.funcdir(path, func, patt, recur, funcd, tree)
     end
 end
 
-
+M.is_windows = is_windows
 M.splitpath = splitpath
 M.mkdir = mkdir
 M.ext = ext
 M.copyfile = copyfile
 M.abspath = abspath
+M.exists = function(f)
+	return lfs.attributes (f)
+end
 --path of main script
 function M.this_script_path()
 	return splitpath(abspath(arg[0])) --.. sep
