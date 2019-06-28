@@ -13,6 +13,7 @@ function OSCFunc.newfilter(path,template,func,runonce,block,alt_linda)
 	else
 		udpsclinda:send("addFilter",{path,handleOSCFuncLinda})
 	end
+	return {template=template,func=func,runonce=runonce,path=path,handleOSCFuncLinda=handleOSCFuncLinda}
 end
 
 function OSCFunc.fake_newfilter(path,template,func,runonce,block,alt_linda)
