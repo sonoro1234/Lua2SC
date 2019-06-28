@@ -25,7 +25,7 @@ end
 ----------------------------------------------------------- 
 
 local function bodyKeyWords()
-
+			_run_options = {SC_UDP_PORT=57000} --needed by sclua
 			--print("package loaded")
 			--for k,v in pairs(package.loaded) do print(k,v) end
 			local sckeywordsSource = {}
@@ -54,7 +54,6 @@ local function bodyKeyWords()
 			require("sc.MetronomLanes")
 			require("sc.queue_action")
 			sclua = require("sclua.Server")
-			_run_options = {SC_UDP_PORT=57000}
 			s = sclua.Server()
 			local keyword_table = {}
             for index, value in pairs(_G) do
