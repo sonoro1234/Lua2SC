@@ -103,7 +103,7 @@ local function ReceiveTCPLoop(tcppars)
 			lanes.timer(idlelinda,"statusSC",1,0)
 			break 
 		end
-        print("SCTCP waiting for server")
+        print("SCTCP waiting for server",listentcp,err)
 		if lindaloop(1) then return end
     end
 	local ip3, port3 = listentcp:getsockname()
