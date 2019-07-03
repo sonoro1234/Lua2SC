@@ -204,24 +204,28 @@ function Server_metatable:notify(arg)
 	self.oscout:send('/notify', arg)
 end
 
+local syncedlinda = lanes.linda()
+--OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,false,false,syncedlinda)
 function Server_metatable:sync(id,dontblock)
 	id = id or math.random(2^10)
 	if not dontblock then
-	local syncedlinda = lanes.linda()
-	OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true,true,syncedlinda)
-	ThreadServerSendT{{"/sync",{id}}}
-	--local key,val = syncedlinda:receive("OSCReceive") -- wait
-	--OSCFunc.handleOSCReceive(val) -- clean responder and print
-	while true do
-		local key,val = syncedlinda:receive(0,"OSCReceive") -- wait
-		if val then OSCFunc.handleOSCReceive(val);break end -- clean responder and print
-		OSCFunc.process_all(0)
-	end
+		OSCFunc.newfilter("/synced",id,function(msg) 
+			print(msg[1],msg[2][1]) 
+		end,true,true,syncedlinda)
+		--ThreadServerSendT{{"/sync",{id}}}
+		ThreadServerSend{"/sync",{id}}
+		--local key,val = syncedlinda:receive("OSCReceive") -- wait
+		--OSCFunc.handleOSCReceive(val) -- clean responder and print
+		while true do
+			local key,val = syncedlinda:receive(0,"OSCReceive") -- wait
+			if val then OSCFunc.handleOSCReceive(val);break end -- clean responder and print
+			OSCFunc.process_all(0)
+		end
 	else
 		OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true)
 		ThreadServerSendT{{"/sync",{id}}}
 	end
-	OSCFunc.process_all()
+	OSCFunc.process_all(0)
 end
 
 function Server_metatable:status()
@@ -237,6 +241,9 @@ function Server_metatable:makeBundle(time,func) --,bundle)
 	ThreadServerSendT(self.BUNDLE, time)
 	Server_metatable.sendMsg = oldf
 	return ret
+end
+function Server_metatable:sendBundle(time,...)
+	ThreadServerSendT({...}, time)
 end
 --function get_osc()
 --	for msg in oscin:recv() do	

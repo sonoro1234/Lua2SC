@@ -74,19 +74,8 @@ function oscout:Msg(...)
 	return {addr,msg}
 end
 function oscout:send(...)
-	local addr = select(1, ...)
-	local msg = {select(2, ...)}
-
-	for i,v in ipairs(msg) do
-		if type(v)=="number" then
-			-- if not integer make it float osc
-			if math.floor(v) ~= v then
-				msg[i] = {"float",v}
-			end
-		end
-	end
-	--sendBundle({addr,msg})--,lanes.now_secs())
-	ThreadServerSend({addr,msg})
+	ThreadServerSend(self:Msg(...))--,nil)
+	--ThreadServerSendT({self:Msg(...)},lanes.now_secs())
 end
 local M = {}
 function M.Send()
