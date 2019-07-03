@@ -44,7 +44,8 @@ function doSchedule(window)
     repeat        
         continue = 0
         if eventQueue[1] and eventQueue[1].delta<window then
-            sendMidi(eventQueue[1])
+			local midisender = eventQueue[1].midisender
+            midisender:sendMidi(eventQueue[1])
             table.remove(eventQueue, 1)  
             continue = 1
         end              
@@ -313,10 +314,13 @@ function MidiEP(t)
 	return res
 end
 MidiEventPlayer = EventPlayer:new({})
-function MidiEventPlayer:playMidiNote(nv,vel,chan,beatTime, beatLen,outPort) 
+function MidiEventPlayer:playMidiNote(nv,vel,chan,beatTime, beatLen,outPort,midisender) 
 	--print("beattime "..beatTime.." beatlen"..beatLen.."\n")
 	on = noteOn(nv,vel,chan,beatTime,outPort)
 	off = noteOff(nv, chan,beatTime + beatLen,outPort)
+	midisender = midisender or MIDIOut
+	on.midisender = midisender
+	off.midisender = midisender
 	--prtable(on)
 	--prtable(off)
 	scheduleEvent(on)
@@ -406,7 +410,7 @@ function MidiEventPlayer:playOneEvent(lista,beatTime, beatLen)
 --			self:playMidiNote(v,velo,chan,beatTime,beatLen, outPort)
 --		end
 --	else
-		self:playMidiNote(nota,velo,chan,beatTime,beatLen, outPort)
+		self:playMidiNote(nota,velo,chan,beatTime,beatLen, outPort,lista.midisender)
 	--end
 end
 function EventPlayer:Init()

@@ -253,6 +253,7 @@ nevent.detune = event.detune
 nevent.noteOffVelocity = event.noteOffVelocity
 nevent.inPort = event.inPort
 nevent.outPort = event.outPort
+nevent.midisender = event.midisender
 addMidiMetaTable(nevent)
 return nevent
 end
@@ -498,3 +499,5 @@ function stopAllPlaying()
         sendMidi(noteOff(note, channel))
     end   
 end
+
+MIDIOut = {sendMidi=function(self,event) sendMidi(event) end}
