@@ -902,14 +902,14 @@ end
 
 --first to get functions help link 
 --require"sc.handwrittenugens"
-print("loading ugendefs from",lua2scpath.."/lua/ugendefs/")
+
 local lfs = require"lfs"
-for file in lfs.dir(lua2scpath.."/lua/ugendefs/") do
-	--print("ugendef:",file)
-	--prtable(lfs.attributes(lua2scpath.."/lua/ugendefs/"..file))
-	if lfs.attributes(lua2scpath.."/lua/ugendefs/"..file).mode == "file" then
+local path = require"sc.path"
+print("loading ugendefs from",lua2scpath..path.chain("lua","ugendefs"))
+for file in lfs.dir(lua2scpath..path.chain("lua","ugendefs")) do
+	if lfs.attributes(lua2scpath..path.chain("lua","ugendefs",file)).mode == "file" then
 		if file:sub(-3,-1)=="lua" then
-		dofile(lua2scpath.."/lua/ugendefs/"..file)
+		dofile(lua2scpath..path.chain("lua","ugendefs",file))
 		end
 	end
 end
