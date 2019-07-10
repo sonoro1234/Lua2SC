@@ -80,14 +80,19 @@ end
 local function is_stacklevel_lower(level)
 	return not debug.getinfo(level,"l")
 end
+local pathsc = require"sc.path"
+local function absolutePath(path)
+	return "@"..pathsc.abspath(path:sub(2))
+end
 function Debugger.hook_call_ret(event)
 	local func = debug.getinfo(2,"f").func
 
 	if Debugger.functable[func]==nil then
 		local debuginfo = debug.getinfo(2,"SL")
 		local activelines = debuginfo.activelines
-		local source = debuginfo.source
-	
+		local source = absolutePath(debuginfo.source)
+		--local source = debuginfo.source
+		--print(source,path.abspath(source))
 		for i,line in ipairs(activelines) do
 			if Debugger.breakpoints[line] and Debugger.breakpoints[line][source] then
 				Debugger.functable[func] = true
@@ -113,7 +118,9 @@ function Debugger.debug_hook (event, line)
 	if Debugger.breakpoints[line] or Debugger.step_into or Debugger.step_over then
 		local thread = coroutine.running() or 0
 		local debuginfo = debug.getinfo(2,"S")
-		local s = debuginfo.source
+		local s = absolutePath(debuginfo.source)
+		--local s = debuginfo.source
+		--print(s,path.abspath(s))
 		--debug_print("trace",event, line,s,Debugger.step_over,Debugger.step_into)
 		if (Debugger.step_over and Debugger.laststacklevel[thread] and is_stacklevel_lower(Debugger.laststacklevel[thread])
 		or Debugger.step_into 
