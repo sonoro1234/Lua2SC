@@ -30,10 +30,11 @@ sinte=SynthDef("KarplusMiniArp",{freq=440,amp = 1,decay = 10,pan=0,coef=0.9 ,coe
 	local coefi=LinExp.kr(amp,0,1,0.9,LinExp.kr(freq,50,1000,coef,0.2*coef))
 	signal = Karplus.ar(signal, 1, freqreciprocal, freqreciprocal, 9, 0,{-coefi},{1-coefi})
 	CheckBadValues.ar(signal,22)
-
+	signal = Sanitize.ar(signal,0)
+	signal=LeakDC.ar(signal)
 	signal = Mix{RLPF.ar(signal,freqR1,wideF1)*L1,Resonz.ar(signal,freqR2,wideF2)*L2,RHPF.ar(signal,freqR3,wideF3)*L3}
 	signal=signal*EnvGen.kr(Env.perc(0.0,decay,amp),gate,nil,nil,nil,2);
-	signal=LeakDC.ar(signal)
+	
 	DetectSilence.ar(signal,0.001,0.1,2);
 	CheckBadValues.ar(signal,23)
 	signal = Pan2.ar(signal,pan);
