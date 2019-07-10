@@ -82,7 +82,7 @@ function MIDIRecord(instgui,ini,endr)
 	end
 	local parent = addPanel{type="vbox",parent=instgui.panelInst}
 	local recpanel = addPanel{type="vbox",parent=parent}
-	local butrec = addControl{value=0, typex="toggle",clabel="record",panel=recpanel,
+	local butrec = addControl{value=0, typex="toggle",name="record",clabel="record",panel=recpanel,
 			callback=function(value,str,c) 
 					if value==1 then
 						instgui.record = true
@@ -115,7 +115,6 @@ function MIDIRecord(instgui,ini,endr)
 					end
 				end),
 			GOTO(endr,ini),
-			--ACTION(320*5,print,"Estoy aqui compas 30")
 		}
 	}
 	recordrepeater = OscEP{inst = instgui.inst, sends={0.2}}
@@ -446,7 +445,8 @@ function MidiToOsc.midi2osc(midiEvent)
 	local thisMidiOsc = MidiToOsc.vars[ch]
 	local mono = thisMidiOsc.mono
 	if thisMidiOsc.record then
-		local ppqpos = curHostTime.oldppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
+		--local ppqpos = curHostTime.oldppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
+		local ppqpos = theMetro.ppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
 		--print("recordmidi xxxxx",#thisMidiOsc.recorded,ppqpos)
 		thisMidiOsc.recorded[#thisMidiOsc.recorded +1] = {ppq=ppqpos,event=midiEvent}
 	end
