@@ -1,4 +1,5 @@
 local NRT = {}
+local sentosctable = {}
 function NRT:open(filepath)
 	local file,err = io.open(filepath,"wb")
 	self.file = file
@@ -13,9 +14,11 @@ function NRT:sendBundle(msg,time)
 		local kSecondsToOSCunits = 4294967296
 		local timestamp = time*kSecondsToOSCunits 
 		local dgram = toOSC{timestamp,msg}
-		--prerror(time,#dgram,str2int(int2str(#dgram,4,false)))
-		self.file:write(int2str(#dgram,4,false))
-		self.file:write(dgram)
+
+		--self.file:write(int2str(#dgram,4,false))
+		--self.file:write(dgram)
+		sentosctable[timestamp] = sentosctable[timestamp] or {}
+		table.insert(sentosctable[timestamp],{timestamp,dgram})
 	else
 		prerror("nrt closed:",prOSC(msg))
 	end
@@ -28,11 +31,27 @@ function NRT:sendMultiBundle(time,msg)
 		local timestamp = time*kSecondsToOSCunits 
 		table.insert(msg,1,timestamp)
 		local dgram = toOSC(msg)
-		--prerror(time,#dgram,str2int(int2str(#dgram,4,false)))
-		self.file:write(int2str(#dgram,4,false))
-		self.file:write(dgram)
+
+		--self.file:write(int2str(#dgram,4,false))
+		--self.file:write(dgram)
+		sentosctable[timestamp] = sentosctable[timestamp] or {}
+		table.insert(sentosctable[timestamp],{timestamp,dgram})
 	else
 		prerror("nrt closed:",prOSC(msg))
+	end
+end
+function NRT:sentosctable2file()
+	local sorted = {}
+	for k,v in pairs(sentosctable) do
+		table.insert(sorted,v)
+	end
+	table.sort(sorted,function(a,b) return a[1][1]<b[1][1] end)
+	for i,t in ipairs(sorted) do
+		for j,v in ipairs(t) do
+			local dgram = v[2]
+			self.file:write(int2str(#dgram,4,false))
+			self.file:write(dgram)
+		end
 	end
 end
 local osctable = {}
@@ -83,19 +102,19 @@ function NRT:Gen(endppq,test)
 	theMetro.oldtimestamp = 0
 	local lastt = 0
     sendBundle = function(msg,ti)
-		if ti then assert(ti>=lastt) end
+		--if ti then assert(ti>=lastt) end
 		ti = ti or lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
-		prerror(ti,oscstr)
+		--prerror(ti,oscstr)
 		NRT:sendBundle(msg,ti)
 	end
 	sendMultiBundle = function(ti,msg)
-		if ti then assert(ti>=lastt) end
+		--if ti then assert(ti>=lastt) end
 		ti = ti or lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
-		prerror(ti,oscstr)
+		--prerror(ti,oscstr)
 		NRT:sendMultiBundle(ti,msg)
 	end
 	sendBlocked = function(msg)
@@ -139,6 +158,7 @@ function NRT:Gen(endppq,test)
 		if not NRT.test then
 			print("sending /quit on",theMetro:ppq2time(endppq),endppq)
 			sendBundle({"/quit",{}},theMetro:ppq2time(endppq))
+			NRT:sentosctable2file()
 			NRT:close()
 		else
 			print"saving osc table"
@@ -181,7 +201,9 @@ function NRT:Gen(endppq,test)
 			local line = exe:read("*l")
 			if line then
 				--io.write(line .."\n")
-				print(line)
+				if not line:match("^nextOSCPacket") then
+					print(line)
+				end
 			else
 				--io.write("server finished\n")
 				print("nrt server finished")
