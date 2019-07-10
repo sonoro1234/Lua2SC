@@ -1157,7 +1157,7 @@ function Mix(t)
 	if t.isUGen then return t end
 	if isSimpleTable(t) then t = UGenArr:new(t) end
 	--prtable(t)
-	if(#t<=1) then print"mixing less than two chanels" end
+	if(#t<=1) then prerror"mixing less than two chanels" end
 	local reducedArray = t:clump(4)
 	local mixedarray = reducedArray:Do(function(v) 
 			if #v == 4 then
