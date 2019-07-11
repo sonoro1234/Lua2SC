@@ -360,12 +360,13 @@ function PlotBuffer(buffnum,ini,frames)
 		buff = s.wrapbuffer(buffnum)
 	end
 
-	--in case it is wrapped
-	if not buff.frames then buff:query(true) end
+	--in case it is wrapped or not have frame
+	if not buff.frames or buff.frames == 0 then buff:query(true) end
 	
 	local window = addWindow{w=350,h=370,label="buffer"..tostring(buff.bufnum)}
 	--local panel = addPanel{type="vbox",window=window}
 	local grafics = {}
+	assert(buff.channels)
 	for i=1,buff.channels do
 		grafics[i] = addControl{window=window,panel=panelNO, typex="funcgraph2",width=300,height=300/buff.channels,expand=true}
 	end
