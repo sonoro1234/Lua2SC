@@ -248,20 +248,22 @@ function ThreadServerSend(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
 end
 function ThreadServerSendT(msg,time)
-	time = time or lanes.now_secs()
-	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
+	--time = time or lanes.now_secs()
+	local timestamp = time and OSCTime(time + SERVER_CLOCK_LATENCY) or 1
 	table.insert(msg,1,timestamp)
 	ThreadServerSend(msg)
 end
 
 local UniqueID = IDGenerator(0)
 local syncedlinda = lanes.linda()
+local s = require"sclua.Server".Server()
 function Sync()
 	local id = UniqueID()
-	OSCFunc.newfilter("/synced",id,function(msg) end,true,true,syncedlinda)
-	ThreadServerSend{"/sync",{id}}
-	local key,val = syncedlinda:receive("OSCReceive") -- wait
-	OSCFunc.handleOSCReceive(val) -- clean responder
+	s:sync(id)
+--	OSCFunc.newfilter("/synced",id,function(msg) end,true,true,syncedlinda)
+--	ThreadServerSendT{{"/sync",{id}}}
+--	local key,val = syncedlinda:receive("OSCReceive") -- wait
+--	OSCFunc.handleOSCReceive(val) -- clean responder
 end
 
 function InitSCCOMM()
