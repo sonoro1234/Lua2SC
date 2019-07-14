@@ -254,12 +254,12 @@ function ThreadServerSendT(msg,time)
 	ThreadServerSend(msg)
 end
 
-local UniqueID = IDGenerator(0)
-local syncedlinda = lanes.linda()
+--local UniqueID = IDGenerator(0)
+--local syncedlinda = lanes.linda()
 local s = require"sclua.Server".Server()
 function Sync()
-	local id = UniqueID()
-	s:sync(id)
+	--local id = UniqueID()
+	s:sync()
 --	OSCFunc.newfilter("/synced",id,function(msg) end,true,true,syncedlinda)
 --	ThreadServerSendT{{"/sync",{id}}}
 --	local key,val = syncedlinda:receive("OSCReceive") -- wait

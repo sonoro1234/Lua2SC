@@ -204,40 +204,26 @@ function Server_metatable:notify(arg)
 	self.oscout:send('/notify', arg)
 end
 
-function Server_metatable:syncBB(id)
-	id = id or math.random(2^10)
-	local synced = false
-	OSCFunc.newfilter("/synced",id,function(msg) 
-			print(msg[1],msg[2][1]) 
-			synced = true
-		end,true,false)
-	ThreadServerSend{"/sync",{id}}
-	while not synced do
-		OSCFunc.process_all(0)
-	end
-end
 local syncedlinda = lanes.linda()
---OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,false,false,syncedlinda)
-function Server_metatable:sync(id,dontblock)
-	id = id or math.random(2^10)
-	if not dontblock then
+local UniqueID = IDGenerator(0)
+function Server_metatable:sync(id)
+	id = id or UniqueID()
+	local co,ismain = coroutine.running()--Lua5.2 compat
+	if ismain==nil then ismain = co and true end --not 5.2 compat
+	if ismain then
 		OSCFunc.newfilter("/synced",id,function(msg) 
 			print(msg[1],msg[2][1]) 
 		end,true,false,syncedlinda)
-		ThreadServerSend{"/sync",{id}}
-		--ThreadServerSendT{{"/sync",{id}}}
-		--local key,val = syncedlinda:receive("OSCReceive") -- wait
-		--OSCFunc.handleOSCReceive(val) -- clean responder and print
----[[
+		ThreadServerSendT{{"/sync",{id}}}
 		while true do
 			local key,val = syncedlinda:receive(0,"OSCReceive") -- wait
 			if val then OSCFunc.handleOSCReceive(val);break end -- clean responder and print
 			--OSCFunc.process_all(0)
 		end
---]]
-	else
-		OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]) end,true)
+	else -- in coroutine
+		OSCFunc.newfilter("/synced",id,function(msg) print(msg[1],msg[2][1]);coroutine.resume(co) end,true)
 		ThreadServerSendT{{"/sync",{id}}}
+		coroutine.yield()
 	end
 	OSCFunc.process_all(0)
 end
