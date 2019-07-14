@@ -298,9 +298,11 @@ function VSTPluginController:set(...)
 end
 function VSTPluginController:program_(i)
 	assert(i>=0 and i< self:numPrograms(),"program out of range")
-	self:sendMsg("/program_set",i)
-	self.synth.server:sync()
-	self:prQueryParams();
+	forkIfNeeded(function()
+		self:sendMsg("/program_set",i)
+		self.synth.server:sync()
+		self:prQueryParams();
+	end)
 end
 function VSTPluginController:prMakeOscFunc(func, path,runonce)
 	return OSCFunc.newfilter(path,{self.synth.nodeID,self.synthIndex},function(msg)
@@ -365,6 +367,7 @@ function VSTPluginController:prQueryPrograms(wait)
 	self:prQuery(wait, self:numPrograms(), '/program_query');
 end
 function VSTPluginController:prQuery(wait, num, cmd)
+	forkIfNeeded(function()
 	local bsiz = 64 --16
 	local div, mod;
 	div = math.floor(num/bsiz);
@@ -383,5 +386,5 @@ function VSTPluginController:prQuery(wait, num, cmd)
 
 	-- request remaining parameters/programs
 	if mod > 0 then self:sendMsg(cmd, num - mod, mod) end
-
+	end)
 end
