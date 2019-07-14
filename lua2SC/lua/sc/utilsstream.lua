@@ -329,3 +329,13 @@ function wchoice(a,b)
 	end
 	return a[ind]
 end
+function forkIfNeeded(f)
+	local co,ismain = coroutine.running()--Lua5.2 compat
+	if ismain==nil then ismain = co and true end --not 5.2 compat
+	if ismain then
+		local co2 = coroutine.create(f)
+		coroutine.resume(co2)
+	else
+		f()
+	end
+end
