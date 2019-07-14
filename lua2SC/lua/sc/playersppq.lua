@@ -211,7 +211,7 @@ function EventPlayer:Reset()
 	self.used=false
 	print("Reset:",self.name,self.ppqPos)
 end
-
+function EventPlayer:Release() end
 
 function EventPlayer:Pull()
 	--[[now it is done on Metro
