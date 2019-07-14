@@ -98,7 +98,7 @@ function partition(n,p,m,q)
 		return {}
 	end
 end
---n: total ,p:parts,m:minimum part,q:quant
+--n: total sum or parts ,p:parts
 function compositionN(n,p)
 	assert(n > 0) 
 	assert(p > 0)
@@ -127,6 +127,7 @@ function compositionNR(n,p,m)
 	end
 	return res
 end
+--n: total sum ,p:parts,m:minimum part,q:quant
 function composition(n,p,m,q)
 	m=m or 1
 	q=q or m
