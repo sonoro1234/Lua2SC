@@ -74,8 +74,8 @@ function oscout:Msg(...)
 	return {addr,msg}
 end
 function oscout:send(...)
-	ThreadServerSend(self:Msg(...))--,nil)
-	--ThreadServerSendT({self:Msg(...)},lanes.now_secs())
+	--ThreadServerSend(self:Msg(...))--,nil)
+	ThreadServerSendT({self:Msg(...)})
 end
 local M = {}
 function M.Send()
