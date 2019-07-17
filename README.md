@@ -11,6 +11,12 @@ plus some custom modules: osclua, pmidi, random.
 * https://www.lua.org/pil/contents.html  (Online book for Lua 5.0, but great Lua introduction)
 * http://luajit.org/  (LuaJIT additions to Lua 5.1 as ffi.)
 
+------Lua2SC learning resources---------
+
+* The pieces and other examples I will be uploading.
+* Ctrl+I will find the source of most keywords (those in pale blue color in the IDE)
+* I am open to any questions posted as issues in Lua2SC repository.
+
 ------Building-----------
 
 from build directory:
