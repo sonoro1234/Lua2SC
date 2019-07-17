@@ -76,7 +76,7 @@ function ValsToOsc(msg,lista)
 			msg[pos] = {"]"}
 		else
 			pos = pos + 1
-			msg[pos] = val
+			msg[pos] = value
 		end
 	end
 	return msg
@@ -749,6 +749,8 @@ function OscEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		--if type(v)=="function" then
 		if type(v)=="table" and v.is_ctrl_mapper then
 			listafunc[k]=v
+			lista[k]=nil
+		elseif type(v)=="boolean" then --booleans are not recognized
 			lista[k]=nil
 		end
 	end

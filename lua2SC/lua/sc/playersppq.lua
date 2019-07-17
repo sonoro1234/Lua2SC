@@ -551,7 +551,7 @@ function ActionEventPlayer:NextVals()
 	self.tmplist = nil
 	self.curlist = self.lista:nextval(self)
 	--prtable(self.curlist)
-	print("N self.curlist ",self.curlist)
+	--print("N self.curlist ",self.curlist)
 	if self.curlist == nil then
 		return nil
 	end
