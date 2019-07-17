@@ -1618,8 +1618,8 @@ function CreateScriptGUI()
 				if co.typex=="toggle" then
 					val= (val==1) and true or false
 					co.control:SetValue(val)
-				--elseif co.typex=="button" then
-				--	co.control:SetValue(val)
+				elseif co.typex=="button" then
+					--co.control:SetValue(val)
 				elseif co.typex=="vslider"  or  co.typex=="hslider" then
 					co.control:SetValue(val2pos(val))
 				elseif co.typex=="knob" then
