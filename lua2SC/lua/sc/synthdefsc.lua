@@ -707,6 +707,7 @@ end
 UGenArr.__index = function(t,key)
 	if UGenArr[key] then return UGenArr[key] end
 	if _TAmt[key] then return _TAmt[key] end
+	--if UGen[key] then return UGenArr:ugenfunc(????
 end
 function UGenArr:madd(mul,add)
 	-- for i,v in ipairs(self) do
@@ -744,6 +745,9 @@ function UGenArr:ugenfunc(func,...)
 end
 function UGenArr:linexp(inMin, inMax, outMin, outMax, clip)
 	return self:ugenfunc(UGen.linexp,inMin, inMax, outMin, outMax, clip)
+end
+function UGenArr:clip(Min, Max)
+	return self:ugenfunc(UGen.clip,Min, Max)
 end
 function UGenArr:DoBinaryOp(op,b)
 	--local res=UGenArr:new()
@@ -1635,12 +1639,12 @@ function PlotSynth(synname,secs,outrate)
 		--print"n_ended"
 		buff:getn(0,nsamples,function(vals)
 			local t = {}
---[[
+---[[
 			for i=1,#vals do
 				t[#t+1] = {(i-1)*smp2sec,vals[i]}
 			end
 --]]
----[[
+--[[
 			for i=1,#vals do
 				t[#t+1] = {(i-1)*smp2sec,vals[i]}
 				t[#t+1] = {(i)*smp2sec,vals[i]}
