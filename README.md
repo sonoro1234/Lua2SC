@@ -11,6 +11,8 @@ plus some custom modules: osclua, pmidi, random.
 * https://www.lua.org/pil/contents.html  (Online book for Lua 5.0, but great Lua introduction)
 * http://luajit.org/  (LuaJIT additions to Lua 5.1 as ffi.)
 
+* http://tylerneylon.com/a/learn-lua/ If you dont have more than 15 minutes
+
 ------Lua2SC learning resources---------
 
 * The pieces and other examples I will be uploading.
