@@ -173,16 +173,22 @@ function ratio2midi(rat)
 	return freq2midi(rat * midi2freq(0))
 end
 --only works for 12 semitones escale
-function getDegree(nt,scale)
-	local octave = math.floor(nt/12)
-	local scnote = nt%12
+function getDegreeO(nt,scale)
+	local nt2 = nt - scale[1]
+	local octave = math.floor(nt2/12)
+	local scnote = nt2%12 + scale[1]
+	 
 	for i,v in ipairs(scale) do
-		if v == scnote then return i + octave * #scale end
+		if v == scnote then return i , octave end
 		if v > scnote then
-			return linearmap(scale[i - 1],v,i - 1, i,scnote) + octave * #scale
+			return linearmap(scale[i - 1],v,i - 1, i,scnote) , octave 
 		end
 	end
-	return linearmap(scale[#scale],12,#scale, #scale + 1,scnote) + octave * #scale
+	return linearmap(scale[#scale],12 + scale[1],#scale, #scale + 1,scnote) , octave 
+end
+function getDegree(nt,scale)
+	local deg,oct = getDegreeO(nt, scale)
+	return deg + oct*#scale
 end
 function dbamp(db)
 	return 10^(db/20)
