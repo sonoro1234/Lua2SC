@@ -139,7 +139,7 @@ function opengui()
 					label=player.name or i,
 					FormatLabel=function() return player.name or i end,
 					callback=function(value,str,c) 
-							print("callback unmute ",player.channel.name," valor ",value)
+							--print("callback unmute ",player.channel.name," valor ",value)
 							player.channel.params.unmute = value;
 							player.channel:SendParam("unmute") 
 						end

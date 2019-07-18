@@ -1531,7 +1531,7 @@ function SYNTHDef:makeDefStr(version)
 	return self
 end
 function SYNTHDef:send(block)
-	print(self.name,"sent to server")
+	--print(self.name,"sent to server")
 	if not self.compiledStr then self:makeDefStr() end
 	if block==nil then block=false end
     local msg = {"/d_recv",{{"blob",self.compiledStr}}}

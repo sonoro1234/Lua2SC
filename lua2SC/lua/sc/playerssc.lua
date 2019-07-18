@@ -139,7 +139,7 @@ function scEventPlayer:FreeNode(now)
 		for i,v in ipairs(self.NodeQueue) do
 			--local msg = {"/n_set",{v,"gate",{"float",0}}}
 			local msg = {"/n_free",{v}}
-			print("freenode",v)
+			--print("freenode",v)
 			sendBundle(msg,theMetro:ppq2time(self.ppqPos))
 		end
 		self.NodeQueue = {}

@@ -209,7 +209,7 @@ function EventPlayer:Reset()
 	self.playing= (self.doplay==nil) and true or self.doplay 
 	--self:UpdatePos(0)
 	self.used=false
-	print("Reset:",self.name,self.ppqPos)
+	--print("Reset:",self.name,self.ppqPos)
 end
 function EventPlayer:Release() end
 
@@ -290,13 +290,13 @@ function EventPlayer:Play()
 		local havenext = self:NextVals()
 		if havenext == nil  then
 			if  self.playing then
-				--prtable(self.curlist)
+				print("finished: ",self.name,self.ppqPos)
 				if self.doneAction then
 					self:doneAction()
 				else
 					self:Reset()
 				end
-				print("se acabo: ",self.name,self.ppqPos)
+				
 			end
 			self.playing = false
 			break
@@ -466,7 +466,10 @@ function ACTION(ppq,verb,...)
 	return {ppq=ppq,verb,{...}}
 end
 function BINDSTART(ppq,player,pat)
-	return {ppq=ppq,function() player:Bind(pat);player.MUSPOS=ppq;player:Reset() end,{}}
+	return {ppq=ppq,function()
+		print("bindstart:",player.name,ppq)
+		player:Bind(pat);player.MUSPOS=ppq;player:Reset() 
+	end,{}}
 end
 function SEND(ppq,player,param,value)
 	return {ppq=ppq,function()
@@ -561,7 +564,7 @@ end
 function ActionEventPlayer:UpdatePos()
 --prtable(self.curlist)
 	--if self.curlist.actions then
-	print("Updatepos ",self.curlist.actions.ppq)
+	--print("Updatepos ",self.curlist.actions.ppq)
 	self.prevppqPos=self.ppqPos
 	self.ppqPos=self.curlist.actions.ppq
 	--else
