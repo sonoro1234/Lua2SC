@@ -380,6 +380,7 @@ function ListStepsStream:reset()
 	self.recur=nil
 	Stream.reset(self)
 end
+-- Each time gives one from t and then returns nil
 function LSS(t,r)
 	r = r or -1
 	return ListStepsStream:new({active=true,reps=r,argus=t})
