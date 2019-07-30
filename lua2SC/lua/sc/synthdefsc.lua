@@ -531,11 +531,11 @@ function UGen:clip(lo, hi)
 		--}
 	end
 end
-function UGen:poll(rate)
+function UGen:poll(rate,label,replyID)
 	if self.calcrate == 2 then
-		return Poll.ar(Impulse.kr(rate),self)
+		return Poll.ar(Impulse.kr(rate),self,label,replyID)
 	else
-		return Poll.kr(Impulse.kr(rate),self)
+		return Poll.kr(Impulse.kr(rate),self,label,replyID)
 	end
 end
 UGen.signalRange = "bipolar"
