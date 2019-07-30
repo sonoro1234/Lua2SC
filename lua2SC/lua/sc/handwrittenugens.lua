@@ -406,6 +406,10 @@ function LocalBuf:init(a,b)
 		self.inputs={a,b,maxLocalBufs}
 		return self
 end
+function LocalBuf:clear()
+	ClearBuf(self)
+	return self
+end
 
 PackFFT = nil
 PackFFT=UGen:new{name='PackFFT'}
@@ -533,5 +537,18 @@ end
 function PulseDPW.kr(freq,width,mul,add)
 	freq = freq or 440; width = width or 0.5;mul = mul or 1; add = add or 0
 	return (SawDPW.kr(freq,0) - SawDPW.kr(freq, Wrap.kr(width+width,-1, 1))):madd(mul,add)
+end
+
+BufWr = nil
+BufWr=UGen:new{name='BufWr'}
+function BufWr.kr(...)
+	local   inputArray, bufnum, phase, loop   = assign({ 'inputArray', 'bufnum', 'phase', 'loop' },{ nil, 0, 0.0, 1.0 },...)
+	assert(isMultiExpandable(inputArray))
+	return BufWr:MultiNew(concatTables({1,bufnum,phase,loop},inputArray))
+end
+function BufWr.ar(...)
+	local   inputArray, bufnum, phase, loop   = assign({ 'inputArray', 'bufnum', 'phase', 'loop' },{ nil, 0, 0.0, 1.0 },...)
+	assert(isMultiExpandable(inputArray))
+    return BufWr:MultiNew(concatTables({2,bufnum,phase,loop},inputArray))
 end
  
