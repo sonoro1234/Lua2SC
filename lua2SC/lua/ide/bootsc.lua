@@ -207,7 +207,7 @@ function BootSC(use_tcp)
 		audio_dev_option = [[ -H "]]..this_file_settings.SC_AUDIO_DEVICE..[[" ]]
 	end
 	
-	local cmd=[["]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..audio_dev_option..plugpath..numcores_option..
+	local cmd=[["]]..this_file_settings.SCpath..[["]]..systemclock_option..(use_tcp and [[ -t ]] or [[ -u ]])..this_file_settings.SC_UDP_PORT..[[ -o ]]..this_file_settings.SC_NOUTS..[[ -i ]]..this_file_settings.SC_NINS..[[ -Z ]]..this_file_settings.SC_BUFFER_SIZE..[[ -S ]]..this_file_settings.SC_SAMPLERATE..audio_dev_option..plugpath..numcores_option..
 	[[ -m 65536]]
 	--[[ -m 4096]]
 	..[[ 2>&1]]

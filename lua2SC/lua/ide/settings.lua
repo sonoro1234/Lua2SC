@@ -98,6 +98,11 @@ function Settings:Create(parent)
 	local bsizeTC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_BUFFER_SIZE))
 	grid_sizer:Add(bsizeTC,wx.wxGBPosition(row,1))
 	row = row + 1
+	
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Sample rate:"),wx.wxGBPosition(row,0))
+	local samprTC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_SAMPLERATE))
+	grid_sizer:Add(samprTC,wx.wxGBPosition(row,1))
+	row = row + 1
     
     --grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"system clock:"),wx.wxGBPosition(row,0))
 	local useclockC = wx.wxCheckBox(this, wx.wxID_ANY,"system clock:")
@@ -289,7 +294,8 @@ function Settings:Create(parent)
 					self.options.SC_PLUGIN_PATH[i+1]=pluginTC:GetString(i)
 			end
 			self.options.SC_UDP_PORT=udpTC:GetValue()
-			self.options.SC_BUFFER_SIZE=bsizeTC:GetValue()
+			self.options.SC_BUFFER_SIZE= bsizeTC:GetValue()
+			self.options.SC_SAMPLERATE= samprTC:GetValue()
             self.options.SC_SYSTEM_CLOCK = useclockC:IsChecked() and 1 or 0
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
 			self.options.SC_NOUTS = tonumber(noutCH:GetValue())

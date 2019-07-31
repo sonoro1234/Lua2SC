@@ -104,7 +104,8 @@ settings_defaults = {
 		SC_UDP_PORT=57110,
         SC_SYSTEM_CLOCK=1,
 		SC_AUDIO_DEVICE="",
-		SC_BUFFER_SIZE = -1
+		SC_BUFFER_SIZE = -1,
+		SC_SAMPLERATE = 44100
 	},
 }
 file_config = require"file_settings"
