@@ -243,7 +243,7 @@ function initinternal()
 end
 GetNode=IDGenerator(1001)
 GetBus=IDGenerator(16) --first after audio busses
-
+GetBuffNum=IDGenerator()
 function ThreadServerSend(msg)
 	udpsclinda:send("sendsc",toOSC(msg))
 end

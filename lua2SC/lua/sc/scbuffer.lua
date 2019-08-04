@@ -9,7 +9,7 @@ function SCBuffer:new(o)
 	self.__index = self
 	return o
 end
-GetBuffNum=IDGenerator()
+
 
 function Buffer(channels,samples)
 	local buf=SCBuffer:new({channels = channels,samples=samples})
