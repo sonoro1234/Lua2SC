@@ -23,7 +23,7 @@ local function getSFZdata(sfz,nota,amp)
 	local good_regs = {}
 	for i,r in ipairs(regs) do
 		local reg = sfz.regions[r.region]
-		if reg.lovel<=vel and reg.hivel>=vel and reg.lorand<=rand and reg.hirand>rand then
+		if reg.lovel<=vel and (reg.hivel+1)>vel and reg.lorand<=rand and reg.hirand>rand then
 			if reg.xfin_lovel and vel <= reg.xfin_lovel then goto CONTINUE end
 			if reg.xfout_hivel and vel >= reg.xfout_hivel then goto CONTINUE end
 			--now seq
@@ -42,6 +42,7 @@ local function getSFZdata(sfz,nota,amp)
 		end
 		::CONTINUE::
 	end
+    assert(#good_regs>0)
 	return good_regs
 end
 local min,max = math.min,math.max
@@ -73,9 +74,12 @@ local function CalcXF(reg,note,amp)
 	return xfv*xfn
 end
 local function getParams(sfz,nota,amp)
+	amp = math.min(1,amp)
 	local allparams = {}
 	local dat = sfz:getSFZdata(nota,amp)
-	if not dat or #dat==0 then return nil end
+	if not dat or #dat==0 then 
+		return nil 
+	end
 	if sfz.dump then 
 		print("good regs",#dat)
 		for i=1,#dat do
@@ -91,6 +95,7 @@ local function getParams(sfz,nota,amp)
 		local ri = dati.region
 		local reg = sfz.regions[ri]
 		local buffer = sfz.buffers[reg.bufindex]
+		--local buffer = allbuffers[reg.bufindex]
 
 		params.bufnum = buffer.bufnum
 		if reg.loop_start then --looped
@@ -181,12 +186,13 @@ function M.free_buffers(sfz)
 end
 
 local bufbyname = {}
+local allbuffers = {}
 function M.load_buffers(sfz)
 	-------load buffers get wav info
 	local s = require"sclua.Server".Server()
 	local sndfile = require"sndfile_ffi"
 	local ffi = require"ffi"
-	local buffers = {}
+	
 	for i,r in ipairs(sfz.regions) do
 
 		local default_path = sfz.control and sfz.control.default_path or ""
@@ -195,7 +201,7 @@ function M.load_buffers(sfz)
 		if not (r.loop_start or r.loop_end) then
 			--get loop info
 			local sf = sndfile.Sndfile(path)
-			--print(sf:channels(),sf:frames(),sf:samplerate(),sf:format())
+			print("sf load",path,sf:channels(),sf:frames(),sf:samplerate(),sf:format())
 			local inst = ffi.new"SF_INSTRUMENT[1]"
 			local instret = sndfile.sf_command (sf.sf, sndfile.SFC_GET_INSTRUMENT, inst, ffi.sizeof(inst[0])) ;
 			if instret==sndfile.SF_TRUE and inst[0].loop_count > 0 then
@@ -207,17 +213,17 @@ function M.load_buffers(sfz)
 		if not bufbyname[path] then
 			local buf = s.Buffer()
 			buf:allocRead(path,0,-1)
-			table.insert(buffers, buf)
-			r.bufindex = #buffers
+			table.insert(allbuffers, buf)
+			r.bufindex = #allbuffers
 			bufbyname[path] = r.bufindex
 		else --alredy have this sample
 			r.bufindex = bufbyname[path]
 		end
 	end
-	sfz.buffers = buffers
+	sfz.buffers = allbuffers
 	if not (sfz.options.dontsync or USING_LILYPOND) then
 		s:sync()
-		assert(buffers[1].channels)
+		--assert(buffers[1].channels)
 	end
 end
 --------------------
@@ -414,7 +420,7 @@ function M.read(fpath,options)
 	--sfz.keyboard.minmidi = minmidi
 	sfz.minkey, sfz.maxkey = minmidi,maxmidi
 
-	for n=noteToNumber"c1",noteToNumber"c7" do
+	for n=noteToNumber"c1",noteToNumber"c8" do
 		for i,r in ipairs(sfz.regions) do
 			if n >= r.lokey and n <= r.hikey then
 				if not (r.xfout_hikey and (r.xfout_hikey <= n)) then
