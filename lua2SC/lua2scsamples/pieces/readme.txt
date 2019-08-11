@@ -40,3 +40,6 @@ movie: https://www.youtube.com/watch?v=exrnB1Gd9KQ
 
 -- ClarinetQuintet
 hearing: https://soundcloud.com/victor-bombi/clarinetquintet
+
+-- Om: Mystic-humoristic piece with virtual Bulgarian voices and tibetan monks
+hearing: https://soundcloud.com/victor-bombi/om-1
