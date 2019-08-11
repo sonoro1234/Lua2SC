@@ -1155,7 +1155,7 @@ function DOACTION(fun)
 end
 function COUNT(str)
 	local turn = 0
-	PS{dur =LS{0},_dummy=function() turn=turn+1;print(str,turn) end}
+	return PS{dur =LS{0},_dummy=function() turn=turn+1;print(str,turn) end}
 end
 --used for seting inserts from player stream
 function SETINS(i,parvals)
