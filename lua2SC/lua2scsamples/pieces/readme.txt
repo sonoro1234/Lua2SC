@@ -43,3 +43,7 @@ hearing: https://soundcloud.com/victor-bombi/clarinetquintet
 
 -- Om: Mystic-humoristic piece with virtual Bulgarian voices and tibetan monks
 hearing: https://soundcloud.com/victor-bombi/om-1
+
+-- Kyrie: Kyrie eleison with a parsimonious structure.
+hearing: https://soundcloud.com/victor-bombi/kyrie
+movie: https://vimeo.com/222018101
