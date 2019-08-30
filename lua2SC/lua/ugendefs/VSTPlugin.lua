@@ -1,21 +1,73 @@
 VSTPlugin = MultiOutUGen:new({name="VSTPlugin"})
 local Serverdefault = require"sclua.Server".Server()
-function VSTPlugin.ar(input, numOut, bypass, params, id)
+local function asArray(o)
+	if type(o)=="table" then
+		return o
+	elseif type(o)=="nil" then
+		return {}
+	else
+		error"asArray not valid"
+	end
+end
+function VSTPlugin.ar(input, numOut, bypass, params, id, info, auxInput, numAuxOut)
+	local flags = 0
+	input = asArray(input)
+	auxInput = asArray(auxInput)
+	params = asArray(params)
+	assert(#params%2==0,"'params': expecting pairs of param index/name + value")
+
 	id = id or "nullid"
 	numOut = numOut or 1
 	bypass = bypass or 0
-	local numIn = 0
-	if input then
-		numIn = #input or 1
-	else
-		input = {}
-	end
-	return VSTPlugin:MultiNew(concatTables({2,id, numOut, bypass, numIn},input,params))
+	numAuxOut = numAuxOut or 0
+	info = info or 0
+	return VSTPlugin:MultiNew(concatTables({2, id, info, numOut, numAuxOut, flags, bypass, #input},
+	input,#params/2, params, #auxInput,  auxInput ))
 end
 local pluginDict = {}
-function VSTPlugin:init( theID, numOut ,... )
+function VSTPlugin:init( theID, theInfo, numOut, numAuxOut, flags, bypass, numInputs ,... )
 		if theID~="nullid" then self.id = theID end
-		self.inputs = {...}
+		if theInfo~= 0 then self.info = theInfo end
+		self.numInputs = numInputs
+		local inputArray = {}
+		if numInputs > 0 then
+			for i=1,numInputs do
+				local inp = select(i,...)
+				assert(inp.calcrate == 2, "input not audio rate!!")
+				inputArray[#inputArray + 1] = inp
+			end
+		end
+		local offset = numInputs + 1
+		local paramArray = {}
+		local numParams = select(offset, ...)
+		if numParams > 0 then
+			for i=offset + 1, offset + numParams*2 do
+				paramArray[#paramArray + 1] = select(i,...)
+			end
+		end
+		offset = offset + 1 + (numParams*2)
+		local auxInputArray = {}
+		local numAuxInputs = select(offset, ...)
+		if numAuxInputs > 0 then
+			for i= offset + 1, offset + numAuxInputs do
+				local inp = select(i,...)
+				assert(inp.calcrate == 2, "input not audio rate!!")
+				auxInputArray[#auxInputArray + 1] = inp
+			end
+		end
+		for i=1, #paramArray, 2 do
+			local param, value = paramArray[i], paramArray[i+1]
+			if type(param)~="number" then
+				if not self.info then
+					error("cant get param without info!!")
+				else
+					local param1 = info:findParamIndex(param)
+					if not param1 then error("bad parameter "..param.." for plugin "..info.name) end
+					paramArray[i] = param1
+				end
+			end
+		end
+		self.inputs = concatTables({numOut, flags, bypass, numInputs}, inputArray, numAuxInputs, auxInputArray, numParams, paramArray)
 		return self:initOutputs(numOut)
 end
 
