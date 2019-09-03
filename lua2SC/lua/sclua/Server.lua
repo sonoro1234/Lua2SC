@@ -191,6 +191,11 @@ function Server_metatable:sendMsg(...)
 	self.oscout:send(...)
 end
 
+function Server_metatable:listSendMsg(t)
+	self:sendMsg(unpack(t))
+end
+
+
 function Server_metatable:Msg(...)
 	return self.oscout:Msg(...)
 end
