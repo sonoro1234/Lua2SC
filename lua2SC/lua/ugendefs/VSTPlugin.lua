@@ -1,5 +1,38 @@
 VSTPlugin = MultiOutUGen:new({name="VSTPlugin"})
 local Serverdefault = require"sclua.Server".Server()
+-- function takes a string that behaves like a file to be read
+local function StrStream(strg)
+    local strptr = 1
+    local str = strg
+    local strfile = {}
+    function strfile:read(len)
+        local oldstrptr = strptr
+        strptr = strptr + len
+		if oldstrptr > #strg then return nil end
+        return str:sub(oldstrptr,strptr-1)
+    end
+	function strfile:next()
+		return self:read(1)
+	end
+	function strfile:readUpTo(del)
+		local strin = ""
+		local char = self:next()
+		if not char then return nil end
+		while char and char~=del do
+			strin = strin .. char
+			char = self:next()
+		end
+		return strin
+	end
+	function strfile:prGetLine(skipempty)
+		while true do
+			local line = self:readUpTo"\n"
+			if not line then return nil end
+			if (not skipempty or #line>0) and line:sub(1)~="#" and line:sub(1)~=";" then return line end
+		end
+	end
+    return strfile
+end
 local function asArray(o)
 	if type(o)=="table" then
 		return o
@@ -71,6 +104,20 @@ function VSTPlugin:init( theID, theInfo, numOut, numAuxOut, flags, bypass, numIn
 		return self:initOutputs(numOut)
 end
 
+function VSTPlugin.clearMsg(remove)
+	remove = remove==nil
+	local remint = remove and 1 or 0
+	return {'/cmd', '/vst_clear', remint};
+end
+
+function VSTPlugin.clear(server, remove)
+	server = server or require"sclua.Server".Server()
+	-- clear local plugin dictionary
+	pluginDict[server] = {}
+	-- clear server plugin dictionary
+	--remove=true -> also delete temp file
+	server:listSendMsg(VSTPlugin.clearMsg(remove));
+end
 local lpath = require"sc.path"
 
 local function resolvePath(path)
@@ -128,6 +175,107 @@ local function makeInfo(key, info)
 			sysexOutput= flags[8]
 		}
 end
+local function trim(cad)
+    return cad:gsub("^%s*(.-)%s*$","%1") --remove initial and final spaces
+end
+local function prParseKeyValuePair(line)
+	local larr = stsplit(line,"=")
+	for i,v in ipairs(larr) do larr[i] = trim(v) end
+	return larr
+end
+local function hex2int(str)
+	str = str:upper():reverse()
+	str = {str:byte(1,#str)}
+	local sum = 0
+	for i,v in ipairs(str) do
+		if v >= 65 then
+			sum = sum + bit.lshift(v - 55, (i-1)*4)
+		else
+			sum = sum + bit.lshift(v - 48, (i-1)*4)
+		end
+	end
+	return sum
+end
+local function prParseCount(line)
+	local onset = line:find"="
+	if not onset then error"plugin info: bad data (expecting 'n=<number>'" end
+	return tonumber(line:sub(onset+1))
+end
+local function prParseInfo(stream)
+	local info = {}
+	-- default values:
+	info.numAuxInputs = 0
+	info.numAuxOutputs = 0
+	local line,plugin, n, parameters, indexMap, programs, keys
+	while true do
+		line = stream:prGetLine(true);
+		if not line then error"EOF reached" end
+		if line == "[plugin]" then plugin = true 
+		elseif line == "[parameters]" then
+			local name, label
+			line = stream:prGetLine();
+			n = prParseCount(line)
+			parameters = {}
+			indexMap = {}
+			for i=1,n do
+				line = stream:prGetLine();
+				name, label = unpack(stsplit(line,","))
+				parameters[i] = {name = trim(name), label = trim(label)}
+			end
+			info.parameters = parameters
+			for i,param in ipairs(parameters) do
+				indexMap[param.name] = i
+			end
+			info.prParamIndexMap = indexMap;
+		elseif line == "[programs]" then
+			line = stream:prGetLine();
+			n = prParseCount(line)
+			programs = {}
+			for i=1,n do
+				local name = stream:prGetLine()
+				programs[i] = {name = name}
+			end
+			info.programs = programs
+		elseif line == "[keys]" then
+			line = stream:prGetLine();
+			n = prParseCount(line)
+			keys = {}
+			for i=1,n do keys[i] = stream:prGetLine() end
+			info.key = keys[1]
+			return info
+		else
+			if not plugin then error"plugin info: bad data (%)" end
+			local key, value = unpack(prParseKeyValuePair(line));
+			if key == "path" then info[key]=value
+			elseif key == "name" then info[key]=value
+			elseif key == "vendor" then info[key]=value
+			elseif key == "category" then info[key]=value
+			elseif key == "version" then info[key]=value
+			elseif key == "sdkVersion" then info[key]=value
+			elseif key == "sdkversion" then info[key]=value
+			elseif key == "id" then info[key]=value
+			elseif key == "inputs" then info.numInputs=tonumber(value)
+			elseif key == "outputs" then info.numOutputs=tonumber(value)
+			elseif key == "auxinputs" then info.numAuxInputs=tonumber(value)
+			elseif key == "auxoutputs" then info.numAuxOutputs=tonumber(value)
+			elseif key == "flags" then
+				local f = hex2int(value)
+				local flags = {}
+				for i=0,7 do flags[i] = bit.band(1,bit.rshift(f,i)) end
+				info.hasEditor = flags[0]>0 
+				info.isSynth = flags[1]>0
+				info.singlePrecision = flags[2]>0
+				info.doublePrecision = flags[3]>0
+				info.midiInput = flags[4]>0
+				info.midiOutput = flags[5]>0
+				info.sysexInput = flags[6]>0
+				info.sysexOutput = flags[7]>0
+			else
+				prerror("Bad key",key)
+			end
+		end
+	end
+end
 local function parseInfo(str)
 	local data = stsplit(str,"\t")
 	local key = data[1]
@@ -147,24 +295,77 @@ local function parseInfo(str)
 	end
 	return info
 end
-local function searchLocal(server, searchPaths, useDefault, verbose, action)
-	--local filePath =   lua2scpath.."tmpvst"
-	local filePath = os.tmpname()
+
+local function prParseIni(stream)
+	local line = stream:prGetLine(true)
+	if line~="[plugins]" then error"missisng [plugins] header" end
+	line = stream:prGetLine(true)
+	local n = prParseCount(line)
+	local results = {}
+	for i=1,n do
+		results[i] = prParseInfo(stream)
+	end
+	return results
+end
+
+local function prMakeDest(dest)
+	if not dest then return -1 end
+	if type(dest)=="string" then return dest end
+	if type(dest)=="number" then return dest end
+	error"Bad dest in prMakeDest"
+end
+
+local function searchMsg(dir, useDefault, verbose, save, parallel, dest)
+	--defaults
+	useDefault = type(useDefault)==nil and true or useDefault
+	if verbose==nil then verbose = false end
+	if save==nil then save = true end
+	if parallel==nil then parallel = true end
+	-- bool to int
 	useDefault = useDefault and 1 or 0
 	verbose = verbose and 1 or 0
+	save = save and 1 or 0
+	parallel = parallel and 1 or 0
 
-	-- flags: local, use default, verbose
-	local flags = bit.bor(1 , bit.lshift(useDefault , 1) , bit.lshift(verbose, 2))
-	local tmp = concatTables(searchPaths,filePath)
-	server:sendMsg('/cmd', '/vst_search', flags,unpack(tmp));
+	local flags = 0
+	for i,v in ipairs{useDefault, verbose, save, parallel} do
+		flags = bit.bor(flags, bit.lshift(v,i-1))
+	end
+	
+	dir = type(dir)=="string" and {dir} or dir
+	assert(type(dir)=="table" or type(dir)=="nil", "Bad dir type")
+	if dir == nil then dir = {} end
+	for i,v in ipairs(dir) do dir[i] = resolvePath(v) end
+
+	dest = prMakeDest(dest)
+	
+	return concatTables({'/cmd', '/vst_search', flags, dest}, dir)
+
+end
+local function searchLocal(server, searchPaths, useDefault, verbose, save, parallel, action)
+
+	local tmpPath = os.tmpname()
+	server:listSendMsg(searchMsg(dir, useDefault, verbose, save, parallel, tmpPath))
 	server:sync()
-	local file,err = io.open(filePath,"rb")
+	local file,err = io.open(tmpPath,"rb")
 	assert(file,err)
 	local str = file:read"*a"
-	print("filePath",filePath)
-	print(str)
 	file:close()
-
+	local strf = StrStream(str)
+--	print"----------"
+--	print(str)
+--	print"-----------"
+	local res = prParseIni(strf)
+	local dict = pluginDict[server]
+	for k,info in pairs(res) do
+		dict[info.key]=info
+	end
+--[[
+	while true do
+		local line = strf:prGetLine(true)
+		if not line then break end
+		print(line)
+	end
 	local dict = pluginDict[server]
 	local infos = stsplit(str,"\n")
 	for i,line in ipairs(infos) do
@@ -173,26 +374,42 @@ local function searchLocal(server, searchPaths, useDefault, verbose, action)
 		dict[info.key] = info
 		end
 	end
+--]]
 end
-function VSTPlugin.search(server, dir, useDefault, verbose, wait, action)
+function VSTPlugin.search(server, dir, useDefault, verbose, wait, action, save, parallel)
 	server = server or require"sclua.Server".Server()
-	useDefault = useDefault or true
-	if not verbose then verbose = false end
+	if useDefault==nil then useDefault = true end
+	if verbose==nil then verbose = true end
+	if save==nil then save = true end
+	if parallel==nil then parallel = true end
 	wait = wait or -1
-	if dir then
-		if type(dir)=="string" then dir = {dir} end
-	else
-		dir = {}
-	end
-	for i,v in ipairs(dir) do
-		dir[i] = resolvePath(v)
-	end
+	
 	pluginDict[server] = pluginDict[server] or {}
-	searchLocal(server, dir, useDefault, verbose, action)
+	searchLocal(server, dir, useDefault, verbose, save, parallel, action)
 end
 function VSTPlugin.getDict(server)
 	server = require"sclua.Server".Server()
 	return pluginDict[server]
+end
+function VSTPlugin.plugins(server)
+	server = require"sclua.Server".Server()
+	return pluginDict[server]
+end
+function VSTPlugin.pluginList(server, sorted)
+	local dict = VSTPlugin.plugins(server)
+	local array = {}
+	for k,v in pairs(dict) do table.insert(array,v) end
+	if sorted then
+		table.sort(array,function(a,b) return a.name < b.name end)
+	end
+	return array
+end
+function VSTPlugin.print(server)
+	local dict = VSTPlugin.pluginList(server, true)
+	--prtable(dict)
+	for k,v in ipairs(dict) do
+		print(v.key,v.vendor,v.path)
+	end
 end
 function VSTPlugin.prGetInfo(server, key, wait, action)
 		local info
@@ -440,3 +657,8 @@ function VSTPluginController:prQuery(wait, num, cmd)
 	if mod > 0 then self:sendMsg(cmd, num - mod, mod) end
 	end)
 end
+
+--ddd = "key="
+--require"sc.utils"
+--eee = stsplit(ddd,"=")
+--prtable(eee)
