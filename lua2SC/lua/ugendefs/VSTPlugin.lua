@@ -201,8 +201,20 @@ local function prParseCount(line)
 	if not onset then error"plugin info: bad data (expecting 'n=<number>'" end
 	return tonumber(line:sub(onset+1))
 end
+
+local info_meta = {
+	__index = function(t, i)
+		if i=="numParameters" then
+			return #t.parameters
+		elseif i=="numPrograms" then
+			return #t.programs
+		end
+	end
+}
+
+
 local function prParseInfo(stream)
-	local info = {}
+	local info = setmetatable({},info_meta)
 	-- default values:
 	info.numAuxInputs = 0
 	info.numAuxOutputs = 0
