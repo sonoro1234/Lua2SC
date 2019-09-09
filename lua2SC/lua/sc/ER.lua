@@ -33,7 +33,7 @@ end
 local Nbuf = op.Nbuf or 2048*8
 local synname = op.direct and "earlypandir" or "earlypan"
 synname = synname .. (op.name or "")
-SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},function()
+SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1,angle=0},function()
 	print("busB.busIndex",busB.busIndex)
 	--local L=TA(op.L or {20,10,16})*In.kr(busSize.busIndex,1)
 	--local Ps = Ref(op.Pr or {9,3,1.2})
@@ -46,7 +46,7 @@ SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1.5,angle=0},functi
 	local N = op.N or 5
 	local input = In.ar(busout,2)
 	local monoin = Mix(input)*0.5
-	local omangle = angle*math.pi*0.5
+	local omangle = angle*math.pi*0.5*(op.anglefac or 1)
 	local Psmod = {Ps[1] + omangle:sin()*dist,Ps[2] + omangle:cos()*dist,Ps[3]}
 
 	local early
