@@ -47,3 +47,6 @@ hearing: https://soundcloud.com/victor-bombi/om-1
 -- Kyrie: Kyrie eleison with a parsimonious structure.
 hearing: https://soundcloud.com/victor-bombi/kyrie
 movie: https://vimeo.com/222018101
+
+-- African Room: African song with early reflections simulating room
+hearing: https://soundcloud.com/victor-bombi/african-room
