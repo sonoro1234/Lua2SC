@@ -94,7 +94,7 @@ function VSTPlugin:init( theID, theInfo, numOut, numAuxOut, flags, bypass, numIn
 				if not self.info then
 					error("cant get param without info!!")
 				else
-					local param1 = info:findParamIndex(param)
+					local param1 = info.findParamIndex(param)
 					if not param1 then error("bad parameter "..param.." for plugin "..info.name) end
 					paramArray[i] = param1
 				end
@@ -208,6 +208,10 @@ local info_meta = {
 			return #t.parameters
 		elseif i=="numPrograms" then
 			return #t.programs
+		elseif i=="findParamIndex" then
+			return function(name)
+				return t.prParamIndexMap[name]
+			end
 		end
 	end
 }
@@ -288,6 +292,7 @@ local function prParseInfo(stream)
 		end
 	end
 end
+--[[
 local function parseInfo(str)
 	local data = stsplit(str,"\t")
 	local key = data[1]
@@ -307,7 +312,7 @@ local function parseInfo(str)
 	end
 	return info
 end
-
+--]]
 local function prParseIni(stream)
 	local line = stream:prGetLine(true)
 	if line~="[plugins]" then error"missisng [plugins] header" end
@@ -355,7 +360,7 @@ local function searchMsg(dir, useDefault, verbose, save, parallel, dest)
 
 end
 local function searchLocal(server, searchPaths, useDefault, verbose, save, parallel, action)
-
+	--forkIfNeeded(function()
 	local tmpPath = os.tmpname()
 	server:listSendMsg(searchMsg(dir, useDefault, verbose, save, parallel, tmpPath))
 	server:sync()
@@ -363,6 +368,8 @@ local function searchLocal(server, searchPaths, useDefault, verbose, save, paral
 	assert(file,err)
 	local str = file:read"*a"
 	file:close()
+	local ok,err = os.remove(tmpPath)
+	if not ok then prerror("could not delete tmp file ",err) end
 	local strf = StrStream(str)
 --	print"----------"
 --	print(str)
@@ -372,6 +379,7 @@ local function searchLocal(server, searchPaths, useDefault, verbose, save, paral
 	for k,info in pairs(res) do
 		dict[info.key]=info
 	end
+	--end)
 --[[
 	while true do
 		local line = strf:prGetLine(true)
@@ -461,6 +469,8 @@ local function prProbeLocal(server, path, key, action)
 		error("not existing "..filePath)
 	end
 	action(info)
+	local ok,err = os.remove(filePath)
+	if not ok then prerror("could not delete tmp file ",err) end
 end
 function VSTPlugin.probe(server, path, key, wait, action)
 	wait = wait or -1
@@ -491,6 +501,14 @@ function VSTPluginController:new(synth, id, synthdef, wait)
 	end
 	return o
 end
+
+local function msg2string(msg,offset)
+	local leng = msg[offset]
+	local arr = {}
+	for i=1,leng do table.insert(arr,msg[offset+i]) end
+	return string.char(unpack(arr))
+end
+
 function VSTPluginController:init(synth,theIndex,wait)
 	self.synth = synth
 	self.synthIndex = theIndex
@@ -503,7 +521,7 @@ function VSTPluginController:init(synth,theIndex,wait)
 			index = msg[3] --.asInteger;
 			value = msg[4] --.asFloat;
 			--(msg.size > 5).if {display = this.class.msg2string(msg, 5);};
-			if #msg>5 then display = msg[5] end
+			if #msg>5 then display = msg2string(msg,5) end
 			-- cache parameter value
 			self.paramCache[index] = {value, display};
 			-- notify dependants
@@ -519,7 +537,7 @@ function VSTPluginController:init(synth,theIndex,wait)
 	ofc = self:prMakeOscFunc(function(msg)
 			local index, name;
 			index = msg[3] --.asInteger;
-			name = msg[4] --this.class.msg2string(msg, 4);
+			name = msg2string(msg, 4);
 			self.programNames[index] = name;
 			-- notify dependants
 			--this.changed('/program', index, name);
@@ -587,7 +605,7 @@ function VSTPluginController:program_(i)
 end
 function VSTPluginController:prMakeOscFunc(func, path,runonce)
 	return OSCFunc.newfilter(path,{self.synth.nodeID,self.synthIndex},function(msg)
-		print(prOSC(msg))
+		--print(prOSC(msg))
 		func(msg[2])
 	end,runonce)
 end
@@ -621,7 +639,10 @@ function VSTPluginController:open(path, editor, info, action)
 			self.paramCache = TA():Fill(theInfo.numParameters, {0, nil});
 			self.program = 0;
 			-- copy default program names (might change later when loading banks)
-			self.programNames = deepcopy(theInfo.programNames);
+			self.programNames = {} --deepcopy(theInfo.programNames);
+			for i,v in ipairs(theInfo.programs) do
+				self.programNames[i] = v.name
+			end
 			self:prQueryParams();
 			-- post info if wanted
 			if info then prtable(theInfo) end
@@ -668,6 +689,25 @@ function VSTPluginController:prQuery(wait, num, cmd)
 	-- request remaining parameters/programs
 	if mod > 0 then self:sendMsg(cmd, num - mod, mod) end
 	end)
+end
+
+function VSTPluginController:writeProgram(path, action)
+	path = resolvePath(path);
+	self:prMakeOscFunc(function(msg)
+			local success = msg[3]>0
+			if action then action(self, success) end
+		end, '/vst_program_write',true)
+	self:sendMsg('/program_write', path);
+end
+
+function VSTPluginController:readProgram(path, action)
+	path = resolvePath(path);
+	self:prMakeOscFunc(function(msg)
+			local success = msg[3]>0
+			if action then action(self, success) end
+			self:prQueryParams()
+		end, '/vst_program_read',true)
+	self:sendMsg('/program_read', path);
 end
 
 --ddd = "key="
