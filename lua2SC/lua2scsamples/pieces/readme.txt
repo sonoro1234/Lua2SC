@@ -53,3 +53,6 @@ hearing: https://soundcloud.com/victor-bombi/african-room
 
 -- Me estoy marchando: Castillian folk
 hearing: https://soundcloud.com/victor-bombi/me-estoy-marchando
+
+-- violin partita: algorithmic composition for violin and piano
+hearing: https://soundcloud.com/victor-bombi/partita-for-violin-i
