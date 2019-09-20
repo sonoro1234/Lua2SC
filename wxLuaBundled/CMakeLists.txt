@@ -14,7 +14,7 @@ if(UNIX)
 	set(WXWIDGETSLOC ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets)
 	set(EXECUTE_COMMAND	./configure)
 	set(EXECUTE_ARGS --prefix=${WX_BUILD} ${WXWIDGETSDEBUG} --disable-shared --enable-unicode 
-    --enable-compat28 
+    --enable-compat30 
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no 
     --with-zlib=builtin --disable-richtext --with-gtk=2 
     "CFLAGS=-Os -fPIC" "CXXFLAGS=-Os -fPIC")
@@ -48,7 +48,7 @@ else(UNIX)
 	endif()
 	
 	#set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=2.8 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_EXPAT=OFF -DwxUSE_LIBTIFF=OFF -DwxUSE_UNICODE=ON -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
-	set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=2.8 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_UNICODE=ON -DwxUSE_EXPAT=builtin -DwxUSE_LIBTIFF=builtin -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
+	set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=3.0 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_UNICODE=ON -DwxUSE_EXPAT=builtin -DwxUSE_LIBTIFF=builtin -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
 	
 	message("---------------------------- configuring wxWidgets -------------------------------")
 	message("EXECUTE_COMMAND is " "${EXECUTE_COMMAND}")
@@ -77,7 +77,11 @@ if(WIN32)
 	if(MSVC)
 		set(wxWidgets_LIB_DIR ${wxWidgets_install}/lib/vc_lib)
 	else() #mingw
-		set(wxWidgets_LIB_DIR ${wxWidgets_install}/lib/gcc_lib)
+		if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+			set(wxWidgets_LIB_DIR ${wxWidgets_install}/lib/gcc_x64_lib)
+		else()
+			set(wxWidgets_LIB_DIR ${wxWidgets_install}/lib/gcc_lib)
+		endif()
 	endif()
 endif()
 if(UNIX)
