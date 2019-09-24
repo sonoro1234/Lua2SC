@@ -13,7 +13,7 @@ if(UNIX)
 	set(WXWIDGETSDEBUG "--disable-debug")
 	set(WXWIDGETSLOC ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets)
 	set(EXECUTE_COMMAND	./configure)
-	set(EXECUTE_ARGS --prefix=${WX_BUILD} ${WXWIDGETSDEBUG} --disable-shared --enable-unicode 
+	set(EXECUTE_ARGS --prefix=${WX_BUILD} ${WXWIDGETSDEBUG} --disable-shared --enable-unicode --with-opengl 
     --enable-compat30 
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no 
     --with-zlib=builtin --disable-richtext --with-gtk=2 

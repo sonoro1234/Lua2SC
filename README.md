@@ -19,16 +19,28 @@ plus some custom modules: osclua, pmidi, random.
 * Ctrl+I will find the source of most keywords (those in pale blue color in the IDE)
 * I am open to any questions posted as issues in Lua2SC repository.
 
+------Ubuntu Studio building requirements ---------
+All of them can be installed with `sudo apt install`
+
+* cmake (should be >= 3.13)
+* libasound2-dev
+
+and for wx module
+
+* libgtk2.0-dev
+* libgl1-mesa-dev
+* freeglut3-dev
+
 ------Building-----------
 
 from build directory:
-* set LUAJIT_BIN to the desired installation location in init_cmake.bat
+* set LUAJIT_BIN to the desired installation absolute location in init_cmake.bat (.sh)
 * add -DBUILD_WXLUA=ON in init_cmake.bat if you wish to also build wx module.
 * run init_cmake.bat (or copy to init_cmake.sh)
 * make
 * make install
 
-you will get Lua2SCinstalled directory inside build.
+you will get Lua2SC installed directory where you pointed LUAJIT_BIN to.
 
 this directory can be copied anywhere.
 
