@@ -8,6 +8,7 @@ function Buffer_metatable:alloc(numframes, numchannels,cmplMsg)
 	numchannels = numchannels or 1
 	OSCFunc.newfilter("/b_info",self.bufnum,self:queryresponse(),true)
 	ThreadServerSendT{{'/b_alloc', {self.bufnum, numframes, numchannels}},{"/b_query",{self.bufnum}}}
+	return self
 end
 
 function Buffer_metatable:allocRead(path,start,numframes)
@@ -115,6 +116,40 @@ function Buffer_metatable:getn(index, numsamples,action)
 		end,true)
 	end
 	ThreadServerSend(self.server:Msg('/b_getn', self.bufnum, index, numsamples))
+end
+
+function Buffer_metatable:loadToFloatArray(index, count, action)
+	--forkIfNeeded(function()
+	index = index or 0
+	count = count or -1
+	local tmpPath = os.tmpname()
+	self:write(tmpPath, "wav", "float", count, index)
+	self.server:sync()
+	local sndfile = require"sndfile_ffi"
+	local ffi = require"ffi"
+	local sf = sndfile.Sndfile(tmpPath)
+	--print("sf load",tmpPath,sf:channels(),sf:frames(),sf:samplerate(),sf:format())
+	local samples = tonumber(sf:channels()*sf:frames())
+	--print("samples",samples,type(samples))
+	local rbuff = ffi.new("float[?]",samples)
+	local readen = sf:readf_float(rbuff, sf:frames())
+	--assert(200==readen)
+	if sf:frames()~=readen then
+		prerror("sf error:",sndfile.C.sf_error(sf.sf))
+	end
+	local ret = {}
+	for i=0,samples-1 do
+		ret[i+1] = rbuff[i]
+	end
+
+	sf:close()
+	local ok,err = os.remove(tmpPath)
+	if not ok then prerror("could not delete tmp file ",err) end
+	--print"calling action"
+	if action then action(ret) end
+	--print"called action"
+	return ret
+	--end)
 end
 
 function Buffer_metatable:__gc() 
