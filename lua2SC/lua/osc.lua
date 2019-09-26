@@ -1,5 +1,5 @@
 -- this file is for using sclua
-package.cpath = package.cpath .. package.cpath:gsub("%?","?"..table.concat{_VERSION:match("(%d).(%d)")})
+-- package.cpath = package.cpath .. package.cpath:gsub("%?","?"..table.concat{_VERSION:match("(%d).(%d)")})
 function Window(title,x,y,w,h)
 	require"iuplua"
 	require( "iupluagl" )
