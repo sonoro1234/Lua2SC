@@ -142,6 +142,12 @@ function _TAmt.__call(t,ini,ends,step)
 	end 
 	return t:new(res) --self:new(res)
 end
+function _TAmt:wrapAt(i)
+	local lent = #self
+	i=i%lent
+	i= (i~=0) and i or lent
+	return self[i]
+end
 function _TAmt:Do(f,...)
 	local res={}
 	for i,v in ipairs(self) do
@@ -247,6 +253,22 @@ function _TAmt:min()
 		min = (min > v) and v or min
 	end
 	return min
+end
+function _TAmt:mean()
+	return self:sum()/#self
+end
+function _TAmt:stddev()
+	local mean = self:mean()
+	local diff = self - mean
+	diff = diff:squared()
+	return math.sqrt(diff:sum()/(#self-1))
+end
+function _TAmt:differentiate()
+	local difs = {}
+	for i=2,#self do
+		table.insert(difs,self[i]-self[i-1])
+	end
+	return self:new(difs)
 end
 --[[
 ss=TA():series(12)
