@@ -97,6 +97,11 @@ function UNTILEv(name,pat,waitmark)
 				end)
 end
 --]]
+
+-- if waitmark is true playing will last until name Event and _mark present
+-- _mark can be generated with MARK() to signal pattern end
+-- so playing will stop when name Event is set and pattern is finished
+-- if waitmark is false playing will stop when name Event is set
 local function genUntilev(name,waitmark)
 	local finished = false
 	local first = true
