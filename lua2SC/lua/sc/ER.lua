@@ -37,8 +37,9 @@ SynthDef(synname,{busout=0,cbusB=busB.busIndex,bypass=0,dist=1,angle=0},function
 	print("busB.busIndex",busB.busIndex)
 	--local L=TA(op.L or {20,10,16})*In.kr(busSize.busIndex,1)
 	--local Ps = Ref(op.Pr or {9,3,1.2})
-	local L=TA(op.L or {10,20,16})*In.kr(busSize.busIndex,1)
-	local Ps = Ref(op.Pr or {4.5,5,1.2})
+	local sizefac = In.kr(busSize.busIndex,1)
+	local L=TA(op.L or {10,20,16})*sizefac
+	local Ps = Ref(op.Pr or {4.5,5,1.2})*sizefac
 	local Pr = Ps --Ref{3,3,1.2}
 	local B = In.kr(cbusB,1) --0.92 --0.72
 	dist = In.kr(busDist.busIndex,1)*dist
