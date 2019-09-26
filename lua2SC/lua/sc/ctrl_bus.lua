@@ -144,6 +144,9 @@ table.insert(initCbCallbacks,function()
 	SynthDef("SINE",{freq=44 ,phase=0 ,amp=1,add=0,bus=0,t_gate=1},function()
 		Out.kr(bus,SinOsc.kr(freq,phase,amp,add))
 	end):store()
+	SynthDef("TRI",{freq=44 ,phase=0 ,amp=1,add=0,bus=0,t_gate=1},function()
+		Out.kr(bus,LFTri.kr(freq,phase,amp,add))
+	end):store()
 	SynthDef("VIB",{bus=0,freq=1,rate=5,delay=0,depth=0.1,rv=0.04,dv=0.1,t_gate=1},function()
 		Out.kr(bus,Vibrato.kr{freq=freq, rate=rate, depth=depth, delay=delay,rateVariation=rv,depthVariation=dv,trig=t_gate})
 	end):store()
@@ -240,6 +243,13 @@ function SINE(freq,phase,amp,add)
 	local ctmap = ctrl_mapper:new{}
 	function ctmap:verb(paramname,player,beatTime,beatLen)
 		return SendCtrlSynth("SINE",{freq=freq ,phase=phase ,amp=amp,add=add},paramname,player,beatTime)
+	end
+	return ctmap
+end
+function TRI(freq,phase,amp,add)
+	local ctmap = ctrl_mapper:new{}
+	function ctmap:verb(paramname,player,beatTime,beatLen)
+		return SendCtrlSynth("TRI",{freq=freq ,phase=phase ,amp=amp,add=add},paramname,player,beatTime)
 	end
 	return ctmap
 end
