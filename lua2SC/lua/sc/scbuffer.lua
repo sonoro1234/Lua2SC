@@ -212,7 +212,15 @@ function SCBuffer:Init(block)
 		self:write(nil)
 		self.DiskOutNode = GetNode()
 		assert(Master.node)
-		sendBundle({"/s_new",{ "DiskoutSt", self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}})--,when);
+		local synname
+		if self.channels==1 then
+			synname = "DiskoutMono"
+		elseif self.channels == 2 then
+			synname = "DiskoutSt"
+		else
+			error("DiskOutBuffer channels must be 1 or 2")
+		end
+		sendBundle({"/s_new",{ synname, self.DiskOutNode,3, Master.node, "bufnum", self.buffnum,"busin",self.recording_bus}})--,when);
 		print("init disk out")
 		prtable(self)
 		self:queryinfo(true)

@@ -661,6 +661,11 @@ diskout=SynthDef("DiskoutSt", {bufnum=0,busin=0},function()
     DiskOut.ar(bufnum, In.ar(busin,2):clip2(1));
 end)
 sintes[#sintes+1]=diskout
+
+diskout=SynthDef("DiskoutMono", {bufnum=0,busin=0},function()
+    DiskOut.ar(bufnum, In.ar(busin,1):clip2(1));
+end)
+sintes[#sintes+1]=diskout
 --]]
 
 --[[
