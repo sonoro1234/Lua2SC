@@ -56,3 +56,9 @@ hearing: https://soundcloud.com/victor-bombi/me-estoy-marchando
 
 -- violin partita: algorithmic composition for violin and piano
 hearing: https://soundcloud.com/victor-bombi/partita-for-violin-i
+
+-- Rosalia?: Flamenco piece with virtual Rosalia and Camaron.
+hearing: https://soundcloud.com/victor-bombi/rosalia
+
+-- Morning in India: Indian classic combo with singer, sitar, tamboura and tabla.
+hearing: https://soundcloud.com/victor-bombi/morning-in-india
