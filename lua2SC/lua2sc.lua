@@ -66,27 +66,17 @@ function splitpath(P)
 end
 ----------------------------------------------
 function SetLuaPath(arg)
-	--print(arg[0],lfs.currentdir (),lfs.attributes(arg[0]).dev,debug.getinfo(2,"S").source)
-	--print(abspath(arg[0]),splitpath(abspath(arg[0])))
-    
-    --lua2scpath_portable = splitpath(abspath(arg[0]))
-	--lua2scpath = lua2scpath_portable.."lua2sc".. sep
     lua2scpath = splitpath(abspath(arg[0]))
 	lua2scpath_portable = abspath(lua2scpath.."..".. sep)
-    
 	_presetsDir = lua2scpath .. "presets" .. sep
-	----_scscriptsdir = lua2scpath .."sc\\"
-	-- .. lua2scpath .. "lua\\?\\init.lua;"
+
 	local dllstr = is_windows and "dll" or "so"
 	package.path = lua2scpath .. "lua" .. sep .. "?.lua;" .. lua2scpath .. "lua" .. sep .. "?/init.lua;"  .. package.path 
 	package.cpath = lua2scpath .. "luabin" .. sep .. "?." .. dllstr .. ";"  .. package.cpath
-	--print(package.path)
-	--print(package.cpath)
 end
 
 SetLuaPath(arg) 
 require("pmidi")
---print("pmidi",pmidi,pmidi.core)
 require("sc.utils")
 --require("random") 	--not nedded here but to avoid lanes wx crash
 
@@ -94,18 +84,21 @@ require("osclua")
 toOSC=osclua.toOSC
 fromOSC=osclua.fromOSC
 
+local EXEext = is_windows and ".exe" or ""
 settings_defaults = {
 	settings ={
 		midiin={},
 		midiout={},
-		SCpath="",
-		SC_SYNTHDEF_PATH="default",
-		SC_PLUGIN_PATH={"default"},
+		SCpath="SuperCollider/supernova"..EXEext,
+		SC_SYNTHDEF_PATH="SuperCollider/synthdefs",
+		SC_PLUGIN_PATH={"SuperCollider/sc3-plugins","SuperCollider/Myplugins"},
 		SC_UDP_PORT=57110,
         SC_SYSTEM_CLOCK=1,
 		SC_AUDIO_DEVICE="",
 		SC_BUFFER_SIZE = -1,
-		SC_SAMPLERATE = 44100
+		SC_SAMPLERATE = 44100,
+		SC_NINS = 2,
+		SC_NOUTS = 2
 	},
 }
 file_config = require"file_settings"
@@ -227,4 +220,3 @@ end
 prtable(lanes.timers())
 prtable(lanes.threads())
 os.exit() --can help in wx SIGSEGV at exit
-
