@@ -38,7 +38,7 @@ end):store(true)
 
 local function TambouraPlayer(escale)
 	local pl = OscVoicerEP{inst="tamboura"}
-	pl.inserts = {{"synpathetic_Tamboura",{freq=midi2freq(getNote(1+7*3,escale))}},{"tamboura_soundboard"}}
+	pl.inserts = {{"sympathetic_Tamboura",{freq=midi2freq(getNote(1+7*3,escale))}},{"tamboura_soundboard"}}
 	return pl
 end
 

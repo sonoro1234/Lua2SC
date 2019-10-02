@@ -1,5 +1,5 @@
 --- first some synthdefs
-local phISEM = require"sc.phISEMSynth"
+local phISEM = require"sc.PhISEMSynth"
 phISEM:MakeSynth("cascabeles","cascabeles")
 
 SynthDef("btabla",{out=0,freq=100,noisef=0.2,t_gate=1,gate=1,ancho=100,fnoise=1200,amp=1,att=0.125,rel=0.125,tension=0.1,loss=1,ewidth=1/6,epos=0.25,a1=0.5,facF=1,size=1},function()
