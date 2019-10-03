@@ -399,18 +399,29 @@ frame:Connect(wx.wxEVT_TIMER,
 		end)
 wakeupidletimer:Start(30,false)
 --]]
-	
+--[[
 	-- wrap into protected call as DragAcceptFiles fails on MacOS with
 	-- wxwidgets 2.8.12 even though it should work according to change notes
 	-- for 2.8.10: "Implemented wxWindow::DragAcceptFiles() on all platforms."
 	pcall(function() frame:DragAcceptFiles(true) end)
 	frame:Connect(wx.wxEVT_DROP_FILES,function(evt)
+			print"DragandDrop"
 			local files = evt:GetFiles()
 			if not files or #files == 0 then return end
 			for i,f in ipairs(files) do
 				LoadFile(f,nil,true)
 			end
 		end)
+--]]
+frameDropTarget = wx.wxLuaFileDropTarget();
+frameDropTarget.OnDropFiles = function(self, x, y, filenames)
+                                        for i = 1, #filenames do
+                                            LoadFile(filenames[i], nil, true)
+                                        end
+                                        return true
+                                     end
+frame:SetDropTarget(frameDropTarget)
+
 	managedpanel = wx.wxPanel(frame, wx.wxID_ANY)
 	
 	manager = Manager() 
