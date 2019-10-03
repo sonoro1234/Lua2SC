@@ -1,7 +1,6 @@
 	local ID_DUMPTREE       = NewID()
 	local ID_DUMPOSC       = NewID()
 	local ID_BOOTSC       = NewID()
-    local ID_BOOTSC_tcp       = NewID()
 	local ID_BOOTSC_internal       = NewID()
 	local ID_QUITSC       = NewID()
 	local ID_AUTODETECTSC       = NewID()
@@ -13,7 +12,6 @@ function InitSCMenu()
 		{ ID_DUMPTREE,              "Dump SC Tree",               "Dumps SC Tree in SC console" },
 		{ ID_DUMPOSC,              "Dump OSC",               "Dumps OSC" , wx.wxITEM_CHECK },
 		{ ID_BOOTSC,              "Boot SC",               "Boots SC" },
-		{ ID_BOOTSC_tcp,              "Boot SC TCP",               "Boots SC TCP" },
 		{ ID_BOOTSC_internal,              "Boot SC internal",               "Boots SC internal" },
 		{ ID_QUITSC,              "Quit SC",               "Quits SC" },
 		{ ID_AUTODETECTSC,              "Autodetect SC",               "Autodetect SC", wx.wxITEM_CHECK  },
@@ -33,7 +31,9 @@ function InitSCMenu()
 		function(event) 
 			if event:IsChecked() then
                 if not IDESCSERVER.inited then
-                    IDESCSERVER:init("tcp",file_settings:load_table("settings"),mainlinda)
+					local options = file_settings:load_table("settings")
+					local typeserver = (options.SC_USE_TCP==1) and "tcp" or "udp"
+                    IDESCSERVER:init(typeserver,options,mainlinda)
                 end
                 --udpsclinda:send("Detect",1)
 				--IDESCSERVER:sync()
@@ -46,7 +46,6 @@ function InitSCMenu()
 			end
 		end)
 	frame:Connect(ID_BOOTSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(false) end)
-    frame:Connect(ID_BOOTSC_tcp,  wx.wxEVT_COMMAND_MENU_SELECTED,function() return BootSC(true) end)
 	frame:Connect(ID_BOOTSC_internal,  wx.wxEVT_COMMAND_MENU_SELECTED,function() 
 		menuBar:Check(ID_AUTODETECTSC, false)
 		local this_file_settings = file_settings:load_table("settings")
@@ -94,10 +93,6 @@ function InitSCMenu()
 				event:Enable(IDESCSERVER.inited~=nil)
 			end)
 	frame:Connect(ID_BOOTSC, wx.wxEVT_UPDATE_UI,
-			function (event)
-				event:Enable(IDESCSERVER.inited==nil)
-			end)
-    frame:Connect(ID_BOOTSC_tcp, wx.wxEVT_UPDATE_UI,
 			function (event)
 				event:Enable(IDESCSERVER.inited==nil)
 			end)
@@ -171,7 +166,7 @@ function SCProcess_Loop(cmd,bootedlinda)
 	return true
 end		
 require"lanesutils"
-function BootSC(use_tcp) 
+function BootSC() 
 	menuBar:Check(ID_AUTODETECTSC, false)
 	local this_file_settings = file_settings:load_table("settings")
 	local scexe = this_file_settings.SCpath
@@ -179,7 +174,7 @@ function BootSC(use_tcp)
 		thread_error_print("Cannot boot",scexe,"does not exist.")
 		return 
 	end
-	
+	local use_tcp = this_file_settings.SC_USE_TCP==1
 	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
 	wx.wxSetWorkingDirectory(path)
 	wx.wxSetEnv("SC_SYSAPPSUP_PATH",path) 

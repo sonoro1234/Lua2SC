@@ -1,16 +1,6 @@
 local is_windows = package.config:sub(1,1) == '\\'
 Settings={
---[[
-	options={
-		midiin={},
-		midiout={},
-		SCpath="",
-		SC_SYNTHDEF_PATH="default",
-		SC_PLUGIN_PATH={"default"},
-		SC_UDP_PORT=57110,
-		SC_AUDIO_DEVICE=""
-	},
-	--]]
+
 	ID_CANCEL_BUTTON=NewID(),
 	ID_SAVE_BUTTON=NewID(),
 	ID_RESET_MIDI_BUTTON=NewID(),
@@ -89,9 +79,13 @@ function Settings:Create(parent)
 	grid_sizer:SetVGap(2)
 	
 	local row=0
-	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Sc Synth udp port:"),wx.wxGBPosition(row,0))
+	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Sc port:"),wx.wxGBPosition(row,0))
 	local udpTC = wx.wxTextCtrl(this, wx.wxID_ANY,tostring(self.options.SC_UDP_PORT))
 	grid_sizer:Add(udpTC,wx.wxGBPosition(row,1))
+	
+	local useTCP = wx.wxCheckBox(this, wx.wxID_ANY,"use TCP")
+    useTCP:SetValue(self.options.SC_USE_TCP == 1)
+	grid_sizer:Add(useTCP,wx.wxGBPosition(row,2))
 	row = row + 1
 	
 	grid_sizer:Add(wx.wxStaticText(this, wx.wxID_ANY,"Buffer size:"),wx.wxGBPosition(row,0))
@@ -297,6 +291,7 @@ function Settings:Create(parent)
 			self.options.SC_BUFFER_SIZE= bsizeTC:GetValue()
 			self.options.SC_SAMPLERATE= samprTC:GetValue()
             self.options.SC_SYSTEM_CLOCK = useclockC:IsChecked() and 1 or 0
+			self.options.SC_USE_TCP = useTCP:IsChecked() and 1 or 0
 			self.options.SC_AUDIO_DEVICE=Au_Dev_TC:GetValue()
 			self.options.SC_NOUTS = tonumber(noutCH:GetValue())
 			self.options.SC_NINS = tonumber(ninCH:GetValue())

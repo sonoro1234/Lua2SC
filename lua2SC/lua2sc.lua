@@ -93,6 +93,7 @@ settings_defaults = {
 		SC_SYNTHDEF_PATH="SuperCollider/synthdefs/",
 		SC_PLUGIN_PATH={"SuperCollider/sc3-plugins","SuperCollider/Myplugins"},
 		SC_UDP_PORT=57110,
+		SC_USE_TCP=1,
         SC_SYSTEM_CLOCK=1,
 		SC_AUDIO_DEVICE="",
 		SC_BUFFER_SIZE = -1,
