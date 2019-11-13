@@ -178,6 +178,8 @@ function BootSC()
 	local path = wx.wxFileName.SplitPath(this_file_settings.SCpath)
 	wx.wxSetWorkingDirectory(path)
 	wx.wxSetEnv("SC_SYSAPPSUP_PATH",path) 
+	wx.wxSetEnv("SC_JACK_DEFAULT_INPUTS","system")
+	wx.wxSetEnv("SC_JACK_DEFAULT_OUTPUTS","system")
 	if this_file_settings.SC_SYNTHDEF_PATH~="default" then
 		wx.wxSetEnv("SC_SYNTHDEF_PATH",this_file_settings.SC_SYNTHDEF_PATH)
 	end
