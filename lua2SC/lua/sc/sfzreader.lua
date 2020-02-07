@@ -151,8 +151,9 @@ end
 function M.make_player(sfz)
 	return FS(function(e) 
 		local nota = e.tmplist.note
-		local scale = e.tmplist.escale[1]
+		
 		if not nota then
+			local scale = e.tmplist.escale[1]
 			local degree = e.tmplist.degree
 			if type(degree)~="table" then degree = {degree} end
 			nota = {}
