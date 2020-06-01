@@ -47,7 +47,7 @@ function routine:Pull()
 		print("reset ppqPos" .. self.ppqPos .. " hostppqPos " .. theMetro.ppqPos .. " ",self.name)
 		self:Reset()
 	
-	elseif theMetro.playing > 0 then
+	elseif theMetro.playing > 0 or USING_LILYPOND then
 		while self.playing and theMetro.oldppqPos >= self.ppqPos do
 			--local good,dur=coroutine.resume(self.co)
 			-- if not good then print("error en co ",dur) end
@@ -72,7 +72,7 @@ function routine:Pull()
 end
 function routine:Play()
 	self:Pull()
-	if theMetro.playing == 0 then
+	if theMetro.playing == 0 and not USING_LILYPOND then
 		return
 	end
 	while theMetro.oldppqPos < self.ppqPos and self.ppqPos <= theMetro.ppqPos and self.playing do

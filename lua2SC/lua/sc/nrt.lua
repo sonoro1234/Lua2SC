@@ -100,21 +100,24 @@ function NRT:Gen(endppq,test)
 	end
 	theMetro:play(nil,0,0,25)
 	theMetro.oldtimestamp = 0
+	theMetro.oldppqPos = 0
 	local lastt = 0
     sendBundle = function(msg,ti)
 		--if ti then assert(ti>=lastt) end
-		ti = ti or lastt
+		--if not ti then print("ti null",theMetro.ppqPos);print(theMetro.oldtimestamp,theMetro.oldppqPos,theMetro.bpsi) end
+		ti = ti or theMetro:ppq2time(theMetro.ppqPos) --lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
-		--prerror(ti,oscstr)
+		if test then prerror(ti,oscstr) end
 		NRT:sendBundle(msg,ti)
 	end
 	sendMultiBundle = function(ti,msg)
 		--if ti then assert(ti>=lastt) end
-		ti = ti or lastt
+		--if not ti then print("ti null",theMetro.ppqPos);print(theMetro.oldtimestamp,theMetro.oldppqPos,theMetro.bpsi) end
+		ti = ti or theMetro:ppq2time(theMetro.ppqPos) --lastt
 		lastt = ti
 		local oscstr = prOSC(msg):sub(1,255)
-		--prerror(ti,oscstr)
+		if test then prerror(ti,oscstr) end
 		NRT:sendMultiBundle(ti,msg)
 	end
 	sendBlocked = function(msg)
