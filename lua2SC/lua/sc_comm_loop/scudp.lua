@@ -1,6 +1,6 @@
 
 local SCUDP={}
-local function ReceiveTCPLoop(tcppars)
+local function ReceiveUDPLoop(tcppars,numsccomm)
 	local listenudp
 	local trace = false
 	local tracestatus = false
@@ -43,11 +43,12 @@ local function ReceiveTCPLoop(tcppars)
 			listenudp:close()
 			print"closed listenudp"
 		end
+		print( "finalizer ok" )
 	end
 	
 	set_finalizer( finalizer_func ) 
 	set_error_reporting("extended")
-	set_debug_threadname("ReceiveUDPLoop")
+	set_debug_threadname("ReceiveUDPLoop"..numsccomm)
 	
 	local socket = require("socket")
 	require("osclua")
@@ -167,7 +168,7 @@ function SCUDP:close()
 		SCUDP.ReceiveTCPLoop_lane = nil
 	end
 end	
-function SCUDP:init(settings,receivelinda)
+function SCUDP:init(settings,receivelinda,numsccomm)
 	print("initudp SCUDP")
 	local options = {}
 	options.host = "127.0.0.1"
@@ -187,10 +188,10 @@ function SCUDP:init(settings,receivelinda)
 				scriptlinda = scriptlinda
 				},
 		priority=0},
-		ReceiveTCPLoop)
+		ReceiveUDPLoop)
     udpsclinda:set("exit") --delete previous exits
 	udpsclinda:set("sendsc") --delete previous sendsc
-	SCUDP.ReceiveTCPLoop_lane = tcp_lane_gen(options)
+	SCUDP.ReceiveTCPLoop_lane = tcp_lane_gen(options,numsccomm)
     return true
 end
 require"sc.number2string"

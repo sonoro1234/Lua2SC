@@ -1,6 +1,6 @@
 
 local SCTCP={}
-local function ReceiveTCPLoop(tcppars)
+local function ReceiveTCPLoop(tcppars, numsccomm)
 	local listentcp
 	local trace = false
 	local tracestatus = false
@@ -43,11 +43,12 @@ local function ReceiveTCPLoop(tcppars)
 			listentcp:close()
 			print"closed listentcp"
 		end
+		print( "finalizer ok" )
 	end
 	
 	set_finalizer( finalizer_func ) 
 	set_error_reporting("extended")
-	set_debug_threadname("ReceiveUDPLoop")
+	set_debug_threadname("ReceiveTCPLoop"..numsccomm)
 	
 	local socket = require("socket")
 	require("osclua")
@@ -170,11 +171,12 @@ function SCTCP:close()
 	if SCTCP.tcp then SCTCP.tcp:close() end
 	SCTCP.tcp = nil
 	if SCTCP.ReceiveTCPLoop_lane then
+		print"setting ReceiveTCPLoop_lane=nil"
         udpsclinda:send("exit",1)
 		SCTCP.ReceiveTCPLoop_lane = nil
 	end
 end	
-function SCTCP:init(settings,receivelinda)
+function SCTCP:init(settings,receivelinda, numsccomm)
 	print("initudp SCTCP")
 	local options = {}
 	options.host = "127.0.0.1"
@@ -197,7 +199,7 @@ function SCTCP:init(settings,receivelinda)
 		ReceiveTCPLoop)
     udpsclinda:set("exit") --delete previous exits
 	udpsclinda:set("sendsc") --delete previous sendsc
-	SCTCP.ReceiveTCPLoop_lane = tcp_lane_gen(options)
+	SCTCP.ReceiveTCPLoop_lane = tcp_lane_gen(options,numsccomm)
     return true
 end
 require"sc.number2string"

@@ -5,14 +5,15 @@ local SCUDP = require"sc_comm_loop.scudp"
 local SCTCP = require"sc_comm_loop.sctcp"
 local SCFFI = require"sc_comm_loop.scinternal"
 local  SCCOMMLOOP = {}
-
+local numsccomm = 0
 function SCCOMMLOOP:init(types,options,linda)
     print"SCCOMMLOOP init"
+	numsccomm = numsccomm + 1
 	assert(not self.inited)
 	if types == "udp" then
 		self.type = types
 		self.sc = SCUDP
-		self.sc:init(options,linda)
+		self.sc:init(options,linda, numsccomm)
 		self.inited = true
 	elseif types == "internal" then
 		if not jit then prerror("must run luajit for internal server"); return end
@@ -24,7 +25,7 @@ function SCCOMMLOOP:init(types,options,linda)
     elseif types == "tcp" then
 		self.type = types
 		self.sc = SCTCP
-		local res = self.sc:init(options,linda)
+		local res = self.sc:init(options,linda, numsccomm)
 		self.inited = res
         if not res then self.sc = nil end
 	else
