@@ -164,6 +164,7 @@ function SCUDP:close()
 	SCUDP.tcp = nil
 	if SCUDP.ReceiveTCPLoop_lane then
         udpsclinda:send("exit",1)
+		SCUDP.ReceiveTCPLoop_lane = nil
 	end
 end	
 function SCUDP:init(settings,receivelinda)
@@ -188,6 +189,7 @@ function SCUDP:init(settings,receivelinda)
 		priority=0},
 		ReceiveTCPLoop)
     udpsclinda:set("exit") --delete previous exits
+	udpsclinda:set("sendsc") --delete previous sendsc
 	SCUDP.ReceiveTCPLoop_lane = tcp_lane_gen(options)
     return true
 end

@@ -5,7 +5,7 @@ local function ReceiveTCPLoop(tcppars)
 	local trace = false
 	local tracestatus = false
 	local lanes = require "lanes" --.configure()
-    ---[=[ logging
+    --[=[ logging
     local file  = io.open([[C:\supercolliderrepos\build_Lua2SC\install\logsctcp.txt]],"w+")
     local function filelog(str)
         file:write("line\n")
@@ -37,7 +37,7 @@ local function ReceiveTCPLoop(tcppars)
 		else
 			print( "TCPSC: after normal return" )
 		end
-        io.close(file) --logging
+        if file then io.close(file) end --logging
 		if listentcp then
 			print("closing listentcp",listentcp)
 			listentcp:close()
@@ -116,7 +116,7 @@ local function ReceiveTCPLoop(tcppars)
 		if lindaloop(0) then return end
 		if dgram then
 			if #dgram%4~=0 then prerror("osc not 4 multiple");prerror(dgram) end
-            ---[[ for debugging tcp
+            --[[ for debugging tcp
 			local succ,msg = pcall(fromOSC,dgram)
             if not succ then 
                 prerror(msg);prerror("olddgram",olddgram,"len",#olddgram);
@@ -125,7 +125,7 @@ local function ReceiveTCPLoop(tcppars)
             end
             --]]
 			-- normal version
-            --local msg = fromOSC(dgram)
+            local msg = fromOSC(dgram)
 			olddgram = dgram
 			if trace then
 				if msg[1]~="/status.reply" or tracestatus then
@@ -171,6 +171,7 @@ function SCTCP:close()
 	SCTCP.tcp = nil
 	if SCTCP.ReceiveTCPLoop_lane then
         udpsclinda:send("exit",1)
+		SCTCP.ReceiveTCPLoop_lane = nil
 	end
 end	
 function SCTCP:init(settings,receivelinda)
@@ -195,6 +196,7 @@ function SCTCP:init(settings,receivelinda)
 		priority=0},
 		ReceiveTCPLoop)
     udpsclinda:set("exit") --delete previous exits
+	udpsclinda:set("sendsc") --delete previous sendsc
 	SCTCP.ReceiveTCPLoop_lane = tcp_lane_gen(options)
     return true
 end
