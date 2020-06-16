@@ -1585,7 +1585,7 @@ function SYNTHDef:guiplay(lista)
 	local on = getMsgLista({"/s_new", {self.name, node, 0, 0}},lista)
 	sendBundle(on)
 
-	local notisink = {params={},node=node}
+	local notisink = {params=lista,node=node}
 	function notisink:notify(control)
 		local on = getMsgLista({"/n_set", {self.node}},self.params)
 		sendBundle(on)
