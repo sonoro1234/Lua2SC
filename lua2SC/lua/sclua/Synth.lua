@@ -61,6 +61,24 @@ function Synth_metatable:mapa(args) -- mapping from audio bus
 	self.server:sendMsg('/n_mapa', self.nodeID, unpack(msg) )
 end
 
+function Synth_metatable:after(defName, args)
+	return self.server.Synth(defName, args, self, 3)
+end
+
+function Synth_metatable:before(defName, args)
+	return self.server.Synth(defName, args, self, 2)
+end
+
+function Synth_metatable.gui(syn)
+	local notisink = {params=syn.args,node=syn.nodeID}
+	function notisink:notify(control)
+		local on = getMsgLista({"/n_set", {self.node}},self.params)
+		sendBundle(on)
+	end
+	local igui = InstrumentsGUI(syn.name,false,parent,notisink.params,notisink)
+	return igui
+end
+
 -- support garbage collection:
 function Synth_metatable:__gc() 
 	self:free() 
