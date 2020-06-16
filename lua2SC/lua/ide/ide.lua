@@ -643,7 +643,6 @@ function ConfigSaveOpenDocuments(config)
 	config:save_table("openDocuments",config_openDocuments)
 end
 function ConfigLoadOpenDocuments(config)
-	--print"ConfigLoadOpenDocuments"
 	local config_openDocuments = config:load_table("openDocuments")
 	--prtable(config_openDocuments)
 	if config_openDocuments then
@@ -652,8 +651,9 @@ function ConfigLoadOpenDocuments(config)
 			abriredit(v)
 		end
 		lastDirectory = config_openDocuments.lastDirectory
+	else
+		abriredit(lua2scpath.."/examples/simple_theme.lua")
 	end
-	--print"ConfigLoadOpenDocuments end"
 end
 -- ----------------------------------------------------------------------------
 -- Get/Set notebook editor page, use nil for current page, returns nil if none
