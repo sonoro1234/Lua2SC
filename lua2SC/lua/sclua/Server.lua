@@ -44,7 +44,7 @@ local function Server(IP, port)
 			server = s,
 			nodeID = nextNodeID(),
 			name = name,
-			args = parseArgsX(args),
+			args = args,
 		}, Synth_metatable)
 		--[[
 		local targ = 0
@@ -54,7 +54,7 @@ local function Server(IP, port)
 			targ = target
 		else targ = BASE_NODE end
 		--]]
-		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, addAction or 0, target and target.nodeID or BASE_NODE, unpack(synthTab.args))
+		s:sendMsg('/s_new', synthTab.name, synthTab.nodeID, addAction or 0, target and target.nodeID or BASE_NODE, unpack(parseArgsX(synthTab.args)))
 		return synthTab
 	end 
 	smet.tail = function(aGroup, defName, args)
