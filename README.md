@@ -51,7 +51,7 @@ run: Lua2SC.bat or Lua2SC.sh
 
 1. set Debug/settings
 2. Supercollider/BootSC (wait until booted)
-3. open simple_theme in lua2SC\lua2scsamples\ 
+3. open simple_theme (or any other) in lua2SC\examples\ 
 4. Debug/run  (F6)
 5. Debug/Cancel run (F5)
 
