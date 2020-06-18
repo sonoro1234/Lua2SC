@@ -284,18 +284,18 @@ local MAX_ENVEL_prosc = (MAX_ENVEL_STEPS +1)*4
 table.insert(initCbCallbacks,function()
 SynthDef("ENVEL",{envel=Ref(Env().newClear(MAX_ENVEL_STEPS):prAsArray()),bus=0,t_gate=1},
 			function()
-			local sig = EnvGen.kr{envel,t_gate}
+			local sig = EnvGen.kr(envel,t_gate)
 			CheckBadValues.kr(sig,0,2)
 			ReplaceOut.kr(bus,sig)--doneAction=2})
 		end):store()
 ---[[
 SynthDef("ENVELm",{lev=Ref(TA():Fill(MAX_ENVEL_STEPS +1,0)),tim=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),cur=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),bus=0,t_gate=1},
 			function()
-			ReplaceOut.kr(bus,EnvGen.kr{Env(lev,tim,cur),t_gate})--doneAction=2})
+			ReplaceOut.kr(bus,EnvGen.kr(Env(lev,tim,cur),t_gate))--doneAction=2})
 		end):store()
 SynthDef("ENVELm_st",{lev=Ref(TA():Fill(MAX_ENVEL_STEPS +1,0)),tim=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),cur=Ref(TA():Fill(MAX_ENVEL_STEPS,0)),bus=0,t_gate=1},
 			function()
-			ReplaceOut.kr(bus,EnvGen.kr{Env.new_str_curves(lev,tim,cur),t_gate})--doneAction=2})
+			ReplaceOut.kr(bus,EnvGen.kr(Env.new_str_curves(lev,tim,cur),t_gate))--doneAction=2})
 		end):store()
 
 --]]

@@ -9,9 +9,12 @@ require "sc.synthdefSCRead"
 --end
 --fun4d{en=67,5}
 function assign(defs,defv,...)
+	local namedargs
+	local hasnamedarg
 	local defval 
 	if select('#', ...)==1 and type(select(1, ...))=="table" and getmetatable(select(1, ...)) == nil then
 		defval = select(1, ...)
+		namedargs = true
 	else
 		defval = {...}
 	end
@@ -32,7 +35,14 @@ function assign(defs,defv,...)
 			end
 		else
 			def[k]=v
+			hasnamedarg = true
 		end
+	end
+	--check that namedargs is not just 1 arg with multiexpansion
+	if namedargs and not hasnamedarg then
+		prerror"For multiexpansion of first argument not being confused with namedargs use any additional extra argument."
+		print(namedargs , hasnamedarg)
+		error("ambiguous namedargs",3)
 	end
 	--prtable("def2",def)
 	local ret = {}

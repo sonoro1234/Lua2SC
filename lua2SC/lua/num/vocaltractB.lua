@@ -209,7 +209,7 @@ local function LFexci()
 		--local exci = VeldhuisGlot.ar(vibratoF,Tp,Te,Ta,namp,nwidth)*glot*3*Ee
 		exci =  WhiteNoise.ar()*plosive*Ee + exci
 		exci = Mix(exci)
-		local ampvi = EnvGen.kr{Env({0,0,0,vibdepth*vibampfac},{0,vibdelay,0.01}),t_gate}
+		local ampvi = EnvGen.kr(Env({0,0,0,vibdepth*vibampfac},{0,vibdelay,0.01}),t_gate)
 		exci = LPF.ar(exci,fexci)*jitfac2*SinOsc.ar(vibrate,nil,ampvi,1)
 		--exci =  BrownNoise.ar()*plosive*EnvGen.ar(Env({0,0,1},{0.02,0.04}),t_gate) + exci
 		return exci
