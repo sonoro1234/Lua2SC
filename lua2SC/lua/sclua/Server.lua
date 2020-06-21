@@ -44,7 +44,7 @@ local function Server(IP, port)
 			server = s,
 			nodeID = nextNodeID(),
 			name = name,
-			args = args,
+			args = args or {},
 		}, Synth_metatable)
 		--[[
 		local targ = 0
