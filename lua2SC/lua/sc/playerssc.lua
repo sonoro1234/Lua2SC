@@ -1184,28 +1184,28 @@ function copyplayer(player)
 	OSCPlayers[#OSCPlayers+1]=player2
 	return player2
 end
-
-function fadeout(ppq1,ppq2,...)
+function fadedb(args,...)
+	local ppq1 = args.ppq1
+	local ppq2 = args.ppq2
+	local inidb = args.inidb
+	local enddb = args.enddb
+	local interval = args.interval or 0.1
 	for k,player in ipairs{...} do
 		player.channel.Filters = player.channel.Filters or {}
 		player.channel.Filters.level = function(list)
-			return list.level * db2amp(linearmap_c(ppq1,ppq2,0,-120,player.channel.ppqPos))
+			return list.level * db2amp(linearmap_c(ppq1,ppq2,inidb,enddb,player.channel.ppqPos))
 		end
-		player.channel:MergeBind{dur = ConstSt(0.1)}
+		player.channel:MergeBind{dur = ConstSt(interval)}
 		player.channel:Reset()
 		player.channel.ppqPos=ppq1
 	end
 end
 
+function fadeout(ppq1,ppq2,...)
+	fadedb({ppq1=ppq1, ppq2=ppq2, inidb=0, enddb=-120},...)
+end
+
 function fadein(ppq1,ppq2,...)
-	for k,player in ipairs{...} do
-		player.channel.Filters = player.channel.Filters or {}
-		player.channel.Filters.level = function(list)
-			return list.level * db2amp(linearmap_c(ppq1,ppq2,-120,0,player.channel.ppqPos))
-		end
-		player.channel:MergeBind{dur = ConstSt(0.1)}
-		player.channel:Reset()
-		player.channel.ppqPos=ppq1
-	end
+	fadedb({ppq1=ppq1, ppq2=ppq2, inidb=-120, enddb=0},...)
 end
 
