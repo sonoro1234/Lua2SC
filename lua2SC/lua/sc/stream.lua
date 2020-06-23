@@ -1175,6 +1175,7 @@ function SETCHAN(parvals)
 				local beatLen = parvals.dur
 				parvals.dur = nil
 				local function fun(pll)
+					pl.channel.params = {}
 					for k,v in pairs(parvals) do
 						if not (type(v)=="table" and v.is_ctrl_mapper) then
 							pl.channel.params[k]=v
