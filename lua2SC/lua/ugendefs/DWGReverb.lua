@@ -1,3 +1,9 @@
+DWGAllpass = UGen:new{name="DWGAllpass"}
+function DWGAllpass.ar(inp,len,a)
+	a = a or 0.7
+	return DWGAllpass:MultiNew{2,inp,len,a}
+end
+
 DWGReverbC1C3 = MultiOutUGen:new{name="DWGReverbC1C3"}
 function DWGReverbC1C3.ar(inp,len,c1,c3,mix,coefs,perm,doprime)
 	inp = inp or 0;c1 = c1 or 1;c3 = c3 or 1;len = len or 32000;mix = mix or 1
