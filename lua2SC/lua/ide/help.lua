@@ -32,16 +32,20 @@ local function DisplaySCHelp()
 		end
 	end
 	if searchtex then
-		local htmcontent = [[<html><head>
+		local lfs = require"lfs_ffi"
+		local classhtml = lua2scpath.."../SuperCollider/RenderedHelp/Classes/"..searchtex..".html"
+		if lfs.attributes(classhtml) then
+			io.popen(classhtml)
+		else
+			local htmcontent = [[<html><head>
 <meta http-equiv="refresh" content="0;url=file:///]]..lua2scpath.."../SuperCollider/RenderedHelp/Search.html#"..searchtex..[[ "></head></html>]]
-		local tmppath = lua2scpath.."../SuperCollider/RenderedHelp/redirSearch.html"
-		print(tmppath)
-		local tmpfile = io.open(tmppath,"w")
-		if tmpfile then
-			tmpfile:write(htmcontent)
-			tmpfile:close()
-			io.popen(tmppath)
-			--os.remove(tmppath)
+			local tmppath = lua2scpath.."../SuperCollider/RenderedHelp/redirSearch.html"
+			local tmpfile = io.open(tmppath,"w")
+			if tmpfile then
+				tmpfile:write(htmcontent)
+				tmpfile:close()
+				io.popen(tmppath)
+			end
 		end
 	else
 		io.popen(lua2scpath.."../SuperCollider/RenderedHelp/Help.html")
@@ -124,8 +128,8 @@ function InitHelpMenu()
 	local ID_SCHELP         = NewID()
 	helpMenu = wx.wxMenu{
         { ID_ABOUT,      "&About",       "About Lua2SC IDE" },
-		{ ID_HELP,      "&Help\tF1",       "Help" },
-		{ ID_SCHELP,      "&SCHelp\tF2",       "SCHelp" }}
+		{ ID_SCHELP,      "&SCHelp\tF1",       "SCHelp" },
+		{ ID_HELP,      "&Help\tF2",       "Help" }}
 	menuBar:Append(helpMenu, "&Help")
 	frame:Connect(ID_ABOUT, wx.wxEVT_COMMAND_MENU_SELECTED, DisplayAbout)
 	frame:Connect(ID_HELP, wx.wxEVT_COMMAND_MENU_SELECTED, DisplayHelp)
