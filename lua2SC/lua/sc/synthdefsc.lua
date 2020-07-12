@@ -914,9 +914,10 @@ function Out:init(...)
 end
 
 
---first to get functions help link 
---require"sc.handwrittenugens"
 
+require "sc.dumpedugens"
+--second to avoid definitions in dumpedugens
+--first to get functions help link 
 local lfs = require"lfs"
 local path = require"sc.path"
 print("loading ugendefs from",lua2scpath..path.chain("lua","ugendefs"))
@@ -927,8 +928,7 @@ for file in lfs.dir(lua2scpath..path.chain("lua","ugendefs")) do
 		end
 	end
 end
-require "sc.declareugens5"
---second to avoid definitions in declareugens4
+
 require"sc.handwrittenugens"
 
 LFPulse.signalRange="unipolar"

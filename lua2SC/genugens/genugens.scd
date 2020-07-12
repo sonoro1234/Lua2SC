@@ -1,11 +1,19 @@
-(
+
 var failedclasses=List.new();
-var testclass = {arg class;var ret;try {ret=class.new().rate; }{ret=\fail};ret};
-UGen.allSubclasses.do({arg it;
-	var armet,nameclass,mulind,comas,losmetodos,defaultval,therearedefaults,argnames,supcl;
-	var methodfound,excluded,isexcl;
-	losmetodos=['ir','kr','ar'];
-	excluded=["Out","MultiOutUGen","OutputProxy","BinaryOpUGen","UnaryOpUGen","MulAdd"];//,"LocalBuf","PackFFT"];
+var find_rate_from_new = {arg class;var ret;try {ret=class.new().rate; }{ret=\fail};ret};
+var excluded=["Out","MultiOutUGen","OutputProxy","BinaryOpUGen","UnaryOpUGen","MulAdd"];
+var losmetodos=['ir','kr','ar'];
+
+var ugens;
+//get all sorted ugens except excluded
+ugens = UGen.allSubclasses.select({|ugen| excluded.detect({arg itexcl;itexcl==ugen.name.asString}).isNil});
+ugens.sort({|a, b| a.name < b.name});
+
+ugens.do({arg it;
+	var armet,nameclass,mulind,defaultval,argnames,supcl;
+	var methodfound,isexcl;
+
+
 	nameclass=it.name.asString;
 	isexcl = excluded.detect({arg itexcl;itexcl==nameclass});
 	if(isexcl.isNil,{
@@ -38,12 +46,13 @@ UGen.allSubclasses.do({arg it;
 			});
 			("function "++nameclass++"."++metod.asString++"(...)").postln;
 
-			therearedefaults=false;
+
 			"\t".post;
 			defaultval = armet.prototypeFrame.copyRange(1,armet.prototypeFrame.size).replace([inf],["math.huge"]);
 					if((argnames.size >0),{
 			"local ".post;
-			argnames.asString.replace("SymbolArray[",' ').replace("]",' ').post;
+			//argnames.asString.replace("SymbolArray[",' ').replace("]",' ').post;
+			argnames.asCompileString.replace("SymbolArray["," ").tr($],$ ).replace("'","").post;
 			" = assign(".post;
 			argnames.asCompileString.replace("SymbolArray[","{").tr($],$}).post;
 			",".post;
@@ -62,12 +71,10 @@ UGen.allSubclasses.do({arg it;
 				{("\treturn "++nameclass++":MultiNew{").post;}
 			);
 			(indmetod.asString).post;
-			//mulind=mulind??{armet.argNames.size};
-			//comas=false;
+
 			argnames.do({arg varname,ind;
 				if( (varname!='mul') && (varname!='add'),
 					{
-						//if(comas,{",".post;},{comas=true});
 						",".post;
 						varname.asString.post;
 					}
@@ -89,9 +96,9 @@ UGen.allSubclasses.do({arg it;
 
 	if(methodfound,{},
 	{
-		var larate=testclass.value(it);
+		var larate=find_rate_from_new.value(it);
 		if(larate!=\fail,{
-		var therearedefaults,mulind;
+		var mulind;
 		var ratefunc=switch (larate,
     			\scalar,   { "ir" },
     			\control, { "kr" },
@@ -119,11 +126,11 @@ UGen.allSubclasses.do({arg it;
 		//("function "++it.name++"."++ratefunc++"\(").post;
 		("function "++it.name++".create"++"\(...)").postln;
 
-			therearedefaults=false;
 			"\t".post;
 			if((argnames.size >0),{
 			"local ".post;
-			argnames.asString.replace("SymbolArray[",' ').replace("]",' ').post;
+			//argnames.asString.replace("SymbolArray[",' ').replace("]",' ').post;
+			argnames.asCompileString.replace("SymbolArray["," ").tr($],$ ).replace("'","").post;
 			" = assign(".post;
 			argnames.asCompileString.replace("SymbolArray[","{").tr($],$}).post;
 			",".post;
@@ -140,12 +147,10 @@ UGen.allSubclasses.do({arg it;
 				{("\treturn "++it.name++":MultiNew{").post;}
 		);
 			(ratenum.asString).post;
-			//mulind=mulind??{armet.argNames.size};
-			//comas=false;
+
 			argnames.do({arg varname,ind;
 				if( (varname!='mul') && (varname!='add'),
 					{
-						//if(comas,{",".post;},{comas=true});
 						",".post;
 						varname.asString.post;
 					}
@@ -166,32 +171,8 @@ UGen.allSubclasses.do({arg it;
 
 	}); //not out or multi
 });
-"failed classes are".postln;
+"--[[failed classes are".postln;
 failedclasses.do({arg it; it.postln;});
-)
-/*
-var therearedefaults;
-var it=Dseries;
-var metodo=it.class.findMethod(\new);
+"--]]".postln;
 
-var argnames=metodo.argNames;
-//metodo.argumentString.postln;
-argnames.do({arg varname,ind;
-				var defaultval=metodo.prototypeFrame.at(ind);
-				if((ind>0) && (defaultval.notNil),{
-					therearedefaults=true;
-					(varname.asString++"="++varname.asString++" or ").post;
-					if((defaultval.isString) || (defaultval.class.name.asString=="Symbol"),
-						{("'"++defaultval.asString++"';").post;},
-						{if(defaultval==inf,{defaultval="math.huge"});
-						(defaultval.asString++";").post;}
-					);
-				});
-			});
-*/
-(
-a=["Out","MultiOutUGen","OutputProxy","BinaryOpUGen","UnaryOpUGen","MulAdd"];
-a.asString.replace("[",' ').tr($],$}).postln;
-"zzzzzz".postln;
-a.asString.replace("[",' ').replace("]",' ').post;
-)
+0.exit;
