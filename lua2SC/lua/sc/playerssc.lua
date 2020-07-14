@@ -798,19 +798,18 @@ function OscPianoEP(t)
 	player.pedalqueue =  {}
 	player.pianofreequeue = {}
 	player.pianonodes =  {}
+	player.nodetimetofree = {}
 	OSCPlayers[#OSCPlayers + 1]= player
 	return player
 end
---function OscPianoEventPlayer:Play()
---	
---	self:doFreeQueue(self.ppqPos)
---	if not self.pianopedal then
---		self:doPedalQueue()
---	end
---	OscEventPlayer.Play(self)
---end
+
+function OscPianoEventPlayer:Play()
+	self:doFreeQueue()
+	OscEventPlayer.Play(self)
+end
 function OscPianoEventPlayer:setFreeQueue(node,time,freq)
-	table.insert(self.pianofreequeue,{time=time,node=node,freq=freq}) 
+	table.insert(self.pianofreequeue,{time=time,node=node,freq=freq})
+	self.nodetimetofree[node] = time
 	self.freeQueueDirty = true
 end
 function OscPianoEventPlayer:doFreeQueue()
@@ -826,13 +825,19 @@ function OscPianoEventPlayer:doFreeQueue()
 	local pianofreequeue = self.pianofreequeue
     repeat        
         if pianofreequeue[1] and pianofreequeue[1].time <= ppq then
-			if self.pianopedal then
-				self.pedalqueue[pianofreequeue[1].node] = pianofreequeue[1]
-			elseif self.pianonodes[pianofreequeue[1].freq] then
-				local off = {"/n_set",{pianofreequeue[1].node,"gate",{"float",0}}}
-				sendBundle(off, theMetro:ppq2time(pianofreequeue[1].time))
-				self.pianonodes[pianofreequeue[1].freq] = nil
-				self.pedalqueue[pianofreequeue[1].node] = nil
+			if self.nodetimetofree[pianofreequeue[1].node] <= ppq then
+				if self.pianopedal then
+					self.pedalqueue[pianofreequeue[1].node] = pianofreequeue[1]
+				elseif self.pianonodes[pianofreequeue[1].freq] then
+					local off = {"/n_set",{pianofreequeue[1].node,"gate",{"float",0}}}
+					sendBundle(off, theMetro:ppq2time(self.nodetimetofree[pianofreequeue[1].node]))
+					self.pianonodes[pianofreequeue[1].freq] = nil
+					self.pedalqueue[pianofreequeue[1].node] = nil
+				--else
+					--print("bad freequeue",pianofreequeue[1].node)
+				end
+			--else
+				--print("skip free",pianofreequeue[1].node,ppq)
 			end
             table.remove(pianofreequeue, 1)  
 		else
@@ -851,6 +856,7 @@ function OscPianoEventPlayer:doPedalQueue()
 	end
 	self.pedalqueue = {}
 end
+
 function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta) 
 	
 	--set defaults, get freq,escale,legato,inst
@@ -871,11 +877,9 @@ function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 	if lista.freq then
 		freq = lista.freq
 	elseif lista.note then
-		--freq = functabla(lista.note,midi2freq)
 		freq = midi2freq(lista.note)
 	elseif lista.degree then
 		freq = midi2freq(getNote(lista.degree,escale))
-		--freq = functabla(freq,midi2freq)
 	end
 	lista.note=nil;lista.degree=nil;lista.freq=freq
 	
@@ -885,22 +889,15 @@ function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		beatLen = beatLen * lista.legato;legato=lista.legato;lista.legato=nil 
 	end
 
-	--inst = lista.inst or "default";
 	local inst = lista.inst or self.inst
 	lista.inst=nil
 	
 	if lista.pianopedal~=nil then
 		self.pianopedal = lista.pianopedal
-		--prerror("self.pianopedal",self.pianopedal)
-		--if self.pianopedal then
-			--self:doFreeQueue()
-		--end
 	end
-	self:doFreeQueue()
 	lista.pianopedal = nil
 
 	if IsREST(freq) then
-		--self:Release(theMetro:ppq2time(beatTime)) 
 		return  
 	end
 	if IsNOP(freq) then
@@ -914,11 +911,15 @@ function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 		if thisnode then
 			on ={"/n_set", {thisnode}}
 		else
-			thisnode = GetNode() --self:GetNode(beatTime)
+			thisnode = GetNode()
 			self.pianonodes[freq] = thisnode
+
 			on ={"/s_new", {inst, thisnode, 0, self.instr_group}}
+
 			OSCFunc.newfilter("/n_end",thisnode,function(noty) 
-				self.pianonodes[freq] = nil
+				if self.pianonodes[freq]==thisnode then
+					self.pianonodes[freq] = nil
+				end
 				self.pedalqueue[thisnode] = nil
 			end,true)
 		end
@@ -927,7 +928,6 @@ function OscPianoEventPlayer:playOneEvent(lista,beatTime, beatLen,delta)
 	-- get is_ctrl_mapper
 	local listafunc = {}
 	for k,v in pairs(lista) do
-		--if type(v)=="function" then
 		if type(v)=="table" and v.is_ctrl_mapper then
 			listafunc[k]=v
 			lista[k]=nil
