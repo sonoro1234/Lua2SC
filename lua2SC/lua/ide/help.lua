@@ -18,12 +18,21 @@ local function DisplayHelp()
 	topsizer:SetSizeHints(htmlframe)
 	htmlframe:Show()
 --]]
-io.popen(lua2scpath.."doc/index.html")
+	if jit.os == "Linux" then
+		io.popen("xdg-open "..lua2scpath.."doc/index.html")
+	else --windows
+		io.popen(lua2scpath.."doc/index.html")
+	end
 end
 
 local function DisplaySCHelp()
 	local editor = currentSTC 
-	local searchtex
+	local searchtex,pre
+	if jit.os == "Linux" then
+		pre = "xdg-open "
+	else
+		pre = ""
+	end
 	if editor then
 		local startSel = editor:GetSelectionStart()
 		local endSel   = editor:GetSelectionEnd()
@@ -35,7 +44,7 @@ local function DisplaySCHelp()
 		local lfs = require"lfs_ffi"
 		local classhtml = lua2scpath.."../SuperCollider/RenderedHelp/Classes/"..searchtex..".html"
 		if lfs.attributes(classhtml) then
-			io.popen(classhtml)
+			io.popen(pre..classhtml)
 		else
 			local htmcontent = [[<html><head>
 <meta http-equiv="refresh" content="0;url=file:///]]..lua2scpath.."../SuperCollider/RenderedHelp/Search.html#"..searchtex..[[ "></head></html>]]
@@ -44,11 +53,11 @@ local function DisplaySCHelp()
 			if tmpfile then
 				tmpfile:write(htmcontent)
 				tmpfile:close()
-				io.popen(tmppath)
+				io.popen(pre..tmppath)
 			end
 		end
 	else
-		io.popen(lua2scpath.."../SuperCollider/RenderedHelp/Help.html")
+		io.popen(pre..lua2scpath.."../SuperCollider/RenderedHelp/Help.html")
 	end
 end
 
