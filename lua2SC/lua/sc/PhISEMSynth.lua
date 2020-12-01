@@ -154,6 +154,7 @@ function PhISEM:MakeSynth(name,preset)
 ---[[
 	SynthDef(name, {out = 0,gate=1,ffac = 1,pan = 0,amp=0.1,
 freqs=Ref(t.freqs),sys_dec=t.sys_dec,sound_dec=t.sound_dec,amps=Ref(t.amps),decays=Ref(t.decays),f_rand=Ref(t.freq_rand),objects=t.objects,GAIN=t.GAIN,Zeros=Ref(t.Zeros)}, function()
+	RandID.ir(23)
 	local objectsm = objects:max(2)
 	--local pulses = Dust.ar(objects*43, 1)
 	local pulses = Dust.ar(objectsm*43, 1):sign()
@@ -243,8 +244,9 @@ Effects={FX("gverb")}
 --EPinstGUI(player)
 theMetro:play(120,-4,1)	
 preset = "Claps"
-PhISEM:MakeSynth(preset)	
-local instGui = InstrumentsGUI(preset,false)
+PhISEM:MakeSynth(preset)
+Sync()	
+local instGui = InstrumentsGUI(preset)
 MidiToOsc.AddChannel(0,instGui,{0.0})
 
 FreqScope()
