@@ -61,9 +61,9 @@ function newMidiEvent(midiEvent)
     --add the aliased accessors
     addMidiMetaTable(midiEvent)
     --zero velocity to note off mapping
-    if midiEvent.type==midi.noteOn and midiEvent.velocity==0 then
-        midiEvent.type = midi.noteOff    
-    end
+--    if midiEvent.type==midi.noteOn and midiEvent.velocity==0 then
+--        midiEvent.type = midi.noteOff    
+--    end
     --record which notes are currently down
     if midiEvent.type==midi.noteOn then
         inputNotesDown[midiEvent.byte2+128*midiEvent.channel] = midiEvent.byte3

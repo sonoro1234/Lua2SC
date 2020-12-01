@@ -353,7 +353,7 @@ function iguinotify(self,control)
 	var[control.variable[#control.variable]]=control:val()
 	self:SendParam(control.variable[1])
 end 
-function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,mono)
+function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,args)
 	local ch = ch or 0
 	local igui = igui or {inst="default",params={},oscfree=true}
 	MidiToOsc.vars[ch]=igui 
@@ -373,7 +373,8 @@ function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,mono)
 	MidiToOsc.vars[ch].recorded = {}
 	addMidiFilter{callback=MidiToOsc.midi2osc,channel=ch}
 	MidiToOsc.vars[ch].sends = sends or {}
-	MidiToOsc.vars[ch].mono = mono
+	MidiToOsc.vars[ch].mono = args and args.mono or false
+	MidiToOsc.vars[ch].args = args or {}
 	MidiToOsc.vars[ch].keylist = {}
 	return igui
 end
@@ -460,7 +461,10 @@ function MidiToOsc.midi2osc(midiEvent)
 			table.insert(thisMidiOsc.keylist,midiEvent.byte2)
 		else
 			nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
-			if not nodo then
+			if not nodo or thisMidiOsc.args.retrig then
+				if nodo and thisMidiOsc.args.retrig then
+					NodesOFF(nodo)
+				end
 				nodo = GetNode()
 				snew = true
 			end
@@ -504,7 +508,22 @@ function MidiToOsc.midi2osc(midiEvent)
 		else --not snew
 			if thisMidiOsc.on_maker then
 				on ={"/n_set", {nodo}}
-				thisMidiOsc:on_maker(freq,amp)
+				multipars = thisMidiOsc:on_maker(freq,amp)
+				if multipars then
+					multion = {}
+					for ii=1,#multipars do
+						local inst = multipars[ii].inst or thisMidiOsc.inst
+						multipars[ii].inst = nil
+						if ii==1 then
+							multinode = {nodo[1]}
+						else
+							table.insert(multinode,nodo[ii] or GetNode())
+						end
+						--prtable(multinode)
+						table.insert(multion ,{"/n_set", {multinode[ii]}})
+					end
+					--nodo = multinode
+				end
 			else
 				on ={"/n_set", { nodo, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
@@ -564,7 +583,18 @@ function MidiToOsc.midi2osc(midiEvent)
 			end
 		else --poly dontfree
 			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
-			if nodo then MidiToOsc.free_queue[ch][nodo] = true end
+			if nodo then MidiToOsc.free_queue[ch][nodo] = midiEvent.byte2 end
+		end
+	elseif midiEvent.type==midi.cc and midiEvent.byte2 == 64 then --sustain
+		if midiEvent.byte3 == 127 then
+			thisMidiOsc.oscfree = false
+		else
+			for nodo,byte2 in pairs(MidiToOsc.free_queue[ch]) do
+				NodesOFF(nodo)
+				MidiToOsc.nodesMidi2Osc[midiEvent.channel][byte2] = nil
+			end
+			MidiToOsc.free_queue[ch] = {}
+			thisMidiOsc.oscfree = true
 		end
 	else
 		--sendMidi(midiEvent)
