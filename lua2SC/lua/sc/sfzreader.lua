@@ -120,6 +120,7 @@ local function getParams(sfz,nota,amp)
 		params.volume = reg.volume or 0
 		params.xf = CalcXF(reg,nota,amp)
 		params.gate = 1
+		params.t_trig = 1
 		params.amp = amp
 		params.offset = reg.offset or 0
 		params.pan = reg.pan and reg.pan/100 or 0
@@ -199,13 +200,14 @@ function M.load_buffers(sfz)
 		local default_path = sfz.control and sfz.control.default_path or ""
 		local path = sfz.folder.."/"..default_path..r.sample
 		
-		if not (r.loop_start or r.loop_end) then
+		if not (r.loop_start or r.loop_end) and not sfz.options.dontloop  then
 			--get loop info
 			local sf = sndfile.Sndfile(path)
 			print("sf load",path,sf:channels(),sf:frames(),sf:samplerate(),sf:format())
 			local inst = ffi.new"SF_INSTRUMENT[1]"
 			local instret = sndfile.sf_command (sf.sf, sndfile.SFC_GET_INSTRUMENT, inst, ffi.sizeof(inst[0])) ;
 			if instret==sndfile.SF_TRUE and inst[0].loop_count > 0 then
+				--print(inst[0].loops[0].mode, ffi.C.SF_LOOP_NONE,inst[0].loops[0].count)
 				r.loop_start = r.loop_start or inst[0].loops[0].start
 				r.loop_end = r.loop_end or inst[0].loops[0]["end"]
 			end
@@ -213,7 +215,11 @@ function M.load_buffers(sfz)
 		end
 		if not bufbyname[path] then
 			local buf = s.Buffer()
-			buf:allocRead(path,0,-1)
+			if sfz.options.load_mono then
+				buf:allocReadChannel(path,0,-1)
+			else
+				buf:allocRead(path,0,-1)
+			end
 			table.insert(allbuffers, buf)
 			r.bufindex = #allbuffers
 			bufbyname[path] = r.bufindex
@@ -257,17 +263,17 @@ SynthDef("sfzloopbuf1",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endlo
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
-SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=0,rate=1,amp=1,volume=0,offset=0,xf=1},function()
+SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=1,rate=1,t_trig=1,amp=1,volume=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
-	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate-t_trig, doneAction= 2}
+	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,t_trig,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
-SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=0,rate=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
+SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=1,rate=1,t_trig=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
-	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate-t_trig, doneAction= 2}
+	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,t_trig,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
@@ -391,8 +397,13 @@ function M.read(fpath,options)
 		end
 		if not r.pitch_keycenter then 
 			--print"not pitch_keycenter";prtable(r);
-			assert(r.lokey<=60 and r.hikey>=60)
-			r.pitch_keycenter=60 
+			if (r.lokey<=60 and r.hikey>=60) then
+				r.pitch_keycenter=60
+			elseif r.lokey==r.hikey then
+				r.pitch_keycenter = r.lokey
+			else
+				prerror"bad pitch_keycenter"
+			end
 		end
 	end
 	-- find keyboard
