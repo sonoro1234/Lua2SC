@@ -476,56 +476,19 @@ function UGen:lag(t1,t2)
 	end
 end
 -------------operators
---[[
-function UGen:round(b) return BinaryOpUGen.newop('round',self,b) end
-function UGen:pow(b) return BinaryOpUGen.newop('pow',self,b) end
-function UGen:max(b) return BinaryOpUGen.newop('max',self,b) end
-function UGen:min(b) return BinaryOpUGen.newop('min',self,b) end
-function UGen:clip2(b) return BinaryOpUGen.newop('clip2',self,b) end
-function UGen:ring1(b) return BinaryOpUGen.newop('ring1',self,b) end
-function UGen:midicps() return UnaryOpUGen.newop('midicps',self) end
-function UGen:ampdb() return UnaryOpUGen.newop('ampdb',self) end
-function UGen:dbamp() return UnaryOpUGen.newop('dbamp',self) end
-function UGen:neg() return UnaryOpUGen.newop('neg',self) end
-function UGen:reciprocal() return UnaryOpUGen.newop('reciprocal',self) end
---function UGen:round() return UnaryOpUGen.newop('round',self) end
-function UGen:tanh() return UnaryOpUGen.newop('tanh',self) end
-function UGen:distort() return UnaryOpUGen.newop('distort',self) end
-function UGen:sqrt() return UnaryOpUGen.newop('sqrt',self) end
-function UGen:squared() return UnaryOpUGen.newop('squared',self) end
-function UGen:cubed() return UnaryOpUGen.newop('cubed',self) end
-function UGen:exp() return UnaryOpUGen.newop('exp',self) end
-function UGen:log() return UnaryOpUGen.newop('log',self) end
-function UGen:abs() return UnaryOpUGen.newop('abs',self) end
-function UGen:sign() return UnaryOpUGen.newop('sign',self) end
-function UGen:cos() return UnaryOpUGen.newop('cos',self) end
-function UGen:tan() return UnaryOpUGen.newop('tan',self) end
---]]
-operators={["=="]=6,["neg"]=0,["reciprocal"]=16,["bitNot"]=4,["abs"]=5,["asFloat"]=6,["ceil"]=8,["floor"]=9,["frac"]=10,["sign"]=11,["squared"]=12,["cubed"]=13,["sqrt"]=14,["exp"]=15,["midicps"]=17,["cpsmidi"]=18,["midiratio"]=19,["ratiomidi"]=20,["ampdb"]=22,["dbamp"]=21,["octcps"]=23,["cpsoct"]=24,["log"]=25,["log2"]=26,["log10"]=27,["sin"]=28,["cos"]=29,["tan"]=30,["asin"]=31,["acos"]=32,["atan"]=33,["sinh"]=34,["cosh"]=35,["tanh"]=36,["rand"]=37,["rand2"]=38,["linrand"]=39,["bilinrand"]=40,["sum3rand"]=41,["distort"]=42,["softclip"]=43,["coin"]=44,["rectWindow"]=48,["hanWindow"]=49,["welWindow"]=50,["triWindow"]=51,["scurve"]=53,["ramp"]=52,["+"]=0,["-"]=1,["*"]=2,["/"]=4,["div"]=3,["mod"]=5,["pow"]=25,["min"]=12,["max"]=13,["<"]=8,["<="]=10,[">"]=9,[">="]=11,["lcm"]=17,["gcd"]=18,["round"]=19,["roundUp"]=20,["trunc"]=21,["atan2"]=22,["hypot"]=23,["hypotApx"]=24,["leftShift"]=26,["rightShift"]=27,["unsignedRightShift"]=28,["ring1"]=30,["ring2"]=31,["ring3"]=32,["ring4"]=33,["difsqr"]=34,["sumsqr"]=35,["sqrsum"]=36,["sqrdif"]=37,["absdif"]=38,["thresh"]=39,["amclip"]=40,["scaleneg"]=41,["clip2"]=42,["fold2"]=44,["wrap2"]=45,["excess"]=43,["rrand"]=47,["exprand"]=48,["not"]=1}
+local binary_ops={
+["+"]=0,["-"]=1,["*"]=2,["/"]=4,["div"]=3,["mod"]=5,["pow"]=25,["min"]=12,["max"]=13,["<"]=8,["<="]=10,[">"]=9,[">="]=11,["bitAnd"]=14,["bitOr"]=15,["bitXor"]=16,["lcm"]=17,["gcd"]=18,["round"]=19,["roundUp"]=20,["trunc"]=21,["atan2"]=22,["hypot"]=23,["hypotApx"]=24,["leftShift"]=26,["rightShift"]=27,["unsignedRightShift"]=28,["ring1"]=30,["ring2"]=31,["ring3"]=32,["ring4"]=33,["difsqr"]=34,["sumsqr"]=35,["sqrsum"]=36,["sqrdif"]=37,["absdif"]=38,["thresh"]=39,["amclip"]=40,["scaleneg"]=41,["clip2"]=42,["fold2"]=44,["wrap2"]=45,["excess"]=43,["firstArg"]=46,["rrand"]=47,["exprand"]=48,["=="]=6,["!="]=7,}
+local unary_ops={
+["neg"]=0,["reciprocal"]=16,["bitNot"]=4,["abs"]=5,["asFloat"]=6,["asInteger"]=7,["ceil"]=8,["floor"]=9,["frac"]=10,["sign"]=11,["squared"]=12,["cubed"]=13,["sqrt"]=14,["exp"]=15,["midicps"]=17,["cpsmidi"]=18,["midiratio"]=19,["ratiomidi"]=20,["ampdb"]=22,["dbamp"]=21,["octcps"]=23,["cpsoct"]=24,["log"]=25,["log2"]=26,["log10"]=27,["sin"]=28,["cos"]=29,["tan"]=30,["asin"]=31,["acos"]=32,["atan"]=33,["sinh"]=34,["cosh"]=35,["tanh"]=36,["rand"]=37,["rand2"]=38,["linrand"]=39,["bilinrand"]=40,["sum3rand"]=41,["distort"]=42,["softclip"]=43,["coin"]=44,["rectWindow"]=48,["hanWindow"]=49,["welWindow"]=50,["triWindow"]=51,["scurve"]=53,["ramp"]=52,["not"]=1,["isNil"]=2,["notNil"]=3,["digitValue"]=45,["silence"]=46,["thru"]=47,}
 
-binops = {'==','+','-','*','/','div','%','**','min','max','<','<=','>','>=','&','|','lcm','gcd','pow',
-'round','trunc','atan2','hypot','hypotApx','>>','+>>','fill','ring1','ring2','ring3',
-'ring4','difsqr','sumsqr','sqrdif','absdif','amclip','scaleneg','clip2','excess',
-'<!','rrand','exprand','rotate','dist','bitAnd','bitOr','bitXor','bitHammingDistance','@','mod'}
-
-unaryopst = {}
-unaryops = {}
-for k,v in pairs(operators) do
-	unaryopst[k] = true
-end
-for k,v in ipairs(binops) do
-	unaryopst[v] = nil
-end
-for k,v in pairs(unaryopst) do
-	unaryops[#unaryops + 1] = k
-end
---prtable(unaryops)
+--alias
+binary_ops["eq"] = binary_ops["=="]
 ---[[
-for i,v in ipairs(unaryops) do
-	UGen[v] = function(self) return UnaryOpUGen.newop(v,self) end
+for k,v in pairs(unary_ops) do
+	UGen[k] = function(self) return UnaryOpUGen.newop(k,self) end
 end
-for i,v in ipairs(binops) do
-	UGen[v] = function(self,b) return BinaryOpUGen.newop(v,self,b) end
+for k,v in pairs(binary_ops) do
+	UGen[k] = function(self,b) return BinaryOpUGen.newop(k,self,b) end
 end
 --]]
 ------------------------------------------
@@ -619,7 +582,7 @@ function UGen:dumpInputs(tab,synthdef)
 		end
 	elseif ug.name == "BinaryOpUGen" or ug.name=="UnaryOpUGen" then
 		inputs = ug.inputs
-		name = ug.selector --ug.name..ug.selector
+		name = ug.selector .. " (special:"..ug.specialIndex..")"
 	else
 		inputs = ug.inputs
 		name = ug.name
@@ -854,11 +817,11 @@ function UGenArr:distort() return self:DoUnaryOp(UGen.distort) end
 function UGenArr:cos() return self:DoUnaryOp(UGen.cos) end
 --]]
 ---[[
-for i,v in ipairs(unaryops) do
-	UGenArr[v] = function(self) return self:DoUnaryOp(UGen[v]) end
+for k,v in pairs(unary_ops) do
+	UGenArr[k] = function(self) return self:DoUnaryOp(UGen[k]) end
 end
-for i,v in ipairs(binops) do
-	UGenArr[v] = function(self,b) return self:DoBinaryOp(UGen[v],b) end
+for k,v in pairs(binary_ops) do
+	UGenArr[k] = function(self,b) return self:DoBinaryOp(UGen[k],b) end
 end
 --]]
 ----------------------------------------------
@@ -1114,8 +1077,8 @@ end
 function BinaryOpUGen:init(selector,a,b)
 	--debuglocals()
 	self.selector=selector
-	self.specialIndex=operators[selector]
-	assert(operators[selector],"This selector does not exist")
+	self.specialIndex=binary_ops[selector]
+	assert(binary_ops[selector],"This selector does not exist")
 	self.inputs={a,b}
 	local ratea = (type(a)=="number") and 0 or a.calcrate
 	local rateb = (type(b)=="number") and 0 or b.calcrate
@@ -1128,8 +1091,8 @@ function UnaryOpUGen.newop(selector,a)
 end
 function UnaryOpUGen:init(selector,a)
 	self.selector=selector
-	self.specialIndex=operators[selector]
-	assert(operators[selector],"This selector does not exist")
+	self.specialIndex=unary_ops[selector]
+	assert(unary_ops[selector],"This selector does not exist")
 	self.inputs={a}
 	self.calcrate= type(a)=="number" and 0 or a.calcrate
 	return self

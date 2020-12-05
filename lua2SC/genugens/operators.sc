@@ -1,34 +1,42 @@
-
-////////////operators binary
-(
-~binops=['+','-','*','/','div','%','**','min','max','<','<=','>','>=','&','|','lcm','gcd',
-'round','trunc','atan2','hypot','hypotApx','>>','+>>','fill','ring1','ring2','ring3',
-'ring4','difsqr','sumsqr','sqrdif','absdif','amclip','scaleneg','clip2','excess',
-'<!','rrand','exprand','rotate','dist','bitAnd','bitOr','bitXor','bitHammingDistance','@','=='];
-
-///////////~binops.post;
-~binops.do({arg item; ("[\""++item.asString++"\"]="++item.specialIndex++",").post;})
-
-)
-
-///operator special index table
+///operato special index table
 (
 "{".post;
-AbstractFunction.methods.do({arg it; 
+AbstractFunction.methods.do({arg it;
 	if(it.name.specialIndex!= -1,
 		{
-			("[\""++it.name++"\"]="++it.name.specialIndex++",").post;
-			//it.name.specialIndex.post;
+			//("[\""++it.name++"\"]="++it.name.specialIndex++",").post;
+			it.postln;
 		}
 	)
 	});
 "}".postln;
 )
-//////////////
-/////unary ops/////////////////
-neg, reciprocal, bitNot, abs, asFloat, asInt, ceil, floor, frac, sign, squared, cubed, sqrt
-exp, midicps, cpsmidi, midiratio, ratiomidi, ampdb, dbamp, octcps, cpsoct, log, log2,
-log10, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, rand, rand2, linrand, bilinrand,
-sum3rand, distort, softclip, nyqring, coin, even, odd, isPositive, isNegative,
-isStrictlyPositive, rho, theta
-//////////////////////////////////
+////////////////////////
+//thanks to Fredrik Olofson
+//and Lucas Samaruga for https://github.com/smrg-lm/sc3/blob/master/sc3/synth/_specialindex.py
+(
+var binary= List.new, unary= List.new;
+var toString= {|name| "[%]=%,".format(name.asString.quote, name.specialIndex)};
+AbstractFunction.methods.do({arg it;
+	if(it.name.specialIndex >= 0, {  //match test in BasicOpUGen:operator_
+		if(UGen().perform(it.name, UGen()).isKindOf(BinaryOpUGen), {
+			binary.add(it.name);
+		}, {
+			unary.add(it.name);
+		});
+	});
+});
+binary.add("==".asSymbol);
+binary.add("!=".asSymbol);
+unary.add("isNil".asSymbol);
+unary.add("notNil".asSymbol);
+unary.add("digitValue".asSymbol);
+unary.add("silence".asSymbol);
+unary.add("thru".asSymbol);
+"binary_ops={".postln;
+binary.do{|x| toString.(x).post};
+"}".postln;
+"unary_ops={".postln;
+unary.do{|x| toString.(x).post};
+"}".postln;
+)
