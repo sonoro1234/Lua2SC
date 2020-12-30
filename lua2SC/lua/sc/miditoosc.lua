@@ -596,7 +596,21 @@ function MidiToOsc.midi2osc(midiEvent)
 			MidiToOsc.free_queue[ch] = {}
 			thisMidiOsc.oscfree = true
 		end
+	elseif midiEvent.type == midi.pb and thisMidiOsc.node then
+		if thisMidiOsc.mono then
+			local lastnote = thisMidiOsc.keylist[#thisMidiOsc.keylist]
+			if lastnote then
+				local ff = midi2freq(lastnote)*midi2ratio((thisMidiOsc.args.pbfac or 1)*(midiEvent.byte3-64)/64)
+				on ={"/n_set", { thisMidiOsc.node, "freq", {"float" ,ff}}}
+				sendBundle(on)
+			end
+		else
+			on ={"/n_set", { thisMidiOsc.node, "pb", {"float" ,(midiEvent.byte3-64)/64}}}
+			sendBundle(on)
+		end
+		--print(midiEvent.byte3,thisMidiOsc.node)
 	else
+		--print(tb2st(midiEvent)) 
 		--sendMidi(midiEvent)
     end
 end
