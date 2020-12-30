@@ -120,7 +120,6 @@ local function getParams(sfz,nota,amp)
 		params.volume = reg.volume or 0
 		params.xf = CalcXF(reg,nota,amp)
 		params.gate = 1
-		params.t_trig = 1
 		params.amp = amp
 		params.offset = reg.offset or 0
 		params.pan = reg.pan and reg.pan/100 or 0
@@ -263,17 +262,17 @@ SynthDef("sfzloopbuf1",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endlo
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
-SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=1,rate=1,t_trig=1,amp=1,volume=0,offset=0,xf=1},function()
+SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=1,rate=1,amp=1,volume=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
-	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate-t_trig, doneAction= 2}
-	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,t_trig,offset,0,0)*env*amp*volume:dbamp()*xf
+	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
+	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
-SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=1,rate=1,t_trig=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
+SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=1,rate=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
-	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate-t_trig, doneAction= 2}
-	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,t_trig,offset,0,0)*env*amp*volume:dbamp()*xf
+	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
+	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
@@ -432,7 +431,8 @@ function M.read(fpath,options)
 	--sfz.keyboard.minmidi = minmidi
 	sfz.minkey, sfz.maxkey = minmidi,maxmidi
 
-	for n=noteToNumber"c1",noteToNumber"c8" do
+	for n=noteToNumber"c0",noteToNumber"c8" do
+		--print("notenumber",n)
 		for i,r in ipairs(sfz.regions) do
 			if n >= r.lokey and n <= r.hikey then
 				if not (r.xfout_hikey and (r.xfout_hikey <= n)) then
