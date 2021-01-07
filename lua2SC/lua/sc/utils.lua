@@ -29,7 +29,7 @@ function linearmap_c(s,e,ds,de,v)
 	return clip(((de-ds)*(v-s)/(e-s)) + ds,min,max)
 end
 function expinterpolation(s,e,ds,de,v)
-	return linearmap(math.exp(s),math.exp(e),ds,de,math.exp(v))
+	return linearmap_c(math.exp(s),math.exp(e),ds,de,math.exp(v))
 end
 function expinterpolation2(s,e,ds,de,v)
 	return ds * (de/ds)^((v - s)/(e - s))
