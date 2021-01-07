@@ -170,13 +170,16 @@ end
 local function MakeCoralSynth(Tract,name,freqs,resamp)
 	Tract:MakeSynth(name,{Rd=0.3,namp=0.04,nwidth=0.4,vibrate=5,vibdepth=0.01,rv=0.05,jitter=0.01,vibampfac=20},
 	function()
-	
-	--local freqs = TA():series(10,1 - 0.002*5,0.002)
+	RandID.ir(1)
+	local jitters = TA():Fill(#freqs,jitter)
+	local jitfac = LFDNoise3.kr(2*10,jitters,1)
+	--local jitfac2 = LFDNoise3.kr(2*10,jitter*6,1)
 	freqs = freq * freqs
-	freqs = freqs + freqs * LFDNoise3.kr(10,jitter)
+	--freqs = freqs + freqs * LFDNoise3.kr(10,jitter)
+	freqs = freqs * jitfac
 	local vibratoF =  Vibrato.kr{freqs, rate= vibrate, depth= vibdepth, delay= 0.0, onset= 0, 	rateVariation= rv, depthVariation= 0.1, iphase =  0}
 
-	local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)
+	local Tp,Te,Ta,alpha,Ee = Rd2Times(Rd)--*jitfac2)
 
 	local exci = LFglottal.ar(vibratoF,Tp,Te,Ta,alpha,namp,nwidth)*glot*3*Ee
 	
@@ -193,6 +196,7 @@ local function MakeCoralSynth(Tract,name,freqs,resamp)
 end
 
 local function LFexci()
+		RandID.ir(1)
 		--freq = freq + freq*WhiteNoise.kr(0.01)
 		--freq = freq + freq * LFDNoise3.kr(50,jitter)
 		local jitfac = LFDNoise3.kr(2*10,jitter,1)
