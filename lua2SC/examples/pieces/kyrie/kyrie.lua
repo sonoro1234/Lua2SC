@@ -14,8 +14,8 @@
 LILY = require"sc.lilypond"
 
 --------------------- synthdefs ----------------------
-tract = require"num.Tract"(26)
---tract = require"num.vocaltract"(26,true,true)
+tract = require"num.tract"(26)
+--tract = require"num.vocaltractB"(26,true,true)
 --tract = require"num.vocaltract"(26,false,true)
 
 SynthDef("dwgreverb", { busin=0, busout=0,c1=4,c3=4,len=1200,mix = 1},function()
