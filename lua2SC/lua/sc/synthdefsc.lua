@@ -141,6 +141,10 @@ Env_mt.__call=function(self,...)
 	return self.new(...)
 end
 setmetatable(Env,Env_mt)
+
+function Env:plot(t)
+	PlotEnv(self,t or 0.1)
+end
 function Env.newClear(numSegments)
 		local numSegments = numSegments or 8;
 		return Env.new(TA():Fill(numSegments+1,0), TA():Fill(numSegments,1))
