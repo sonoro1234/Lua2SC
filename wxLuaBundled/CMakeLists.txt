@@ -94,7 +94,7 @@ set(wxLua_LUA_LIBRARY_USE_BUILTIN FALSE)
 set(wxLua_LUA_LIBRARY ${LUA_LIBRARY})
 set(wxLua_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
 
-set(wxWidgets_COMPONENTS "stc;gl;html;aui;adv;core;net;base")
+set(wxWidgets_COMPONENTS "gl;core;stc;html;aui;adv;net;base")
 set(wxLuaBind_COMPONENTS ${wxWidgets_COMPONENTS})
 #set(wxWidgets_EXCLUDE_COMMON_LIBRARIES ON) #wxWidgets built without tiff, expat ...
 if(setDEBUG_LEVEL)
