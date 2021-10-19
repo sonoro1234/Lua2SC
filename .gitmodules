@@ -14,7 +14,6 @@
 [submodule "wxLua"]
 	path = wxLuaBundled/wxlua
 	url = https://github.com/sonoro1234/wxLua
-	branch = cmakeimm
 [submodule "wxWidgets"]
 	path = wxLuaBundled/wxWidgets
 	url = https://github.com/sonoro1234/wxWidgets
