@@ -13,7 +13,14 @@ if(NOT EXISTS ${LUAJIT_BUILD})#only build if not done before
 	
 	message("-----------------------copying LuaJIT files")
 	file(MAKE_DIRECTORY ${ljpre})
-	file(COPY ${LUAJIT_SOURCES} DESTINATION ${ljpre})
+	#file(COPY ${LUAJIT_SOURCES} DESTINATION ${ljpre})
+	#generate .relver
+	execute_process(COMMAND git archive -o archivo.tar HEAD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/LuaJIT)
+	#move sources to binary and extract
+	execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/LuaJIT/archivo.tar ${ljpre})
+	execute_process(COMMAND ${CMAKE_COMMAND} -E tar x archivo.tar WORKING_DIRECTORY ${ljpre})
+	#delete archivo.tar
+	execute_process(COMMAND ${CMAKE_COMMAND} -E rm archivo.tar WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/LuaJIT)
 	
 	message("---------------------------- making LuaJIT -------------------------------")
 	if(UNIX)
