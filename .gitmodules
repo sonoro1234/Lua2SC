@@ -13,10 +13,13 @@
 	url = https://github.com/sonoro1234/luasocket.git
 [submodule "wxLua"]
 	path = wxLuaBundled/wxlua
-	url = https://github.com/sonoro1234/wxLua
+	url = https://github.com/pkulchenko/wxLua
 [submodule "wxWidgets"]
 	path = wxLuaBundled/wxWidgets
-	url = https://github.com/sonoro1234/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets
 [submodule "LuaJIT-libsndfile"]
 	path = LuaJIT-libsndfile
 	url = https://github.com/sonoro1234/LuaJIT-libsndfile.git
+[submodule "portmidi"]
+	path = portmidi
+	url = https://github.com/PortMidi/portmidi.git

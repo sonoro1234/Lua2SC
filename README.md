@@ -37,12 +37,19 @@ from build directory:
 * set LUAJIT_BIN to the desired installation absolute location in init_cmake.bat (.sh)
 * add -DBUILD_WXLUA=ON in init_cmake.bat if you wish to also build wx module.
 * run init_cmake.bat (or copy to init_cmake.sh)
-* make
+* make (without install)
 * make install
 
 you will get Lua2SC installed directory where you pointed LUAJIT_BIN to.
 
 this directory can be copied anywhere.
+
+-------------Including Supercollider
+
+* To use an already existing Supercollider installation, you should set the relevant paths in Debug/Settings
+* Another option is to copy Supercollider inside Lua2SC folder, a synthdefs folder can be created inside Supercollider
+* After adding new UGens to the installation you should execute lua2SC/genugens/genugens.bat to get the Lua definitions.
+* To generate html docs you should execute lua2SC/renderSChelp/buildhelp.bat (.sh)
 
 
 --------------To first try---------------------
