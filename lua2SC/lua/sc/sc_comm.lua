@@ -277,7 +277,6 @@ function InitSCCOMM()
 		function ThreadServerSend(msg)
 			mainlinda:send("sendsc",toOSC(msg))
 		end
-		print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY)
 	elseif sc_comm_type == "tcp" then
 		SERVER_CLOCK_LATENCY = 0.2
 		udp ,udpB = inittcp()
@@ -288,6 +287,7 @@ function InitSCCOMM()
 		error(msg)
 		return
 	end
+	print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY, sc_comm_type)
 	udp:send(toOSC{"/clearSched",{}})
 	--udp:send(toOSC({"/dumpOSC",{dumpOSC}})) -- escribir scsynt lo que le llega
 	udp:send(toOSC({"/g_freeAll",{0}}))
