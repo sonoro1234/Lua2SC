@@ -332,7 +332,7 @@ function midiEventToString(event)
 	
 	retval = "Ch: "..(event.channel+1).." "..(midiTypeNames[event.type] or "type "..event.type).." "
 	if event.type==midi.noteOn or event.type==midi.noteOff then
-		retval = retval..(numberToNote(event.byte2).." "..event.byte3.." ")
+		retval = retval..(numberToNote(event.byte2)..": "..event.byte2.." vel:"..event.byte3.." ")
 	end
 	
 	if event.type==midi.cc  then

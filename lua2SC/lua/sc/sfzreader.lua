@@ -1,21 +1,36 @@
 local M = {}
 
-local known_opcodes = {hikey=0,lokey=0,hivel=0,lovel=0,key=0,group=0,pan=0,pitch_keycenter=0,tune=0,sample=0,volume=0,loop_start=0,loop_end=0,offset=0,pitch_random=0,xfin_hikey=0,xfin_hivel=0,xfin_lokey=0,xfin_lovel=0,xfout_hikey=0,xfout_hivel=0,xfout_lokey=0,xfout_lovel=0,seq_length=0,seq_position=0,transpose=0,default_path=0,hirand=0,lorand=0}
+local known_opcodes = {hikey=0,lokey=0,hivel=0,lovel=0,key=0,group=0,pan=0,pitch_keycenter=0,tune=0,sample=0,volume=0,loop_start=0,loop_end=0,offset=0,pitch_random=0,xfin_hikey=0,xfin_hivel=0,xfin_lokey=0,xfin_lovel=0,xfout_hikey=0,xfout_hivel=0,xfout_lokey=0,xfout_lovel=0,seq_length=0,seq_position=0,transpose=0,default_path=0,hirand=0,lorand=0, curve_index=0}
 M.known_opcodes = known_opcodes
 
 local xf_opcodes = {xfin_hikey=0,xfin_hivel=0,xfin_lokey=0,xfin_lovel=0,xfout_hikey=0,xfout_hivel=0,xfout_lokey=0,xfout_lovel=0}
-
-local key_opcodes = {xfin_hikey=0, xfin_lokey=0, xfout_hikey=0, xfout_lokey=0,lokey=0,hikey=0,key=0,pitch_keycenter=0}
+local sw_opcodes = {sw_last=0,sw_lokey=0,sw_hikey=0,sw_default=0, sw_label = 0}
+--this will convert string to number
+local key_opcodes = {xfin_hikey=0, xfin_lokey=0, xfout_hikey=0, xfout_lokey=0,lokey=0,hikey=0,key=0,pitch_keycenter=0,sw_last=0,sw_lokey=0,sw_hikey=0,sw_default=0}
 
 local ampeg_def = {ampeg_start=0,ampeg_sustain=100,ampeg_delay=0,ampeg_attack=0,ampeg_hold=0,ampeg_decay=0,ampeg_release=0.1,ampeg_vel2delay=0,ampeg_vel2attack=0,ampeg_vel2hold=0,ampeg_vel2decay=0,ampeg_vel2sustain=0,ampeg_vel2release=0}
 
+--only for display 
+local label_opcodes = {region_label=0, master_label=0, global_label=0, group_label=0}
+
 for k,v in pairs(ampeg_def) do known_opcodes[k]=v end
 for k,v in pairs(xf_opcodes) do known_opcodes[k]=v end
+for k,v in pairs(label_opcodes) do known_opcodes[k]=v end
+for k,v in pairs(sw_opcodes) do known_opcodes[k]=v end
 
 local function getSFZdata(sfz,nota,amp)
 	nota = math.floor(nota+0.5)
-	if sfz.dump then print(nota,amp,amp*127) end
-	if not sfz.keyboard[nota] then prtable(sfz.keyboard) end
+	--keep sw_last
+	if sfz.sw.sw_lokey then
+		if nota >= sfz.sw.sw_lokey and nota <= sfz.sw.sw_hikey then
+			if not sfz.sw.labels[nota] then return nil end --this sw zone not setted, leave last sw_last
+			if sfz.dump then print("sw note:", nota, sfz.sw.labels[nota]) end
+			sfz.sw.sw_last = nota
+			return nil -- dont play
+		end
+	end
+	if sfz.dump then print("note:", nota, "amp:", amp,amp*127) end
+	if not sfz.keyboard[nota] then print("note not in keyboard:"..nota) end ---prtable(sfz.keyboard) end
 	local vel = amp*127
 	local rand = math.random()
 	local regs = sfz.keyboard[nota]
@@ -23,6 +38,7 @@ local function getSFZdata(sfz,nota,amp)
 	local good_regs = {}
 	for i,r in ipairs(regs) do
 		local reg = sfz.regions[r.region]
+		if reg.sw_last and reg.sw_last ~= sfz.sw.sw_last then goto CONTINUE end
 		if reg.lovel<=vel and (reg.hivel+1)>vel and reg.lorand<=rand and reg.hirand>rand then
 			if reg.xfin_lovel and vel <= reg.xfin_lovel then goto CONTINUE end
 			if reg.xfout_hivel and vel >= reg.xfout_hivel then goto CONTINUE end
@@ -85,7 +101,8 @@ local function getParams(sfz,nota,amp)
 		for i=1,#dat do
 			local tdat = dat[i]
 			local reg = sfz.regions[tdat.region]
-			print(reg.sample,tdat.detune,numberToNote(nota))
+			print("sample:",reg.sample,"detune:", tdat.detune, "note:", numberToNote(nota))
+			--prtable(reg)
 		end
 	end
 
@@ -195,18 +212,18 @@ function M.load_buffers(sfz)
 	local ffi = require"ffi"
 	
 	for i,r in ipairs(sfz.regions) do
-
-		local default_path = sfz.control and sfz.control.default_path or ""
+		local control = sfz.controls[r.control]
+		local default_path = control and control.default_path or ""
 		local path = sfz.folder.."/"..default_path..r.sample
 		
 		if not (r.loop_start or r.loop_end) and not sfz.options.dontloop  then
 			--get loop info
 			local sf = sndfile.Sndfile(path)
-			print("sf load",path,sf:channels(),sf:frames(),sf:samplerate(),sf:format())
 			local inst = ffi.new"SF_INSTRUMENT[1]"
 			local instret = sndfile.sf_command (sf.sf, sndfile.SFC_GET_INSTRUMENT, inst, ffi.sizeof(inst[0])) ;
 			if instret==sndfile.SF_TRUE and inst[0].loop_count > 0 then
-				--print(inst[0].loops[0].mode, ffi.C.SF_LOOP_NONE,inst[0].loops[0].count)
+				print("sf load",path,sf:channels(),sf:frames(),sf:samplerate(),sf:format())
+				print(inst[0].loops[0].mode, ffi.C.SF_LOOP_NONE,inst[0].loops[0].count)
 				r.loop_start = r.loop_start or inst[0].loops[0].start
 				r.loop_end = r.loop_end or inst[0].loops[0]["end"]
 			end
@@ -247,32 +264,32 @@ local function ampeg(amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampe
 			5)
 end
 
-SynthDef("sfzloopbuf2",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endloop=0,amp=1,volume=0,xf=1},
+SynthDef("sfzloopbuf2",AEG{out=0,bufnum=-1,gate=0,rate=1,pb=0,offset=0,stloop=0,endloop=0,amp=1,volume=0,xf=1},
 function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = LoopBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
+	local sig = LoopBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate*(2^pb),1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
-SynthDef("sfzloopbuf1",AEG{out=0,bufnum=-1,gate=0,rate=1,offset=0,stloop=0,endloop=0,amp=1,volume=0,pan=0,xf=1},function()
+SynthDef("sfzloopbuf1",AEG{out=0,bufnum=-1,gate=0,rate=1,pb=0,offset=0,stloop=0,endloop=0,amp=1,volume=0,pan=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = LoopBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
+	local sig = LoopBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate*(2^pb),1,offset,stloop,endloop)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
-SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=1,rate=1,amp=1,volume=0,offset=0,xf=1},function()
+SynthDef("sfzplayer2",AEG{out=0,bufnum=-1,gate=1,rate=1,pb=0,amp=1,volume=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local sig = PlayBuf.ar(2,bufnum,BufRateScale.kr(bufnum)*rate*(2^pb),1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,sig)
 end):store(true)
 
-SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=1,rate=1,amp=1,volume=0,pan=0,offset=0,xf=1},function()
+SynthDef("sfzplayer1",AEG{out=0,bufnum=-1,gate=1,rate=1,pb=0,amp=1,volume=0,pan=0,offset=0,xf=1},function()
 	local ampeg_vars = {amp,ampeg_start,ampeg_sustain,ampeg_delay,ampeg_attack,ampeg_hold,ampeg_decay,ampeg_release,ampeg_vel2delay,ampeg_vel2attack,ampeg_vel2hold,ampeg_vel2decay,ampeg_vel2sustain, ampeg_vel2release}
 	local env = EnvGen.ar{ampeg(unpack(ampeg_vars)), gate, doneAction= 2}
-	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate,1,offset,0,0)*env*amp*volume:dbamp()*xf
+	local sig = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum)*rate*(2^pb),1,offset,0,0)*env*amp*volume:dbamp()*xf
 	Out.ar(out,Pan2.ar(sig,pan))
 end):store(true)
 
@@ -293,15 +310,41 @@ local function keynote(note)
 function M.read(fpath,options)
 	local path = require"sc.path"
 	local folder,inst = path.splitpath(fpath)
-
-	local lines = {}
-	for line in io.lines(folder.."/"..inst) do
-		line = line:gsub("%s*//[^\n]*","")
-		if #line > 0 then table.insert(lines,line) end
+	local defines = {}
+	local includes = {}
+	local function read_file(name)
+		local lines = {}
+		for line in io.lines(name) do
+			--clean comments
+			line = line:gsub("%s*//[^\n]*","")
+			--check defines
+			local var, value = line:match("#define%s+(%$%w+)%s+(%w+)")
+			if var then 
+				--print("define",var,value)
+				defines[var] = value
+			else
+				--defines substitution
+				line = line:gsub("(%$%w+)",defines)
+				--check include
+				--local included = line:match([[#include%s+("[%w/]+")]])
+				local included = line:match([[#include%s+"(.+)"]])
+				if included then 
+					assert(not includes[included], "ciclyc include "..included)
+					includes[included] = true
+					local str = read_file(folder.."/"..included)
+					includes[included] = nil
+					table.insert(lines,str)
+				else
+					if #line > 0 then table.insert(lines,line) end
+				end
+			end
+		end
+		return table.concat(lines,"\n")
 	end
-	local cont = table.concat(lines,"\n")
+
+	local cont = read_file(folder.."/"..inst)
 	
-	local sfz = {regions={},headers={},groups = {},inst=inst,folder=folder,options=options or {}}
+	local sfz = {regions={}, headers={} ,groups = {}, globals = {}, curves = {}, controls = {}, sw = {labels={}}, inst=inst, folder=folder, options=options or {}}
 	--get headers
 	for w in cont:gmatch("(<[^<>]+>[^<>]+)") do
 		--clean comments
@@ -313,6 +356,8 @@ function M.read(fpath,options)
 	local all_opcodes = {}
 	sfz.all_opcodes = all_opcodes
 	local function getopcodes(v)
+		--clean header tag sometimes without space after
+		v = v:gsub("^<[^<>]+>","")
 		local r = {}
 		--opcodes that allow spaces
 		local k,va = v:match("(sample)=([^\n\r]+)")
@@ -327,6 +372,11 @@ function M.read(fpath,options)
 			va = va:gsub("\\","/")
 			r[k]=va 
 		end
+		local k,va = v:match("(sw_label)=([^\n\r]+)")
+		if k then 
+			va = va:gsub("([^%s]+=[^%s]+)","") --clean other opcodes
+			r[k]=va 
+		end
 		--others
 		for k,va in v:gmatch"([^%s=]+)=([^%s=]+)" do
 			if not r[k] then
@@ -336,7 +386,7 @@ function M.read(fpath,options)
 		end
 		-- opcodes inventary
 		for k,v in pairs(r) do
-			all_opcodes[k] = true
+			all_opcodes[k] = (all_opcodes[k] or 0) + 1 --true
 		end
 		--key opcodes to number
 		for k,v in pairs(key_opcodes) do
@@ -344,23 +394,43 @@ function M.read(fpath,options)
 		end
 		return r
 	end
+	local function check_sw(sfz, r)
+			--special for sw_lokey, sw_hikey, sw_default which must be same in instrument
+			for k,_ in pairs({sw_lokey = true, sw_hikey = true}) do
+				if r[k] then
+					if sfz.sw[k] then assert(sfz.sw[k] == r[k], "different "..k) end
+					sfz.sw[k] = r[k]
+				end
+				r[k] = nil
+			end
+			if r.sw_last then sfz.sw.labels[r.sw_last] = r.sw_label or "no sw_label"; r.sw_label = nil end
+			if r.sw_default then sfz.sw.sw_last = r.sw_default; r.sw_default = nil end
+	end
 	--get regions,control,group
 	for i,v in ipairs(sfz.headers) do
 		if v:match"<region>" then
 			local r = getopcodes(v)
 			r.group = #sfz.groups
+			r.global = #sfz.globals
+			r.control = #sfz.controls
 			table.insert(sfz.regions,r)
 		elseif v:match"<control>" then
 			local r = getopcodes(v)
-			assert(not sfz.control)
-			sfz.control = r
+			assert(not r["#define"],"#define in control")
+			table.insert(sfz.controls, r)
 		elseif v:match"<group>" then
 			local r = getopcodes(v)
+			check_sw(sfz, r)
 			table.insert(sfz.groups,r)
 		elseif v:match"<global>" then
 			local r = getopcodes(v)
-			assert(not sfz.global)
-			sfz.global = r
+			check_sw(sfz, r)
+			table.insert(sfz.globals, r)
+		elseif v:match"<curve>" then
+			local r = getopcodes(v)
+			prtable("curve", r)
+			assert(not sfz.curves[r.curve_index],"repeated curve_index")
+			sfz.curves[r.curve_index] = r
 		else
 			prerror"unknown header"
 			prerror(v:match"(<[^<>]+>)")
@@ -376,8 +446,9 @@ function M.read(fpath,options)
 			end
 		end
 		--global
-		if sfz.global then
-			for k,v in pairs(sfz.global) do
+		local global = sfz.globals[r.global]
+		if global then
+			for k,v in pairs(global) do
 				r[k]= r[k] or v
 			end
 		end
@@ -394,6 +465,8 @@ function M.read(fpath,options)
 		for op,val in pairs(ampeg_def) do
 			r[op] = r[op] or val
 		end
+		--option overwrite release
+		if options.ampeg_release then r.ampeg_release = options.ampeg_release end
 		if not r.pitch_keycenter then 
 			--print"not pitch_keycenter";prtable(r);
 			if (r.lokey<=60 and r.hikey>=60) then
@@ -467,7 +540,7 @@ function M.read(fpath,options)
 	local unknown_opcodes = {}
 	for k,v in pairs(all_opcodes) do
 		if not known_opcodes[k] then
-			unknown_opcodes[k]=true
+			unknown_opcodes[k] = v --true
 		end
 	end
 	sfz.unknown_opcodes = unknown_opcodes

@@ -379,7 +379,7 @@ function MidiToOsc.AddChannel(ch,igui,sends,on_maker,inserts,args)
 	return igui
 end
 function MidiToOsc.Init(ch)
-	print"Miditooscinit"
+	print("Miditooscinit",ch)
 	MidiToOsc.vars[ch].group = GetNode()
 	local msg={NEW_GROUP,{MidiToOsc.vars[ch].group,0,0}}
 	sendBundle(msg)
@@ -441,10 +441,10 @@ local function NodesOFF(nodo)
 	end
 end
 function MidiToOsc.midi2osc(midiEvent) 
-	--prtable(midiEvent)
 	local ch = midiEvent.channel
 	local thisMidiOsc = MidiToOsc.vars[ch]
 	local mono = thisMidiOsc.mono
+	local on
 	if thisMidiOsc.record then
 		--local ppqpos = curHostTime.oldppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
 		local ppqpos = theMetro.ppqPos - SERVER_CLOCK_LATENCY * theMetro.bps
@@ -457,10 +457,9 @@ function MidiToOsc.midi2osc(midiEvent)
 			snew = not thisMidiOsc.node
 			nodo = thisMidiOsc.node or GetNode()
 			thisMidiOsc.node = nodo
-			--thisMidiOsc.keylist = thisMidiOsc.keylist or {}
-			table.insert(thisMidiOsc.keylist,midiEvent.byte2)
+			table.insert(thisMidiOsc.keylist, midiEvent.byte2)
 		else
-			nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			nodo = MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]
 			if not nodo or thisMidiOsc.args.retrig then
 				if nodo and thisMidiOsc.args.retrig then
 					NodesOFF(nodo)
@@ -473,7 +472,6 @@ function MidiToOsc.midi2osc(midiEvent)
 		local amp = midiEvent.byte3/127.0
 		--thisMidiOsc.node = nodo
 		--print(amp)
-		local on
 		local multipars, multinode, multion
 		if snew then
 			if thisMidiOsc.on_maker then
@@ -499,10 +497,10 @@ function MidiToOsc.midi2osc(midiEvent)
 			else -- not on_maker
 				on ={"/s_new", {thisMidiOsc.inst, nodo, 0, thisMidiOsc.instr_group, "freq", {"float" ,freq},"amp",{"float",amp}}}
 			end
-			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nodo
+			MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]=nodo
 			thisMidiOsc.node = nodo --for mono
 			--OSCFunc.newfilter("/n_end",nodo,function(noty)
-			--	MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]=nil
+			--	MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]=nil
 			--end,true)
 			print"new"
 		else --not snew
@@ -549,10 +547,10 @@ function MidiToOsc.midi2osc(midiEvent)
     elseif midiEvent.type==midi.noteOff then
 		
 		if mono then
-			--local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			--local nodo = MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]
 			local nodo = thisMidiOsc.node
 			assert(nodo)
-			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
+			MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2] = nil
 			for i,v in ipairs(thisMidiOsc.keylist) do
 				if v == midiEvent.byte2 then
 					table.remove(thisMidiOsc.keylist, i)
@@ -562,27 +560,28 @@ function MidiToOsc.midi2osc(midiEvent)
 			--set freq from last key
 			local lastnote = thisMidiOsc.keylist[#thisMidiOsc.keylist]
 			if thisMidiOsc.oscfree then
-			if lastnote then
-				local freq = midi2freq(lastnote)
-				on ={"/n_set", { nodo, "freq", {"float" ,freq}}}
-				sendBundle(on)
-				print"off set"
-			else
-				NodesOFF(nodo)
-				thisMidiOsc.node = nil
-				print"off release"
-			end
+				if lastnote then
+					local freq = midi2freq(lastnote)
+					on ={"/n_set", { nodo, "freq", {"float" ,freq}}}
+					sendBundle(on)
+					print"off set"
+				else
+					NodesOFF(nodo)
+					thisMidiOsc.node = nil
+					--MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2] = nil
+					print"off release"
+				end
 			end
 		elseif thisMidiOsc.oscfree then
-			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
-			MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2] = nil
+			local nodo = MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]
+			MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2] = nil
 			if nodo then
 				NodesOFF(nodo)
 			else
 				print"off without on"
 			end
 		else --poly dontfree
-			local nodo = MidiToOsc.nodesMidi2Osc[midiEvent.channel][midiEvent.byte2]
+			local nodo = MidiToOsc.nodesMidi2Osc[ch][midiEvent.byte2]
 			if nodo then MidiToOsc.free_queue[ch][nodo] = midiEvent.byte2 end
 		end
 	elseif midiEvent.type==midi.cc and midiEvent.byte2 == 64 then --sustain
@@ -591,22 +590,38 @@ function MidiToOsc.midi2osc(midiEvent)
 		else
 			for nodo,byte2 in pairs(MidiToOsc.free_queue[ch]) do
 				NodesOFF(nodo)
-				MidiToOsc.nodesMidi2Osc[midiEvent.channel][byte2] = nil
+				MidiToOsc.nodesMidi2Osc[ch][byte2] = nil
 			end
 			MidiToOsc.free_queue[ch] = {}
 			thisMidiOsc.oscfree = true
 		end
 	elseif midiEvent.type == midi.pb and thisMidiOsc.node then
+		local node = thisMidiOsc.node
+		local pbval = (midiEvent.byte3-64)/64
 		if thisMidiOsc.mono then
 			local lastnote = thisMidiOsc.keylist[#thisMidiOsc.keylist]
 			if lastnote then
-				local ff = midi2freq(lastnote)*midi2ratio((thisMidiOsc.args.pbfac or 1)*(midiEvent.byte3-64)/64)
-				on ={"/n_set", { thisMidiOsc.node, "freq", {"float" ,ff}}}
-				sendBundle(on)
+				local ff = midi2freq(lastnote)*midi2ratio((thisMidiOsc.args.pbfac or 1)*pbval)
+				if type(node)=="table" then
+					for ii=1,#node do
+						sendBundle{"/n_set", { node[ii], "freq", {"float" , ff}}}
+					end
+				else
+					sendBundle{"/n_set", { node, "freq", {"float" , ff}}}
+				end
 			end
 		else
-			on ={"/n_set", { thisMidiOsc.node, "pb", {"float" ,(midiEvent.byte3-64)/64}}}
-			sendBundle(on)
+			if thisMidiOsc.args.pb_togroup then
+				sendBundle{"/n_set", { thisMidiOsc.instr_group, "pb", {"float" , pbval}}}
+			else
+				if type(node)=="table" then
+					for ii=1,#node do
+						sendBundle{"/n_set", { node[ii], "pb", {"float" , pbval}}}
+					end
+				else
+					sendBundle{"/n_set", { node, "pb", {"float" , pbval}}}
+				end
+			end
 		end
 		--print(midiEvent.byte3,thisMidiOsc.node)
 	else
