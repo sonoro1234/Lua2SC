@@ -2,10 +2,11 @@
 ## Expects LUA_INCLUDE_DIR and LUA_LIBRARY
 #################################################
 PROJECT(wxLuaBundled CXX)
-cmake_minimum_required(VERSION 3.13)
+#the one I could test with find_package(wxWidgets) for 3.2.6
+cmake_minimum_required(VERSION 3.29.6)
 
 set(WX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build_wx)
-
+set(setDEBUG_LEVEL true)
 if(UNIX)
     if(NOT EXISTS ${WX_BUILD})#only build if not done before
 	file(MAKE_DIRECTORY ${WX_BUILD})
@@ -13,11 +14,15 @@ if(UNIX)
 	set(WXWIDGETSDEBUG "--disable-debug")
 	set(WXWIDGETSLOC ${CMAKE_CURRENT_BINARY_DIR}/wxWidgets)
 	set(EXECUTE_COMMAND	./configure)
+	set(CPPFLAGS -Os -fPIC)
+	if(setDEBUG_LEVEL)
+		set(CPPFLAGS ´${CPPFLAGS} -DwxDEBUG_LEVEL=0)
+	endif()
 	set(EXECUTE_ARGS --prefix=${WX_BUILD} ${WXWIDGETSDEBUG} --disable-shared --enable-unicode --with-opengl 
     --enable-compat30 
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no 
     --with-zlib=builtin --disable-richtext --with-gtk=2 
-    "CFLAGS=-Os -fPIC" "CXXFLAGS=-Os -fPIC")
+    "CFLAGS=-Os -fPIC" "CXXFLAGS=${CPPFLAGS}")
 	message("-----------------------copying wWidgets files")
 	file(MAKE_DIRECTORY ${WXWIDGETSLOC})
 	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets DESTINATION .)
@@ -36,8 +41,8 @@ if(UNIX)
     endif()
 
 else(UNIX)
+	if(NOT EXISTS ${WX_BUILD})#only build if not done before
 	file(MAKE_DIRECTORY ${WX_BUILD})	
-	set(setDEBUG_LEVEL true)
 	set(CPPFLAGS)
 	if(setDEBUG_LEVEL)
 		set(CPPFLAGS -DwxDEBUG_LEVEL=0)
@@ -46,10 +51,12 @@ else(UNIX)
 	if(MSVC)
 		SET(CPPFLAGS "${CPPFLAGS} /EHsc")
 	endif()
-	
 	#set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=2.8 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_EXPAT=OFF -DwxUSE_LIBTIFF=OFF -DwxUSE_UNICODE=ON -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
-	set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=3.0 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_UNICODE=ON -DwxUSE_EXPAT=builtin -DwxUSE_LIBTIFF=builtin -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
+	set(EXECUTE_COMMAND ${CMAKE_COMMAND}  -G${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  -DCMAKE_INSTALL_PREFIX=${WX_BUILD}/install -DwxBUILD_INSTALL=ON -DwxBUILD_MONOLITHIC=OFF -DwxBUILD_SHARED=OFF -DwxBUILD_COMPATIBILITY=3.0 -DwxUSE_RICHTEXT=OFF -DwxUSE_XRC=OFF -DwxBUILD_PRECOMP=OFF -DwxUSE_UNICODE=ON -DwxUSE_EXPAT=builtin -DwxUSE_LIBTIFF=builtin -DwxUSE_LIBJPEG=builtin -DwxUSE_LIBPNG=builtin -DwxUSE_ZLIB=builtin -DwxUSE_OPENGL=ON  "-DCMAKE_CXX_FLAGS=${CPPFLAGS}"  ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets)
 	
+	#-DwxUSE_PROPGRID=ON -DwxUSE_WEBVIEW=ON -DwxUSE_XRC=ON -DwxUSE_RICHTEXT=ON -DwxUSE_MEDIACTRL=ON -DwxUSE_XML=ON
+	#could add these
+	#-DwxUSE_XRC=ON -DwxUSE_RICHTEXT=ON -DwxUSE_XML=ON
 	message("---------------------------- configuring wxWidgets -------------------------------")
 	message("EXECUTE_COMMAND is " "${EXECUTE_COMMAND}")
 	file(WRITE ${WX_BUILD}/comando.txt "${EXECUTE_COMMAND}")
@@ -65,6 +72,10 @@ else(UNIX)
 		RESULT_VARIABLE build_command_result
         )
 	message( "build_command_result " ${build_command_result} "---------------------------------")
+	if(NOT ${build_command_result} EQUAL 0)
+		message(FATAL_ERROR "wxWidgets could not be compiled!!")
+	endif()
+	endif()
 endif()
 ##wxLua
 add_custom_target(SecondaryAllBuild ALL DEPENDS wxLuaModule)
@@ -94,7 +105,7 @@ set(wxLua_LUA_LIBRARY_USE_BUILTIN FALSE)
 set(wxLua_LUA_LIBRARY ${LUA_LIBRARY})
 set(wxLua_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
 
-set(wxWidgets_COMPONENTS "gl;core;stc;html;aui;adv;net;base")
+set(wxWidgets_COMPONENTS "gl;core;base;stc;html;aui;adv;net")#;webview;propgrid;media;xml;xrc;richtext")
 set(wxLuaBind_COMPONENTS ${wxWidgets_COMPONENTS})
 #set(wxWidgets_EXCLUDE_COMMON_LIBRARIES ON) #wxWidgets built without tiff, expat ...
 if(setDEBUG_LEVEL)

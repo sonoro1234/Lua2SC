@@ -13,7 +13,7 @@
 	url = https://github.com/sonoro1234/luasocket.git
 [submodule "wxLua"]
 	path = wxLuaBundled/wxlua
-	url = https://github.com/pkulchenko/wxLua
+	url = https://github.com/sonoro1234/wxLua
 [submodule "wxWidgets"]
 	path = wxLuaBundled/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets
