@@ -76,6 +76,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 	for i,v in pairsByValues(syntdef.paramnames,compst) do
 		--print("xxxxxxxxxxxparamnames ",i," ",v)
 		--prtable(params)
+		local defval, defval_s
 		if v~="freq" and v~="gate" and v~="out" and v~="amp" and v~="pan" and v~="busin" and v~="busout" then
 			if longitudes[v]>1 then compuesto=true else compuesto=false end 
 			--print("compuesto ",compuesto)
@@ -97,17 +98,18 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					--println("c0n defaults")
 					defval=syntdef.parameters[i2]
 				end
-				if defval > 0 then
+				defval_s = syntdef.parameters[i2]
+				if defval_s > 0 then
 					--maxval=(defval <=1) and 1 or defval*2
-					maxval= defval * 4
+					maxval= defval_s * 4
 					minval=0
-				elseif defval==0 then
+				elseif defval_s==0 then
 					maxval = 1
 					minval = -1
 				else
 					--probably db
-					maxval = -defval * 6
-					minval = defval * 6
+					maxval = -defval_s * 6
+					minval = defval_s * 6
 				end
 				
 				local textcontrol = {panel=panel,value=defval,type=GUITypes.text}
