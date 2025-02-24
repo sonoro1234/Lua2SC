@@ -1809,7 +1809,7 @@ function CreateScriptGUI()
 		end
 		local id=event:GetId()
 		scriptlinda:send("_valueChangedCb",{id,val,str})
-		event:Skip()
+		event:Skip(false)
 	end
 	
 	local function ConnectComands(win)
