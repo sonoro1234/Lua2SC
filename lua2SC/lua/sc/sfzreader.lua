@@ -466,7 +466,7 @@ function M.read(fpath,options)
 			r[op] = r[op] or val
 		end
 		--option overwrite release
-		if options.ampeg_release then r.ampeg_release = options.ampeg_release end
+		if sfz.options.ampeg_release then r.ampeg_release = sfz.options.ampeg_release end
 		if not r.pitch_keycenter then 
 			--print"not pitch_keycenter";prtable(r);
 			if (r.lokey<=60 and r.hikey>=60) then
