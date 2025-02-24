@@ -218,6 +218,7 @@ function InstrumentsGUI(synname,chooser,parent,params,notified)
 					deletePanel(self.panelParamfx)
 					self.panelParamfx=addPanel{type="hbox",parent=self.panelInst,name=self.inst}
 					openSynthdefGuiA(self.inst,self.panelParamfx,self.params,notified or self,false,true)
+					guiUpdate()
 			end
 		end
 	end}
