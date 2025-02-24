@@ -1811,15 +1811,19 @@ function CreateScriptGUI()
 		scriptlinda:send("_valueChangedCb",{id,val,str})
 		event:Skip()
 	end
+	
 	local function ConnectComands(win)
-		local win = win or ScriptGUI
+		assert(wxlua.GetBindings()[4].GetBindingName == "wxcore")
 		local wxEVT_Array=wxlua.GetBindings()[4].GetEventArray --wxcore events
+		local evTypes = {}
 		for i = 1, #wxEVT_Array do
-            --if not skipEVTs[wxEVT_Array[i].name] then
-                win:Connect(wx.wxID_ANY, wxEVT_Array[i].eventType, CommadEventProcess)
-            --end
+				evTypes[wxEVT_Array[i].eventType] = true
         end
+		for k,v in pairs(evTypes) do
+			win:Connect(wx.wxID_ANY, k, CommadEventProcess)
+		end
 	end
+	
 	function addWindow(win)
 		win.w = win.w or 200
 		win.h = win.h or 200
@@ -2059,5 +2063,5 @@ function CreateScriptGUI()
                 CloseScriptGUI()
                 event:Skip()
             end)
-	ConnectComands()
+	ConnectComands(ScriptGUI)
 end
