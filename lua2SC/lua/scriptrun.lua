@@ -61,6 +61,7 @@ function ScriptRun(pars)
 	local debugging = pars.debugging
 	local profiling = pars.profiling
 	local typeshed = pars.typeshed
+	local no_players = pars.no_players
 	
 	local function prstak(stk)
 		local str=""
@@ -408,6 +409,7 @@ function ScriptRun(pars)
 				scriptname = script,
 				typerun = typerun,
 				typeshed = typeshed,
+				no_players = no_players,
 				sc_comm_type = SCSERVER.type,
 				MsgLoop = MsgLoop,
                 lua2scpath = lua2scpath,

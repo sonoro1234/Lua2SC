@@ -408,6 +408,7 @@ function MASTER_INIT1()
 	--sendBundle(msg,lanes.now_secs())
 	Master:Init(true)
 end
+table.insert(initCbCallbacks,1,MASTER_INIT1)
 function MASTER_INIT2()
 	Master.inserts=Master.inserts or {}
 	for i,insert in ipairs(Master.inserts) do

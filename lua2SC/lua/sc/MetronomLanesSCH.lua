@@ -18,7 +18,7 @@ theMetro.player = EP{ppqPosSave=0,abstimeAcum=0,name="MetroPlayer"}
 theMetro.player:Bind{dur = 0.5,
 	abst = FS(updateAbsTime,-1,theMetro.player)
 }
-function theMetro:Init()
+function theMetro:init()
 	self.abstimeAcum = 0
 	self.ppqPosSave = 0
 end

@@ -209,8 +209,18 @@ function Server_metatable:notify(arg)
 	self.oscout:send('/notify', arg)
 end
 
+local function makeIDGenerator(ini)
+	local index = ini or 0
+	return function(inc)
+		local ret_index = index
+		inc = inc or 1
+		index = index + inc
+		return ret_index
+	end
+end
+
 local syncedlinda = lanes.linda()
-local UniqueID = IDGenerator(0)
+local UniqueID = makeIDGenerator(0)
 function Server_metatable:sync(id)
 	id = id or UniqueID()
 	local co,ismain = coroutine.running()--Lua5.2 compat
