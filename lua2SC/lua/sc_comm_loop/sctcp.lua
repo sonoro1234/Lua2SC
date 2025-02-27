@@ -41,7 +41,7 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 		if listentcp then
 			print("closing listentcp",listentcp)
 			listentcp:close()
-			print"closed listentcp"
+			print("closed listentcp",listentcp)
 		end
 		print( "finalizer ok" )
 	end
@@ -154,7 +154,7 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 				--print("TCPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
-			print("TCPSC: error: "..status)
+			print("TCPSC: error closed: "..status)
 			return true
 		elseif status == "timeout" then
 			if cancel_test() then

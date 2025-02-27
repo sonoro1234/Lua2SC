@@ -41,7 +41,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 		if listenudp then
 			print("closing listenudp",listenudp)
 			listenudp:close()
-			print"closed listenudp"
+			print("closed listenudp",listenudp)
 		end
 		print( "finalizer ok" )
 	end
@@ -89,7 +89,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 	-----connect
 	listenudp = assert(socket.udp(),"UDPSC: could not open listenudp")
 	listenudp:setpeername(tcppars.host,tcppars.port)
-	local ip3, port3 =listenudp:getsockname()
+	local ip3, port3 = listenudp:getsockname()
 	print("UDPSC: listenudp sends to:"..tcppars.host.." port:"..tcppars.port.." receives as ip:"..ip3.." port"..port3)
 	listenudp:settimeout(0.01)
 	
@@ -147,7 +147,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 				--print("UDPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
-			print("UDPSC: error: "..status)
+			print("UDPSC: error closed: "..status)
 			return true
 		elseif status == "timeout" then
 			if cancel_test() then
@@ -175,7 +175,7 @@ function SCUDP:init(settings,receivelinda,numsccomm)
 	options.port = settings.SC_UDP_PORT
 	assert(SCUDP.tcp==nil,"tcp not closed")
 
-	local tcp_lane_gen = lanes.gen("*",
+	local udp_lane_gen = lanes.gen("*",
 		{
 		--cancelstep=10000,
 		required={},
@@ -191,7 +191,7 @@ function SCUDP:init(settings,receivelinda,numsccomm)
 		ReceiveUDPLoop)
     udpsclinda:set("exit") --delete previous exits
 	udpsclinda:set("sendsc") --delete previous sendsc
-	SCUDP.ReceiveTCPLoop_lane = tcp_lane_gen(options,numsccomm)
+	SCUDP.ReceiveTCPLoop_lane = udp_lane_gen(options,numsccomm)
     return true
 end
 require"sc.number2string"

@@ -1,4 +1,5 @@
---- udp, tcp or internal comunication
+--- udp, tcp or internal comunication, blocked or not
+local comm, commB
 local socket = require("socket")
 require("osclua")
 require("sc.number2string")
@@ -17,9 +18,9 @@ function sendBundle(msg,time)
 	local ret,err
 	if time then
 		local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
-		ret,err = udp:send(toOSC({timestamp,msg}))
+		ret,err = comm:send(toOSC({timestamp,msg}))
 	else
-		ret,err = udp:send(toOSC(msg))
+		ret,err = comm:send(toOSC(msg))
 	end
 	if not ret then print("sendBundle error:",err);error(err) end
 end
@@ -28,23 +29,23 @@ function sendMultiBundle(time,msg)
 	local timestamp = OSCTime(time + SERVER_CLOCK_LATENCY)
 	table.insert(msg,1,timestamp)
 	local dgram = toOSC(msg)
-    local ret,err = udp:send(dgram)
+    local ret,err = comm:send(dgram)
 	if not ret then
 			print("sendMultiBundle error:",err);
 			error(err)
 	end
 end
 function sendBlocked(msg)
-    local ret,err = udpB:send(toOSC(msg))
+    local ret,err = commB:send(toOSC(msg))
 	if not ret then print("sendBlocked error:",err);error(err) end
-    local dgram,err2 = udpB:receive()
+    local dgram,err2 = commB:receive()
 	if not dgram then print(err2,"Not receiving from SCSYNTH\n");error(err2) end
     return fromOSC(dgram)
 end
 
 --receiving in socket after sendBundle
 function receiveBundle()
-	local dgram,err2 = udp:receive()
+	local dgram,err2 = comm:receive()
 	if not dgram then print(err2,"Not receiving from SCSYNTH\n");error(err2) end
     return fromOSC(dgram)
 end
@@ -53,47 +54,50 @@ end
 
 -------------------------------------------------
 
-function initudp()
-	initblockudp()
-	initsendudp()
-	--initreceiveudp()
-end
-function initblockudp()
+local function initblockudp()
 	print("initblockudp")
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udpB == nil,"udpB not closed")
-	udpB = socket.udp()
+	assert(commB == nil,"udpB not closed")
+	local udpB = socket.udp()
 	assert(udpB,"udpB es nulo")
 	udpB:setpeername(host, port)
 	local ip, port2 = udpB:getsockname()
 	--udpB:settimeout(2)
 	print("udpB sends to ip:"..host.." port:"..port)
 	print("udpB reveives as ip:"..ip.." port:"..port2)
+	return udpB
 end
-function initsendudp()
+local function initsendudp()
 	print("initsendudp")
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udp==nil,"udp not closed")
-	udp = socket.udp()
+	assert(comm==nil,"udp not closed")
+	local udp = socket.udp()
 	assert(udp,"udp es nulo")
 	udp:setpeername(host, port)
 	local ip, port2 = udp:getsockname()
 	--udp:settimeout(0)
 	print("udp sends to ip:"..host.." port:"..port)
 	print("udp reveives as ip:"..ip.." port:"..port2)
-    --udpB=udp
-	
+
+	return udp
 end
-function inittcp()
+
+local function initudp()
+	local udpB = initblockudp()
+	local udp = initsendudp()
+	return udp, udpB
+end
+
+local function inittcp()
 	print("initsendtcp")
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udp==nil,"tcp not closed")
+	assert(comm==nil,"tcp not closed")
 	local tcp = socket.connect(host, port)
 	assert(tcp,"tcp es nulo")
 	local ip, port2 = tcp:getsockname()
@@ -105,7 +109,7 @@ function inittcp()
 	local host = "127.0.0.1"
 	local port = _run_options and _run_options.SC_UDP_PORT or 57110
 	local hostt = socket.dns.toip(host)
-	assert(udpB == nil,"tcpB not closed")
+	assert(commB == nil,"tcpB not closed")
 	local tcpB = socket.connect(host, port)
 	tcpB:settimeout(6)
 	assert(tcpB,"tcpB es nulo")
@@ -166,7 +170,7 @@ function printDone(msg,who)
 		assert(false,"not fail nor done")
 	end
 end
-function testQuit(msg)
+local function testQuit(msg)
 	return msg[2][1]=="/quit" and msg[1]=="/done"
 end
 function printN_Go(msg)
@@ -184,7 +188,7 @@ function printN_Go(msg)
 	
 end
 
-function prdgram(d)
+local function prdgram(d)
 		local str = ""
 		str = str .. "datagram:\n"
 
@@ -213,7 +217,7 @@ function IDGenerator(ini)
 		return ret_index
 	end
 end
-function initinternal()
+local function initinternal()
 	local t = {}
 	function t:send(msg)
 		mainlinda:send("sendsc",msg)
@@ -265,40 +269,7 @@ function Sync()
 --	local key,val = syncedlinda:receive("OSCReceive") -- wait
 --	OSCFunc.handleOSCReceive(val) -- clean responder
 end
-
-function InitSCCOMM()
-	print("InitSCCOMM")
-	if sc_comm_type == "udp" then
-		SERVER_CLOCK_LATENCY = 0.4
-		initudp()
-	elseif sc_comm_type == "internal" then
-		SERVER_CLOCK_LATENCY = 0.07
-		udp ,udpB = initinternal()
-		function ThreadServerSend(msg)
-			mainlinda:send("sendsc",toOSC(msg))
-		end
-	elseif sc_comm_type == "tcp" then
-		SERVER_CLOCK_LATENCY = 0.2
-		udp ,udpB = inittcp()
-	else
-		udp ,udpB = {}, {}
-		local msg = "not supported sc_comm_type:"..tostring(sc_comm_type).." Did you boot sc?"
-		prerror(msg)
-		error(msg)
-		return
-	end
-	print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY, sc_comm_type)
-	udp:send(toOSC{"/clearSched",{}})
-	--udp:send(toOSC({"/dumpOSC",{dumpOSC}})) -- escribir scsynt lo que le llega
-	udp:send(toOSC({"/g_freeAll",{0}}))
-	udp:send(toOSC({"/g_deepFree",{0}}))
-	udp:send(toOSC({"/error",{{"int32",1}}}))
-	udp:send(toOSC({"/g_dumpTree",{0,1}}))
-	table.insert(resetCbCallbacks,ResetUDP)
-end
---table.insert(initCbCallbacks,InitUDP)
---table.insert(resetCbCallbacks,ResetUDP)
-function ResetUDP()
+local function ResetUDP()
 	print("reset udps")
 	--sendBlocked{"/sync",{1}}
 	Sync()
@@ -313,15 +284,44 @@ function ResetUDP()
 	Sync()
 	print("closing udps")
 	if sc_comm_type == "tcp" then
-		udp.tcp:shutdown()
-		udpB.tcp:shutdown()
+		comm.tcp:shutdown()
+		commB.tcp:shutdown()
 	end
-	udp:close()
-	udpB:close()
+	comm:close()
+	commB:close()
 	print("closed udps")
 end
 
---table.insert(initCbCallbacks,InitUDP)
---InitUDP()
+function InitSCCOMM()
+	print("InitSCCOMM")
+	if sc_comm_type == "udp" then
+		SERVER_CLOCK_LATENCY = 0.4
+		comm ,commB = initudp()
+	elseif sc_comm_type == "internal" then
+		SERVER_CLOCK_LATENCY = 0.07
+		comm ,commB = initinternal()
+		function ThreadServerSend(msg)
+			mainlinda:send("sendsc",toOSC(msg))
+		end
+	elseif sc_comm_type == "tcp" then
+		SERVER_CLOCK_LATENCY = 0.2
+		comm ,commB = inittcp()
+	else
+		comm ,commB = {}, {}
+		local msg = "not supported sc_comm_type:"..tostring(sc_comm_type).." Did you boot sc?"
+		prerror(msg)
+		error(msg)
+		return
+	end
+	print("SERVER_CLOCK_LATENCY",SERVER_CLOCK_LATENCY, sc_comm_type)
+	comm:send(toOSC{"/clearSched",{}})
+	--comm:send(toOSC({"/dumpOSC",{dumpOSC}})) -- escribir scsynt lo que le llega
+	comm:send(toOSC({"/g_freeAll",{0}}))
+	comm:send(toOSC({"/g_deepFree",{0}}))
+	comm:send(toOSC({"/error",{{"int32",1}}}))
+	comm:send(toOSC({"/g_dumpTree",{0,1}}))
+	table.insert(resetCbCallbacks,ResetUDP)
+end
+
 
 

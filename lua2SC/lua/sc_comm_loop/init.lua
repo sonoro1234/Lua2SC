@@ -35,6 +35,7 @@ end
 
 function SCCOMMLOOP:close()
 	if self.sc then self.sc:close() end
+	self.type = nil
 	self.sc = nil
 	self.inited = nil
 end

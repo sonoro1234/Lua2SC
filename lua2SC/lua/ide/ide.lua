@@ -1451,7 +1451,7 @@ function CloseWindow(event)
 	config=nil
     event:Skip()
 	if IDESCSERVER.inited then
-		IDESCSERVER:quit()
+		QuitSCifNotAutodetect()
 		IDESCSERVER:close()
 	end
 	--midilane:cancel(0.1)

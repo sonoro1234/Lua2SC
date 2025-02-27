@@ -57,8 +57,14 @@ function InitSCMenu()
 		lanes.timer(idlelinda,"statusSC",1,0)
 	end)
 	
+	function QuitSCifNotAutodetect()
+		if not SCMenu:IsChecked(ID_AUTODETECTSC) then
+			IDESCSERVER:quit()
+		end
+	end
+	
 	frame:Connect(ID_QUITSC,  wx.wxEVT_COMMAND_MENU_SELECTED,function(event)
-				IDESCSERVER:quit()
+				QuitSCifNotAutodetect()
 				IDESCSERVER:close()
 				menuBar:Check(ID_AUTODETECTSC, false)
 				if SCProcess then
