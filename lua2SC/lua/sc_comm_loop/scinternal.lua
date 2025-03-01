@@ -18,33 +18,48 @@ typedef struct WorldOptions
 	uint32 mNumControlBusChannels;
 	uint32 mBufLength;
 	uint32 mRealTimeMemorySize;
+	
 	int mNumSharedControls;
 	float *mSharedControls;
+	
 	bool mRealTime;
 	bool mMemoryLocking;
+	float mSafetyClipThreshold;// = 1.26;
+	
 	const char *mNonRealTimeCmdFilename;
 	const char *mNonRealTimeInputFilename;
 	const char *mNonRealTimeOutputFilename;
 	const char *mNonRealTimeOutputHeaderFormat;
 	const char *mNonRealTimeOutputSampleFormat;
+	
 	uint32 mPreferredSampleRate;
+	
 	uint32 mNumRGens;
+	
 	uint32 mPreferredHardwareBufferFrameSize;
+	
 	uint32 mLoadGraphDefs;
+	
 	const char *mInputStreamsEnabled;
 	const char *mOutputStreamsEnabled;
 	const char *mInDeviceName;
+	
 	int mVerbosity;
+	
 	bool mRendezvous;
+	
 	const char *mUGensPluginPath;
+	
 	const char *mOutDeviceName;
+	
 	const char *mRestrictedPath;
+	
 	int mSharedMemoryID;
 } WorldOptions_t;
 
 
 //const struct WorldOptions kDefaultWorldOptions ={0,1024,64,1024,1024,64,128,8,8,4096,64,8192, 0,0, 1, 0,0,0,0,0,0,44100,64, 0, 1,0, 0, 0,2,1,0,0,0,0};
-
+/*
 struct World* World_New(struct WorldOptions *inOptions);
 void World_WaitForQuit(struct World *inWorld);
 void World_Cleanup(struct World *inWorld);
@@ -53,17 +68,43 @@ typedef void (*ReplyFunc)(struct ReplyAddress *inReplyAddr, char* inBuf, int inS
 typedef int (*PrintFunc)(const char *format, va_list ap);
 void SetPrintFunc(PrintFunc func);
 bool World_SendPacket(struct World *inWorld, int inSize, char *inData, ReplyFunc inFunc);
+*/
+/////////////////////////////
+//SC_Reply.h
+struct ReplyAddress;
+typedef void (*ReplyFunc)(struct ReplyAddress* inReplyAddr, char* inBuf, int inSize);
+
+typedef int (*PrintFunc)(const char* format, va_list ap);
+
+struct SndBuf;
+
+void SetPrintFunc(PrintFunc func);
+struct World* World_New(struct WorldOptions* inOptions);
+void World_Cleanup(struct World* inWorld, bool unload_plugins);// = false);
+void World_NonRealTimeSynthesis(struct World* inWorld, struct WorldOptions* inOptions);
+int World_OpenUDP(struct World* inWorld, const char* bindTo, int inPort);
+int World_OpenTCP(struct World* inWorld, const char* bindTo, int inPort, int inMaxConnections,
+                  int inBacklog);
+void World_WaitForQuit(struct World* inWorld, bool unload_plugins); // = false);
+bool World_SendPacket(struct World* inWorld, int inSize, char* inData, ReplyFunc inFunc);
+bool World_SendPacketWithContext(struct World* inWorld, int inSize, char* inData, ReplyFunc inFunc,
+                                 void* inContext);
+int World_CopySndBuf(struct World* world, uint32 index, struct SndBuf* outBuf, bool onlyIfChanged,
+                     bool* didChange);
+int scprintf(const char* fmt, ...);
+
 ]]
 
 SCFFI = {}
 function lanebody(linda)
+	--print"---------enter lanebody"
 	local ffi = require("ffi")
 	require"osclua"
 	ffi.cdef[[typedef void (*ReplyFunc)(struct ReplyAddress *inReplyAddr, char* inBuf, int inSize);]]
-	--ffi.cdef[[unsigned long GetCurrentThreadId(void);unsigned long __stdcall GetCurrentThread(void);]]
-	--local kernel32 = ffi.load("kernel32");
+	
 	local Filters = {}
 	local function ReplyFunS(addr,inbuf,size) 
+		--print("ReplyFunS",addr,inbuf,size)
 		if size == 0 then return end --sometimes sc sends 0 size
 		local oscm = ffi.string(inbuf,size)
 		local msg = osclua.fromOSC(oscm)
@@ -116,22 +157,22 @@ function lanebody(linda)
 		end
 
 	end
-
-	cbbb = ffi.cast("ReplyFunc",ReplyFunS)
-	--print("cbbb "..tostring(cbbb)..tostring(ffi.cast("int",ffi.cast("void *",cbbb))))
-	linda:send("func",tonumber(ffi.cast("int", cbbb)))
+	 --local ptr = tonumber(ffi.cast('uintptr_t', ffi.cast('void *', cb)))
+	local cb = ffi.cast("ReplyFunc",ReplyFunS)
+	local ptr = ffi.cast('uintptr_t', ffi.cast('void *', cb))
+	--print("cbbb "..tostring(cb).." "..tostring(ptr).." "..tostring(tonumber(ptr)))
+	linda:send("func",tonumber(ptr))
 end
-function laneprint(linda,printlinda)--,libpath,libsc)
+function laneprint(linda)
 	local ffi = require("ffi")
-	--ffi.cdef[[typedef int (*PrinterFFI)(char* str,int n);void SetPrintFunc(PrinterFFI func);]]
 	ffi.cdef[[typedef int (*PrintFunc)(const char *format, va_list ap);]]
+	
 	ffi.cdef[[int snprintf(char *buffer, size_t n, const char *fmt,...);
 	int sprintf(char *buffer, const char *fmt,...);
 	int printf(const char *fmt, ...);
 	int vsprintf(char *target, const char *format, va_list arg_ptr);
 	int vsnprintf(char *target, size_t n, const char *format, va_list arg_ptr);]]
-	--ffi.cdef[[unsigned long GetCurrentThreadId(void);unsigned long __stdcall GetCurrentThread(void);]]
-	--local lib = ffi.load(libpath);
+
 	local function PrintFuncFFI(str,n) 
 		print(ffi.string(str))
 		return 1
@@ -158,10 +199,10 @@ function laneprint(linda,printlinda)--,libpath,libsc)
 		--print(string.format(ffi.string(fmt),...))
 		return 0
 	end
-	--cbbb = ffi.cast("PrinterFFI",PrintFunc)
-	--lib.SetPrintFunc(cbbb)
-	cbbb = ffi.cast("PrintFunc",PrintFunc)
-	linda:send("func_print",tonumber(ffi.cast("int", cbbb)))
+
+	local cb = ffi.cast("PrintFunc",PrintFunc)
+	local ptr = ffi.cast('uintptr_t', ffi.cast('void *', cb))
+	linda:send("func_print",tonumber(ptr))
 end
 
 function SCFFI:init(options,linda)
@@ -191,7 +232,8 @@ function SCFFI:init(options,linda)
         end
 	end
 	print("self.libsc",self.libsc)
-		local globals={print=thread_print,
+		local globals={
+				print=thread_print, --comment to dont loose info
 				prerror=thread_error_print,
 				prOSC=prOSC,
 				idlelinda = idlelinda,
@@ -199,9 +241,9 @@ function SCFFI:init(options,linda)
 				scriptlinda = scriptlinda
 				}
 	------------------------------------
-	---[[
+	---[[ comment to see in console
 	self.print_lane = lanegen(laneprint,globals,"laneprint")(true,linda)
-	local key,print_func = linda:receive("func_print")
+	local key, print_func = linda:receive("func_print")
 	self.print_func = ffi.cast("PrintFunc",print_func)
 	self.libsc.SetPrintFunc(self.print_func)
 	--]]
@@ -209,30 +251,32 @@ function SCFFI:init(options,linda)
 	local plugpath = path..[[/plugins]]
 	for i,v in ipairs(options.SC_PLUGIN_PATH) do
 		if(v=="default") then
-		else	
+		else
+			--TODO linux uses ":"
 			plugpath = plugpath..[[;]]..v --..[["]]
 		end
 	end
 	
 	local mUGensPluginPath = plugpath
-	local kDefaultWorldOptions = ffi.new("WorldOptions_t",nil,1024,64,1024,1024,64,128,8,8,4096,64,8192, 0,nil, 1, 0,nil,nil,nil,nil,nil,44100,64, 0, 1,nil, nil, nil,2,1,mUGensPluginPath,nil,nil,0)
+	local kDefaultWorldOptions = ffi.new("WorldOptions_t",nil,1024,64,1024,1024,64,1024,8,8,16384,64,8192, 0,nil, true, false,1.26, nil,nil,nil,nil,nil,44100,64, 0, 1,nil, nil, nil,2,true,mUGensPluginPath,nil,nil,0)
 	kDefaultWorldOptions.mInDeviceName =  options.SC_AUDIO_DEVICE
 	kDefaultWorldOptions.mOutDeviceName =  options.SC_AUDIO_DEVICE
 	self.theworld = self.libsc.World_New(kDefaultWorldOptions)
-	print("self.theworld",self.theworld)
+	--print("self.theworld",self.theworld)
 
 	self.resp_lane = lanegen(lanebody,globals,"oscresponder")(true,linda)
+	--print("waiting for func")
 	local key,respfunc = linda:receive("func")
+	--print("respfunc", key, respfunc)
 	self.respfunc = ffi.cast("ReplyFunc",respfunc)
+	--print("self.respfunc", self.respfunc)
 	self:send(toOSC({"/notify",{1}}))
     return true
-	--self.router_lane = lanegen(router_lane,"router_lane")(linda)
 end
 function SCFFI:close()
-	--self.quit_lane = lanegen(lanebodyquit,{},"lanebodyquit")(true)
 	print("World_WaitForQuit going",self.theworld)
-	self.libsc.World_WaitForQuit(self.theworld)
-	--self.libsc.World_Cleanup(self.theworld)
+	self.libsc.World_WaitForQuit(self.theworld, true)
+	--self.libsc.World_Cleanup(self.theworld) -- called by World_WaitForQuit
 	print"World_WaitForQuit done"
 	---[[
 	if self.resp_lane then
@@ -262,7 +306,9 @@ function SCFFI:send(msg)
 		ffi.copy(cmddata,txt)
 		return cmddata
 	end
-	self.libsc.World_SendPacket(self.theworld, #msg, string2char(msg), self.respfunc)
+	--prtable(osclua.fromOSC(msg))
+	local ret = self.libsc.World_SendPacket(self.theworld, #msg, string2char(msg), self.respfunc)
+	if not ret then print("World_SendPacket error") end
 end
 end -- if jit
 

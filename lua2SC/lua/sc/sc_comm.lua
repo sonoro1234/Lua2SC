@@ -270,7 +270,7 @@ function Sync()
 --	OSCFunc.handleOSCReceive(val) -- clean responder
 end
 local function ResetUDP()
-	print("reset udps")
+	print("reset comm")
 	--sendBlocked{"/sync",{1}}
 	Sync()
 	--sendBundle{"/clearSched",{}}
@@ -282,14 +282,14 @@ local function ResetUDP()
 	sendBundle{"/g_dumpTree",{0,1}}
 	--sendBlocked{"/sync",{1}}
 	Sync()
-	print("closing udps")
+	print("closing comm")
 	if sc_comm_type == "tcp" then
 		comm.tcp:shutdown()
 		commB.tcp:shutdown()
 	end
 	comm:close()
 	commB:close()
-	print("closed udps")
+	print("closed comm")
 end
 
 function InitSCCOMM()
