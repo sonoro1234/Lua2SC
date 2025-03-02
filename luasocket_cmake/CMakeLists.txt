@@ -31,6 +31,7 @@ endif()
 add_definitions( -DLUASOCKET_EXPORTS)
 
 add_library(socket SHARED ${socket_src})
+target_compile_definitions(socket PUBLIC UDP_DATAGRAMSIZE=65536)
 ADD_LIBRARY(mime SHARED ./luasocket/src/mime.c ./luasocket/src/compat.c)
 
 if(MSVC)

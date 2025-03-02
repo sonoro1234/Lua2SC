@@ -11,6 +11,7 @@
 [submodule "luasocket"]
 	path = luasocket_cmake/luasocket
 	url = https://github.com/sonoro1234/luasocket.git
+	branch = datagramsize
 [submodule "wxLua"]
 	path = wxLuaBundled/wxlua
 	url = https://github.com/sonoro1234/wxLua
