@@ -25,7 +25,7 @@ local phrase = "KO-RI-NI-LA_-ME-SU-NE-Mv-KO-RI-NI-LA-_v"
 TT2 = require"num.vocaltractB"(26,false,true) --26 tubes, female, oversampled
 
 -- the player
-she = OscEP{inst=TT2.sinteRdO2.name,mono=true,sends={db2amp(-8)},channel={level=db2amp(-5)}}
+she = OscEP{inst=TT2.sinteRdO2.name,mono=true,sends={db2amp(-18)},channel={level=db2amp(-5)}}
 
 -- talking part of pattern, must go in second table of main PS to get acces to dur parameter
 talkpat = LOOP(PS(TT2:Talk(phrase)))

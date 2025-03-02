@@ -1,12 +1,13 @@
 sfzR = require"sc.sfzreader"
 
 -- set SOSpath in your system
-SOSpath = [[C:\supercolliderrepos\SFZ\sso-master\Sonatina Symphonic Orchestra\]]
-local violin1 = sfzR.read(SOSpath..[[Strings - 1st Violins Sustain.sfz]])
-local violin2 = sfzR.read(SOSpath..[[Strings - 2nd Violins Sustain.sfz]])
-local viola = sfzR.read(SOSpath..[[Strings - Violas Sustain.sfz]])
-local celli = sfzR.read(SOSpath..[[Strings - Celli Sustain.sfz]])
-local bass = sfzR.read(SOSpath..[[Strings - Basses Sustain.sfz]])
+SOSpath = [[C:\supercolliderrepos\SFZ\sso-master\Sonatina Symphonic Orchestra\Strings - ]]
+--SOSpath = [[C:\supercolliderrepos\SFZ\sso-4.0\Sonatina Symphonic Orchestra\Strings - Notation\]]
+local violin1 = sfzR.read(SOSpath..[[1st Violins Sustain.sfz]])
+local violin2 = sfzR.read(SOSpath..[[2nd Violins Sustain.sfz]])
+local viola = sfzR.read(SOSpath..[[Violas Sustain.sfz]])
+local celli = sfzR.read(SOSpath..[[Celli Sustain.sfz]])
+local bass = sfzR.read(SOSpath..[[Basses Sustain.sfz]])
 
 -- synthdef for reverb
 SynthDef("dwgreverb", { busin=0, busout=0,predelay=0.1,c1=1.2,c3=4,len=1200,mix = 1},function()

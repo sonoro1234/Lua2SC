@@ -15,3 +15,4 @@ panel = addPanel{type="vbox"}
 curr_panel = panel
 slider = Slider("val",0,4,1,function(v) print(v);createpoly(v) end)
 Button("but",function() createpoly(slider.value)end)
+Toggle("Tog",function(val) print(val) end)

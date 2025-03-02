@@ -11,20 +11,19 @@ local guiPanelTable = {}
 
 function _valueChangedCb(tag, value, str)
    --print("_valueChangedCb",tag," ", value," ", str)
-    v = guiControlTable[tag]
+    local v = guiControlTable[tag]
 	assert(v,"Invalid tag in _valueChangedCb: "..tag)
 	
 	v.value=v.Gui2Value(value,v)
 	
-    --if v.FormatLabel then
-	if guiControlTable[tag].typex=="button" then
+	if v.typex=="button" then
 		--
 	elseif str then
 		v:setLabel(str)
 	elseif not v.clabel then
 		v:setLabel(v.FormatLabel(v.value,v))
 	end
-	--end
+
     if v.callback then
         v.callback(v.value, str,v)
     end 

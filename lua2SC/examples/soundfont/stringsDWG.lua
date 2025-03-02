@@ -25,7 +25,7 @@ body_resons={{118, 18, -33},
 {1900, 60, -20}}
 sc = require"sclua.Server".Server()
 gainLB = sc.Bus()
-Slider("gainL",0,120,50,function(val) gainLB:set(val) end)
+Slider("gainL",0,120,92,function(val) gainLB:set(val) end)
 gainSB = sc.Bus()
 Slider("gainS",0,2,1.8,function(val) gainSB:set(val) end)
 gainHB = sc.Bus()
@@ -52,12 +52,12 @@ bowed = SynthDef("bowed", {out=0, freq=440, amp=0.5,force=1, gate=1,pos=0.14,c1=
 },function()
 	RandID.ir(rID)
 	N = 30 -- number of players
-	local midiamp = 0.2
+	local midiamp = 0.15
 	local fratio = midi2ratio(midiamp)
 	local freqs = TA():Fill(N,Rand(-midiamp,midiamp):midiratio())
 	freq = freqs*freq
 
-	local vibfreq = Vibrato.kr{freq, rate= vibrate, depth= vibdeph/1000, delay= 0, onset= vibonset, rateVariation= 0.4, depthVariation= 0.2, iphase =  TRand.kr(0,1,t_gate),trig=t_gate}
+	local vibfreq = Vibrato.kr{freq, rate= vibrate, depth= vibdeph/1000, delay= 0, onset= vibonset, rateVariation= 0.5, depthVariation= 0.2, iphase =  TRand.kr(0,1,t_gate),trig=t_gate}
 	local pos = TA():Fill(N,Rand(0.1,0.2))
 
 	Z = Z*Zfac
@@ -66,6 +66,7 @@ bowed = SynthDef("bowed", {out=0, freq=440, amp=0.5,force=1, gate=1,pos=0.14,c1=
 
 	Out.ar(out, Pan2.ar(Mix(son*0.1) ,0))
 end):store(true);
+Sync()
 -------------------------------------------------------------------
 
 local scale = {modes.aeolian}
@@ -137,7 +138,7 @@ local fLPF = math.max(3000,linearmap(0,5,16000,2200,ff))
 ce.inserts = {{"bowsoundboard",{T1=fT1/ff,Qw=Qw,size=ff,fLPF=fLPF,dur=2}}}
 ER:setER(ce,0.5,1)
 
-cb = OscEP{inst="bowed", mono=true,sends={0.5},channel={level=db2amp(-20)}}
+cb = OscEP{inst="bowed", mono=true,sends={0.5},channel={level=db2amp(-16)}}
 cb:Bind(PS({
 	dur = 4*2,
 	escale = scale,
@@ -154,6 +155,6 @@ ER:setER(cb,1,1)
 
 FScope()
 MASTER{level=db2amp(-15)}
-Effects ={FX("dwgreverb",db2amp(-14),0,{c1=1.2})}
+Effects ={FX("dwgreverb",db2amp(-6),0,{c1=1.2})}
 theMetro:tempo(100)
 theMetro:start()
