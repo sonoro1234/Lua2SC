@@ -174,8 +174,8 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 				for onelinda,_ in pairs(Filters.ALL) do
 					onelinda:send("OSCReceive",msg)
 				end
-			else
-				print("TCPSC: "..prOSC(msg))
+			--else --use OSCFunc.trace
+				--print("TCPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
 			print("TCPSC: error closed: "..status)

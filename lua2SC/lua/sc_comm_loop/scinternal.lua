@@ -58,17 +58,6 @@ typedef struct WorldOptions
 } WorldOptions_t;
 
 
-//const struct WorldOptions kDefaultWorldOptions ={0,1024,64,1024,1024,64,128,8,8,4096,64,8192, 0,0, 1, 0,0,0,0,0,0,44100,64, 0, 1,0, 0, 0,2,1,0,0,0,0};
-/*
-struct World* World_New(struct WorldOptions *inOptions);
-void World_WaitForQuit(struct World *inWorld);
-void World_Cleanup(struct World *inWorld);
-//struct ReplyAddress;
-typedef void (*ReplyFunc)(struct ReplyAddress *inReplyAddr, char* inBuf, int inSize);
-typedef int (*PrintFunc)(const char *format, va_list ap);
-void SetPrintFunc(PrintFunc func);
-bool World_SendPacket(struct World *inWorld, int inSize, char *inData, ReplyFunc inFunc);
-*/
 /////////////////////////////
 //SC_Reply.h
 struct ReplyAddress;
@@ -101,7 +90,8 @@ function lanebody(linda)
 	local ffi = require("ffi")
 	require"osclua"
 	ffi.cdef[[typedef void (*ReplyFunc)(struct ReplyAddress *inReplyAddr, char* inBuf, int inSize);]]
-	
+	local trace = false
+	local tracestatus = false
 	local Filters = {}
 	local function ReplyFunS(addr,inbuf,size) 
 		--print("ReplyFunS",addr,inbuf,size)
@@ -109,7 +99,7 @@ function lanebody(linda)
 		local oscm = ffi.string(inbuf,size)
 		local msg = osclua.fromOSC(oscm)
 
-		local key,val = linda:receive(0,"clearFilter","addFilter")
+		local key,val = linda:receive(0,"sendsc","clearFilter","addFilter","trace","exit")
 		while val do 
 			if key == "addFilter" then -- /path, linda, block
 				Filters[val[1]] = Filters[val[1]] or {}
@@ -122,12 +112,23 @@ function lanebody(linda)
 						Filters[val[1]] = nil
 					end
 				end
+            elseif key == "sendsc" then
+                --not needed --see SCFFI:send
+			elseif key == "trace" then
+                trace = val[1]
+				tracestatus = val[2]
+				prtable(Filters)
+            elseif key == "exit" then
+                --not needed : see SCFFI:close
+				--return true
 			end
-			key,val = linda:receive(0,"addFilter","clearFilter")
+			key,val = linda:receive(0,"sendsc","clearFilter","addFilter","trace","exit")
 		end
-
-		--print("UDPSC: "..prOSC(msg))
-		--print("SCUDP receives",msg[1])
+		if trace then
+			if msg[1]~="/status.reply" or tracestatus then
+				print("SCFFI: "..prOSC(msg))
+			end
+		end
 		if msg[1]=="/metronom" then
 			scriptlinda:send("/metronom",msg[2])
 		elseif msg[1]=="/vumeter" then
@@ -145,8 +146,8 @@ function lanebody(linda)
 			for onelinda,_ in pairs(Filters.ALL) do
 				onelinda:send("OSCReceive",msg)
 			end
-		else
-			print("SCFFI: "..prOSC(msg))
+		--else --use OSCFunc.trace
+			--print("SCFFI: "..prOSC(msg))
 		end
 	end
 	 --local ptr = tonumber(ffi.cast('uintptr_t', ffi.cast('void *', cb)))

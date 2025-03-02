@@ -144,9 +144,10 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
             --]]
 			-- normal version
             local msg = fromOSC(dgram)
+			--if #dgram > 8192 then prerror("dgram size", #dgram, msg[1]) end --debug size
 			if trace then
 				if msg[1]~="/status.reply" or tracestatus then
-					print("TCPSC: "..prOSC(msg))
+					print("UDPSC: "..prOSC(msg))
 				end
 			end
 			if msg[1]=="/metronom" then
@@ -166,8 +167,8 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 				for onelinda,_ in pairs(Filters.ALL) do
 					onelinda:send("OSCReceive",msg)
 				end
-			else
-				print("UDPSC: "..prOSC(msg))
+			--else --use OSCFunc.trace
+				--print("UDPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
 			print("UDPSC: error closed: "..status)
