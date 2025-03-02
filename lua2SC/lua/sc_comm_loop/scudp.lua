@@ -56,7 +56,28 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 	local fromOSC=osclua.fromOSC
 
     require"sc.number2string"
-
+	local function notify_and_done(val)
+		print("notify_and_done called", val)
+		listenudp:send(toOSC({"/notify",{val}}))
+		listenudp:settimeout(0.01)
+		while true do
+			local dgram,status = listenudp:receive()
+			if dgram then
+				local msg = fromOSC(dgram)
+				if msg[1] == "/done" and msg[2][1] == "/notify" then
+					print("notify_and_done msg done", msg[1])
+					return
+				elseif msg[1] == "/fail" and msg[2][1] == "/notify" then
+					prerror("notify_and_done msg failed", msg[2][2])
+				else
+					print("notify_and_done msg", msg[1])
+					return
+				end
+			elseif status ~= "timeout" then
+				print("notify_and_done status", status)
+			end
+		end
+	end
 	local Filters = {}
 	require"sc.utils"
 	local function lindaloop(timeout)
@@ -98,7 +119,8 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
         local dgram,status = listenudp:receive()
         if dgram then 
 			print("SCUDP: connected")
-			listenudp:send(toOSC({"/notify",{1}}))
+			--listenudp:send(toOSC({"/notify",{1}}))
+			notify_and_done(1)
 			lanes.timer(idlelinda,"statusSC",1,0)
 			break 
 		end
@@ -110,7 +132,8 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 	-----comm loop
 	while true do
 		local dgram,status = listenudp:receive()
-		if lindaloop(0) then return end
+		if lindaloop(0) then print("send notify 0");notify_and_done(0); return end
+		--if lindaloop(0) then return end
 		if dgram then
             --[[ for debugging tcp
 			local succ,msg = pcall(fromOSC,dgram)
@@ -144,7 +167,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 					onelinda:send("OSCReceive",msg)
 				end
 			else
-				--print("UDPSC: "..prOSC(msg))
+				print("UDPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
 			print("UDPSC: error closed: "..status)
@@ -155,7 +178,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 				return true
 			end
 		else --timeout
-			prerror("UDPSC: ",status)
+			prerror("UDPSC: status ",status)
 		end
 	end
 end	

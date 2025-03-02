@@ -112,12 +112,10 @@ function lanebody(linda)
 		local key,val = linda:receive(0,"clearFilter","addFilter")
 		while val do 
 			if key == "addFilter" then -- /path, linda, block
-				--print("SCFFI: addFilter",val[1],val[2])
 				Filters[val[1]] = Filters[val[1]] or {}
 				Filters[val[1]][val[2]] = true
 				if val[3] then val[3]:send("addFilterResponse",1) end --for block
 			elseif key == "clearFilter" then
-				--print("SCFFI: clearFilter",val)
 				if Filters[val[1]]  then
 					Filters[val[1]][val[2]] = nil
 					if #Filters[val[1]] == 0 then
@@ -131,31 +129,25 @@ function lanebody(linda)
 		--print("UDPSC: "..prOSC(msg))
 		--print("SCUDP receives",msg[1])
 		if msg[1]=="/metronom" then
-			--prtable(msg)
-			--setMetronom(msg[2][2],msg[2][3])
 			scriptlinda:send("/metronom",msg[2])
 		elseif msg[1]=="/vumeter" then
-			--setVumeter(msg[2])
 			scriptguilinda:send("/vumeter",msg[2])
-		--elseif msg[1]=="/b_setn" then
-			--setVumeter(msg[2])
-			--scriptguilinda:send("/b_setn",msg[2])
 		elseif msg[1]=="/status.reply" then
 			idlelinda:send("/status.reply",msg[2])
-			--print("UDPSC: "..prOSC(msg))
-		--elseif msg[1]=="/n_go" or msg[1]=="/n_end" or msg[1]=="/n_on" or msg[1]=="/n_off" or msg[1]=="/n_move" or msg[1]=="/n_info" then
-			--printN_Go(msg)
 		elseif msg[1] == "/fail" then
 			scriptlinda:send("OSCReceive",msg)
 		elseif Filters[msg[1]] then
 			for onelinda,_ in pairs(Filters[msg[1]]) do
-				--print("SCFFIsending",msg[1],onelinda)
 				onelinda:send("OSCReceive",msg)
 			end
-		--else
-			--print("UDPSC: NOT sended:"..prOSC(msg))
+		elseif Filters.ALL then
+			msg[1] = "ALL"
+			for onelinda,_ in pairs(Filters.ALL) do
+				onelinda:send("OSCReceive",msg)
+			end
+		else
+			print("SCFFI: "..prOSC(msg))
 		end
-
 	end
 	 --local ptr = tonumber(ffi.cast('uintptr_t', ffi.cast('void *', cb)))
 	local cb = ffi.cast("ReplyFunc",ReplyFunS)

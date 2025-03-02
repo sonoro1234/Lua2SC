@@ -66,6 +66,28 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
         if not len then return nil,stat end
         return listentcp:receive(str2int(len))
     end
+	local function notify_and_done(val)
+		print("notify_and_done called", val)
+		sendtcp(toOSC({"/notify",{val}}))
+		listentcp:settimeout(0.01)
+		while true do
+			local dgram,status = receivetcp()
+			if dgram then
+				local msg = fromOSC(dgram)
+				if msg[1] == "/done" and msg[2][1] == "/notify" then
+					print("notify_and_done msg done", msg[1])
+					return
+				elseif msg[1] == "/fail" and msg[2][1] == "/notify" then
+					prerror("notify_and_done msg failed", msg[2][2])
+				else
+					print("notify_and_done msg", msg[1])
+					return
+				end
+			elseif status ~= "timeout" then
+				print("notify_and_done status", status)
+			end
+		end
+	end
 	local Filters = {}
 	require"sc.utils"
 	local function lindaloop(timeout)
@@ -100,7 +122,8 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 	while true do
         listentcp,err = socket.connect(tcppars.host,tcppars.port)
         if listentcp then 
-			sendtcp(toOSC({"/notify",{1}}))
+			--sendtcp(toOSC({"/notify",{1}}))
+			notify_and_done(1)
 			lanes.timer(idlelinda,"statusSC",1,0)
 			break 
 		end
@@ -114,7 +137,8 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 	local olddgram = ""
 	while true do
 		local dgram,status = receivetcp()
-		if lindaloop(0) then return end
+		--if lindaloop(0) then print("send notify 0");sendtcp(toOSC({"/notify",{0}})); return end
+		if lindaloop(0) then print("send notify 0");notify_and_done(0); return end
 		if dgram then
 			if #dgram%4~=0 then prerror("osc not 4 multiple");prerror(dgram) end
             --[[ for debugging tcp
@@ -151,7 +175,7 @@ local function ReceiveTCPLoop(tcppars, numsccomm)
 					onelinda:send("OSCReceive",msg)
 				end
 			else
-				--print("TCPSC: "..prOSC(msg))
+				print("TCPSC: "..prOSC(msg))
 			end
 		elseif status == "closed" then --closed ?
 			print("TCPSC: error closed: "..status)
