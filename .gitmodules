@@ -3,7 +3,8 @@
 	url = https://github.com/sonoro1234/luafilesystem
 [submodule "lanes"]
 	path = lanes
-	url = https://github.com/sonoro1234/lanes
+	url = https://github.com/LuaLanes/lanes
+	branch = Branch_v3.17.0
 [submodule "LuaJIT"]
 	path = LuaJIT/LuaJIT
 	url = https://github.com/LuaJIT/LuaJIT.git
