@@ -57,6 +57,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 
     require"sc.number2string"
 	local function notify_and_done(val)
+		local to_count = 0
 		print("notify_and_done called", val)
 		listenudp:send(toOSC({"/notify",{val}}))
 		listenudp:settimeout(0.01)
@@ -75,6 +76,12 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 				end
 			elseif status ~= "timeout" then
 				print("notify_and_done status", status)
+			else --timeout
+				to_count = to_count + 1
+				if to_count > 200 then
+					prerror("udp server not responding to notify 0. Must be closed.")
+					return 
+				end --2 seconds ,must be closed
 			end
 		end
 	end
