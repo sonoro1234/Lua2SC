@@ -29,6 +29,7 @@ end
 local Platform = {}
 Platform.userAppSupportDir = GetUserLocalDataDir()
 Platform.systemAppSupportDir = GetConfigDir()
+Platform.portableDir = lua2scpath
 local lfs = require"lfs"
 local Atk = {}
 Atk.userSupportDir = Platform.userAppSupportDir .. "/ATK";
@@ -66,8 +67,8 @@ function FoaDecoderKernel:initPath()
 	elseif lfs.attributes(Atk.systemKernelDir) and lfs.attributes(Atk.systemKernelDir).mode == "directory" then
 		kernelLibPath = Atk.systemKernelDir
 	else
-		prtable(Platform)
-		error("is Atk instaled in above directories?")
+		prtable("ATK directories:",Platform)
+		error("are Atk kernels instaled in one of the above directories?")
 	end
 	return kernelLibPath .. "/FOA/decoders/" .. self.kind
 end

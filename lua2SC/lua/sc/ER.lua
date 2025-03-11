@@ -12,6 +12,10 @@ function ERmaker(B,Dist,Size,op)
 	Slider("Dist",0,8,Dist,function(val) busDist:set(val) end)
 	local busSize = sc.Bus()
 	Slider("Size",0,8,Size,function(val) busSize:set(val) end)
+	local busHW = sc.Bus()
+	Slider("HW",0.01,0.4,0.2,function(val) busHW:set(val) end)
+	local busN = sc.Bus()
+	Slider("N",0,5,op.N or 5,function(val) busN:set(val) end)
 	
 	local busBypass
 	if op.bypass then
@@ -45,8 +49,8 @@ function ERmaker(B,Dist,Size,op)
 		--local B = In.kr(cbusB,1) --0.92 --0.72
 		local B = In.kr(busB.busIndex,1)
 		dist = In.kr(busDist.busIndex,1)*dist
-		local HW=0.2
-		local N = op.N or 5
+		local HW = In.kr(busHW.busIndex,1) --op.HW or 0.2
+		local N = In.kr(busN.busIndex,1) --op.N or 5
 		local input = In.ar(busout,2)
 		local monoin = Mix(input)*0.5
 		local omangle = angle*math.pi*0.5*(op.anglefac or 1)
