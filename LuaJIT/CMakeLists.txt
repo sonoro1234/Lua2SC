@@ -30,10 +30,13 @@ if(NOT EXISTS ${LUAJIT_BUILD})#only build if not done before
 		#execute_process(COMMAND make install PREFIX=${LUAJIT_BUILD}
 		#    WORKING_DIRECTORY ${ljpre})
 	else()
+		execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/luajit.exe.manifest ${ljsrc}/luajit.exe.manifest)
 		if(MSVC)
-			execute_process(COMMAND ${ljsrc}/msvcbuild.bat #CCOPT="-DLUAJIT_ENABLE_LUA52COMPAT" #dont know haow to set it
+			execute_process(COMMAND ${ljsrc}/msvcbuild.bat "lua52compat"
 			WORKING_DIRECTORY ${ljsrc})
 		else()
+			execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/luajit.rc ${ljsrc}/luajit.rc)
+			execute_process(COMMAND windres -i ${ljsrc}/luajit.rc -o ${ljsrc}/manifest.o)
 			execute_process(COMMAND ${CMAKE_MAKE_PROGRAM} CCOPT="-DLUAJIT_ENABLE_LUA52COMPAT"
 			WORKING_DIRECTORY ${ljsrc})
 		endif()
