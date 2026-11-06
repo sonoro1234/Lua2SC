@@ -1430,7 +1430,8 @@ function SYNTHDef:writeDefFile(version)
 	return self
 end
 function SYNTHDef:makeDefStr(version)
-	local version = version or 3
+	if server_version.major==3 and server_version.minor>=15 then version=version or 3 else version = version or 2 end
+
 	local lens
 	if version == 1 then lens = 2 
 	elseif version > 1 then lens = 4  end

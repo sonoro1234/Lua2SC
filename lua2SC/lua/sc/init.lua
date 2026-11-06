@@ -2,6 +2,11 @@ require"sc.callback_wrappers"
 require"sc.oscfunc"(scriptlinda)
 require"sc.sc_comm"
 InitSCCOMM()
+-- get sc version
+local res = sendBlocked({"/version",{}})
+assert(res[1]=="/version.reply")
+server_version = {name=res[2][1],major=res[2][2],minor=res[2][3]}
+---
 require"sc.gui"
 require"sc.synthdefsc"
 
