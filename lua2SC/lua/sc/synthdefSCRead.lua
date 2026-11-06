@@ -57,6 +57,9 @@ function StrFileOpen(strg)
         self = nil
         return true
     end
+	function strfile:seek()
+        return strptr
+    end
     return strfile
 end
 function readString(str,strptr,len)
@@ -76,15 +79,20 @@ function readSCSynthStream(inp)
     if res.version > 1 then
         lenvint = 4
     end
+	if res.version > 2 then assert(res.version==3) end
     --------------------------
     local numdefs=str2int(inp:read(2)) --numero definiciones
     --print(" syndefs: " .. buff)
     assert(numdefs==1,"El numero de definiciones no es 1 sino "..numdefs)
+	local inipos = inp:seek()
+	if res.version==3 then
+		res.size = str2int(inp:read(lenvint)) -- synthdef size
+	end
     res.name=readpstring(inp)
     --print(" name: "..res.name)
     local K=str2int(inp:read(lenvint)) --numero de constantes
     --print(" constantes: " .. K)
-    Kt={}
+    local Kt={}
     for i=1,K do
         Kt[i]=str2float32(inp:read(4))
     end
@@ -93,22 +101,22 @@ function readSCSynthStream(inp)
 
     local P=str2int(inp:read(lenvint)) --numero de parametros
 
-    Pt={}
+    local Pt={}
     for i=1,P do
         Pt[i]=str2float32(inp:read(4))
     end
     res.parameters=Pt
     local N=str2int(inp:read(lenvint)) --nombre de parametros
     --assert(N==P)
-    Nt={}
+    local Nt={}
     for i=1,N do
         local cad=readpstring(inp)
         Nt[str2int(inp:read(lenvint)) + 1]=cad
     end
     res.paramnames=Nt
-    U=str2int(inp:read(lenvint)) --ugens
+    local U=str2int(inp:read(lenvint)) --ugens
 
-    Ut={}
+    local Ut={}
     for i=1,U do
         local thisUt = {}
         Ut[i] = thisUt
@@ -148,6 +156,27 @@ function readSCSynthStream(inp)
             end
         end
     end
+	--variant spec
+	local num_variants = str2int(inp:read(2))
+	local Variants = {}
+	for i=1,num_variants do
+		Variants[i] = {}
+		Variants[i].name = readpstring(inp)
+		Variants[i].parameters = {}
+		for j=1, P do
+			Variants[i].parameters[j] = str2float32(inp:read(4))
+		end
+	end
+	res.variants = Variants
+	if res.version == 3 then
+		res.resampling = {}
+		res.resampling.block_size = str2int(inp:read(4))
+		res.resampling.block_size_index = str2int(inp:read(4)) + 1
+		res.resampling.factor = str2float32(inp:read(4))
+		res.resampling.factor_index = str2int(inp:read(4)) + 1
+		local endpos = inp:seek()
+		assert(endpos-inipos==res.size)
+	end
     --prtable(Ut)
     -- for i,v in ipairs(Ut) do
         -- print("\n")

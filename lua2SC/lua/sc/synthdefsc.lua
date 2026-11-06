@@ -1420,9 +1420,9 @@ function SYNTHDef:build()
 	self.isBuild=true
 	return self
 end
-function SYNTHDef:writeDefFile()
+function SYNTHDef:writeDefFile(version)
 
-	if not self.compiledStr then self:makeDefStr() end
+	if not self.compiledStr then self:makeDefStr(version) end
 	local fout = assert(io.open(SynthDefs_path..self.name..".scsyndef", "wb"),"cannot open "..SynthDefs_path..self.name..".scsyndef")
 	fout:write(self.compiledStr)
 	fout:close()
@@ -1430,15 +1430,21 @@ function SYNTHDef:writeDefFile()
 	return self
 end
 function SYNTHDef:makeDefStr(version)
-	local version = version or 2
+	local version = version or 3
 	local lens
-	if version == 1 then lens = 2 elseif version == 2 then lens = 4 else error("wrong version") end
+	if version == 1 then lens = 2 
+	elseif version > 1 then lens = 4  end
 
 	if not self.isBuild then self:build() end
 	local tout = {}
 	table.insert(tout,"SCgf")
 	table.insert(tout,int2str(version,4)) --version
 	table.insert(tout,int2str(1,2)) --numdefs
+	local sizepos = #tout + 1
+	local startPos = 10 --with only one numdef
+	if version >2 then
+		table.insert(tout,int2str(0,4)) --size
+	end
 	table.insert(tout,pstring(self.name))
 	
 	local constants=swapkeyvalue(self.constants)
@@ -1503,7 +1509,37 @@ function SYNTHDef:makeDefStr(version)
 			end
 		end
 	end
-	table.insert(tout,int2str(0,2))
+	table.insert(tout,int2str(0,2)) -- zero variants
+	if version >=3 then
+		if self.reblock then
+			if self.reblock.controlIndex then
+				table.insert(tout,int2str(-1, 4))
+				table.insert(tout,int2str(self.reblock.controlIndex,4))
+			else
+				table.insert(tout,int2str(self.reblock.blockSize, 4))
+				table.insert(tout,int2str(0,4))
+			end
+		else
+			table.insert(tout,int2str(0, 4))
+			table.insert(tout,int2str(0,4))
+		end
+		if self.resample then
+			if self.resample.controlIndex then
+				table.insert(tout,float2str(-1))
+				table.insert(tout,int2str(self.resample.controlIndex,4))
+			else
+				table.insert(tout,float2str(self.resample.factor))
+				table.insert(tout,int2str(0,4))
+			end
+		else
+			table.insert(tout,float2str(1))
+			table.insert(tout,int2str(0,4))
+		end
+		-- calc size
+		local sss = table.concat(tout)
+		local size = #sss - startPos
+		tout[sizepos] = int2str(size,4)
+	end
 	self.compiledStr=table.concat(tout)
 	return self
 end
@@ -1646,5 +1682,40 @@ function SYNTHDef:plot(seg,rate)
 end
 
 ----------------------------------------------------
+-- Resample
+function Resample(factor)
+	local M = {}
+	if type(factor)=="number" then
+		--check values
+		factor = math.floor(factor)
+		local m = math.frexp(factor)
+		assert(m==0 or m==0.5,"factor not power of two")
+		M.factor = factor
+	else
+		assert(factor.name == "OutputProxy")
+		M.controlIndex = factor.index-1
+		assert(M.controlIndex,"resample no controlIndex")
+	end
+	M.synthdef = _BUILDSYNTHDEF
+	M.synthdef.resample = M
+end
+
+function Reblock(blockSize)
+	local M = {}
+	if type(blockSize)=="number" then
+		--check values
+		blockSize = math.floor(blockSize)
+		local m = math.frexp(blockSize)
+		assert(m==0 or m==0.5,"blockSize not power of two")
+		M.blockSize = blockSize
+	else
+		assert(blockSize.name == "OutputProxy")
+		M.controlIndex = blockSize.index-1
+		assert(M.controlIndex,"blockSize no controlIndex")
+		print("blockSize.index",blockSize.index-1)
+	end
+	M.synthdef = _BUILDSYNTHDEF
+	M.synthdef.reblock = M
+end
 
 
