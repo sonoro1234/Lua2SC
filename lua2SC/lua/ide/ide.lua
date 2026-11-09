@@ -21,6 +21,7 @@ require"ide.settings"
 require"ide.perspectives"
 require"ide.findreplace"
 require"ide.scriptgui"
+--require"ide.scriptgui_imguiwx" --to test imgui
 require"ide.bootsc"
 require"ide.editor"
 IdentifiersList = require"ide.identifiers"
