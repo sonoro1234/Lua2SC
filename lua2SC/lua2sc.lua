@@ -10,6 +10,13 @@
 lanes=require("lanes")
 lanes.configure({ nb_keepers = 1, with_timers = true, on_state_create = nil,track_lanes=true}) --,verbose_errors=true})
 
+if jit.os=="Windows" then
+local ffi = require"ffi"
+ffi.cdef[[
+bool SetProcessDPIAware();
+]]
+print("DPIAware",ffi.C.SetProcessDPIAware())
+end
 idlelinda= lanes.linda("idlelinda")
 scriptlinda= lanes.linda("scriptlinda")
 scriptguilinda= lanes.linda("scriptguilinda")
