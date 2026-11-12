@@ -326,7 +326,7 @@ ShowCP = function(c,lev)
 end
 function func_draw()
 	-----------------------------------
-				for mes=1,1000 do
+			for mes=1,1000 do
 				local key,val=scriptguilinda:receive(0,"guiModify","guiSetValue","guiUpdate","guiGetValue","guiSetLabel","/vumeter","ClearScriptGUI" )
 				if val then
 					if type(val)=="table" then

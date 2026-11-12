@@ -69,14 +69,27 @@ function Synth_metatable:before(defName, args)
 	return self.server.Synth(defName, args, self, 2)
 end
 
-function Synth_metatable.gui(syn)
+function Synth_metatable.gui(syn,updatetime)
 	local notisink = {params=syn.args,node=syn.nodeID}
 	function notisink:notify(control)
+		print"notisssssssssssssss"
 		local on = getMsgLista({"/n_set", {self.node}},self.params)
 		sendBundle(on)
 	end
-	local igui = InstrumentsGUI(syn.name,false,parent,notisink.params,notisink)
-	return igui
+--	print"syngui doingjjjj"
+--	local igui = InstrumentsGUI(syn.name,false,parent,notisink.params,notisink)
+--	local tgui = igui.gui
+--	print"syngui done"
+--
+--
+	print"syngui doingjjjj"
+	--local panelInstOuter=addPanel{type="vbox",name="instrument",parent=parent}
+	local panelParamfx=addPanel{type="hbox",parent=panelInstOuter,name=syn.name}
+	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,true)
+	print"syngui done"
+
+	if updatetime then tgui.update(updatetime, syn.nodeID) end
+	return tgui
 end
 
 -- support garbage collection:

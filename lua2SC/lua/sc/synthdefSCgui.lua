@@ -15,6 +15,36 @@ end
 function closeSynthdefGui(panel)
 	emptyPanel(panel)
 end
+
+function getSynthdefParams(synthname)
+	--local syntdef=readSCSynthFile(SynthDefs_path..synthname..".scsyndef")
+	local syntdef=readSCSynthFile(synthname)
+		-- hallar las longitudes de los parametross
+	local longitudes={}
+	local lasti=0
+	local lastv=""
+	-- not consecutive number keys
+	for i,v in	pairsByKeys(syntdef.paramnames) do
+		--println(i," : ",v)
+		if lasti > 0 then longitudes[lastv]=i-lasti end
+		lasti=i
+		lastv=v
+	end
+	longitudes[lastv]=#syntdef.parameters-lasti+1
+	syntdef.paramlens = longitudes
+	return syntdef
+	--return {paramnames=syntdef.paramnames,paramlens=longitudes}
+end
+-- for n_getn
+function getSynthdefParams_getn(t)
+	local tt = {}
+	for i,v in pairs(t.paramnames) do
+		table.insert(tt,v)
+		table.insert(tt,t.paramlens[v])
+	end
+	return tt
+end
+
 function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usetext,minrows)
 	--print("openSynthdefGuiB")
 	
@@ -24,8 +54,10 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 	if dontusedefaults==nil then dontusedefaults=true end
 
 	local parameterCtl={}
-	syntdef=readSCSynthFile(synthfile)
-	parameterCtl.syntdef=syntdef
+	--local syntdef=readSCSynthFile(synthfile)
+	local syntdef=getSynthdefParams(synthfile)
+	local longitudes = syntdef.paramlens
+	parameterCtl.synthdef=syntdef
 	--prtable(syntdef.parameters)
 
 	params= params or {}
@@ -41,6 +73,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 	for k,v in pairs(params) do
 		if not parnames[k] then params[k]=nil end
 	end
+--[[
 	-------------------------------------
 	-- hallar las longitudes de los parametross
 	local longitudes={}
@@ -54,6 +87,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 		lastv=v
 	end
 	longitudes[lastv]=#syntdef.parameters-lasti+1
+--]]
 	--prtable(longitudes)
 	-- get the longest param
 	local maxlongi=minrows
@@ -200,6 +234,43 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 				parameterCtl[#parameterCtl + 1] = cont
 			end
 		end
+	end
+	--- prepare /s_getn
+	local msgpars = getSynthdefParams_getn({paramnames=syntdef.paramnames,paramlens=syntdef.paramlens})
+	local controls = {}
+	for i,v in ipairs(parameterCtl) do 
+		if v.variable[2] then
+			controls[v.name]=controls[v.name] or {}
+			controls[v.name][v.variable[2]]=v
+		else
+			controls[v.name] = v
+		end
+	end
+--	parameterCtl.msgpars = msgpars
+--	parameterCtl.controls = controls
+	function parameterCtl.update(time,nodeID)
+		time = time or 0.5
+		OSCFunc.newfilter("/n_setn",nodeID, function(msg) 
+			local resp = msg[2]
+			local msglen = #msg[2]
+			local i = 2
+			while i<msglen do
+				local name = resp[i]
+				local long = resp[i+1]
+				if controls[name] then
+					if long==1 then
+						controls[name]:val(resp[i+2])
+					else
+						for j=1,long do
+							controls[name][j]:val(resp[i+1+j])
+						end
+					end
+				end
+				i = i + 2 + long
+			end
+			QueueAction(time,{function() ThreadServerSend{"/s_getn",{nodeID,unpack(msgpars)}} end})
+		end)
+		QueueAction(time,{function() ThreadServerSend{"/s_getn",{nodeID,unpack(msgpars)}} end})
 	end
 	--guiUpdate()
 	return parameterCtl

@@ -21,7 +21,7 @@ require"ide.settings"
 require"ide.perspectives"
 require"ide.findreplace"
 require"ide.scriptgui"
---require"ide.scriptgui_imguiwx" --to test imgui
+--require"ide.scriptgui_imguiwx"
 require"ide.bootsc"
 require"ide.editor"
 IdentifiersList = require"ide.identifiers"
@@ -281,7 +281,7 @@ function CreateLog()
 					currentSTC=errorLog
 					event:Skip()
 				end)
-	--errorLog:SetWrapMode(1)
+	errorLog:SetWrapMode(wxstc.wxSTC_WRAP_WORD)
 	return errorLog
 end
 --ok with cycles
@@ -623,7 +623,12 @@ end
 function DisplayLog(message, LogW)
     LogW:SetReadOnly(false)
     LogW:AppendText(message)
+    --local linen = LogW:GetLineCount()
+	--print("linen",linen)
+    --LogW:GotoLine(linen)
     LogW:GotoPos(LogW:GetLength())
+	--LogW:EnsureCaretVisible()
+	LogW:ScrollToEnd()
 	LogW:SetReadOnly(true)
 end
 

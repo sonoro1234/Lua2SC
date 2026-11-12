@@ -295,7 +295,7 @@ function InstrumentsGUI(synname,chooser,parent,params,notified)
 		--closeSynthdefGui(self.panelParamfx)
 		--deletePanel(self.panelParamfx)
 		self.panelParamfx=addPanel{type="hbox",parent=self.panelInst,name=self.inst}
-		openSynthdefGuiA(self.inst,self.panelParamfx,self.params,notified or self,true,true)
+		self.gui = openSynthdefGuiA(self.inst,self.panelParamfx,self.params,notified or self,true,true)
 		
 	end
 	return self

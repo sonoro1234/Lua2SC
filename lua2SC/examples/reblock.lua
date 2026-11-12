@@ -1,4 +1,4 @@
-local sinte = SynthDef("karp", { out=Master.busin, blockSize=1, upsample=1}, function()
+local sinte = SynthDef("karp", { out=Master.busin, blockSize=1, upsample=4}, function()
 
     Reblock(blockSize);
     Resample(upsample);
