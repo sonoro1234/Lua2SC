@@ -53,7 +53,7 @@ function WAITEv(name)
 						return nil 
 					end
 					named_events:subscribe(name,function(ppq) 
-														prerror("WatiEv triger",name,ppq,e.name)
+														prerror("WaitEv triger",name,ppq,e.name)
 														e.prevppqPos = -math.huge --avoid reset
 														e.ppqPos = ppq;
 														e.playing = true

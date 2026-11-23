@@ -44,6 +44,7 @@ local function Server(IP, port)
 			server = s,
 			nodeID = nextNodeID(),
 			name = name,
+			group = (target and target.type=="group") and target or nil,
 			args = args or {},
 		}, Synth_metatable)
 		--[[

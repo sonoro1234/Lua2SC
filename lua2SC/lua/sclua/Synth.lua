@@ -69,26 +69,43 @@ function Synth_metatable:before(defName, args)
 	return self.server.Synth(defName, args, self, 2)
 end
 
+function Synth_metatable:getn(index, count, action)
+	if action then
+		OSCFunc.newfilter("/n_setn",self.nodeID,function(msg2)
+			--prtable(msg2)
+			local t = {}
+			for i=4,#msg2[2] do
+				t[#t+1] = msg2[2][i]
+			end
+			action(t)
+		end,true)
+	end
+	ThreadServerSend{"/s_getn",{self.nodeID,index,count or 1}}
+end
+
 function Synth_metatable.gui(syn,updatetime)
 	local notisink = {params=syn.args,node=syn.nodeID}
 	function notisink:notify(control)
-		print"notisssssssssssssss"
-		local on = getMsgLista({"/n_set", {self.node}},self.params)
+		print("notisssssssssssssss",control.name,control.parameter,control:val())
+		local on = {"/n_set", {self.node, control.parameter, {"float",control:val()}}}
+		--prtable(on)
 		sendBundle(on)
 	end
---	print"syngui doingjjjj"
---	local igui = InstrumentsGUI(syn.name,false,parent,notisink.params,notisink)
---	local tgui = igui.gui
---	print"syngui done"
---
---
+--[[
 	print"syngui doingjjjj"
+	local igui = InstrumentsGUI(syn.name,false,parent,notisink.params,notisink)
+	local tgui = igui.gui
+	print"syngui done"
+---]]
+
+---[[
 	--local panelInstOuter=addPanel{type="vbox",name="instrument",parent=parent}
 	local panelParamfx=addPanel{type="hbox",parent=panelInstOuter,name=syn.name}
 	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,true)
 	print"syngui done"
 
-	if updatetime then tgui.update(updatetime, syn.nodeID) end
+	if updatetime then tgui.update(updatetime, syn.group.nodeID, syn.nodeID) end
+--]]
 	return tgui
 end
 

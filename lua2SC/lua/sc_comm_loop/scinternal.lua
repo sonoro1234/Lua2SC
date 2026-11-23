@@ -92,6 +92,7 @@ function lanebody(linda)
 	ffi.cdef[[typedef void (*ReplyFunc)(struct ReplyAddress *inReplyAddr, char* inBuf, int inSize);]]
 	local trace = false
 	local tracestatus = false
+	local traceOSCFunc = false
 	local Filters = {}
 	local function ReplyFunS(addr,inbuf,size) 
 		--print("ReplyFunS",addr,inbuf,size)
@@ -117,6 +118,8 @@ function lanebody(linda)
 			elseif key == "trace" then
                 trace = val[1]
 				tracestatus = val[2]
+				traceOSCFunc =val[3]
+				print("trace:",unpack(val))
 				prtable(Filters)
             elseif key == "exit" then
                 --not needed : see SCFFI:close
@@ -139,12 +142,14 @@ function lanebody(linda)
 			scriptlinda:send("OSCReceive",msg)
 		elseif Filters[msg[1]] then
 			for onelinda,_ in pairs(Filters[msg[1]]) do
+				if traceOSCFunc then print("TCPSC: "..prOSC(msg)) end
 				onelinda:send("OSCReceive",msg)
 			end
 		elseif Filters.ALL then
 			msg[1] = "ALL"
 			for onelinda,_ in pairs(Filters.ALL) do
 				onelinda:send("OSCReceive",msg)
+				if traceOSCFunc then print("TCPSC: "..prOSC(msg)) end
 			end
 		--else --use OSCFunc.trace
 			--print("SCFFI: "..prOSC(msg))

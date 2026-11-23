@@ -31,7 +31,10 @@ else
 end --not no_players
 
 require"sc.miditoosc"
-if not no_players then require"sc.playersscgui" end
+if not no_players then 
+	require"sc.playersscgui"
+	SetMainPanel()
+end
 require"sc.ctrl_bus"
 require"sc.named_events"
 require"sc.routines"

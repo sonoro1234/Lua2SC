@@ -11,6 +11,7 @@ function OSCFunc.newfilter(path,template,func,runonce,block,alt_linda)
 		udpsclinda:send("addFilter",{path,handleOSCFuncLinda,tmplinda})
 		tmplinda:receive("addFilterResponse")
 	else
+		-- send it to sc_comm thread which will call OSCReceive when msg arrives to execute func
 		udpsclinda:send("addFilter",{path,handleOSCFuncLinda})
 	end
 	return {template=template,func=func,runonce=runonce,path=path,handleOSCFuncLinda=handleOSCFuncLinda}
@@ -44,6 +45,8 @@ local function CheckTemplate(msg,template)
 			if msg[i]~=v then return false end
 		end
 		return true
+	elseif type(template)=="function" then
+		return template(msg)
 	else
 		return msg[1]==template
 	end
@@ -104,8 +107,12 @@ function OSCFunc.process_all(timeout)
 		end
 	end
 end
-function OSCFunc.trace(doit,status)
-	udpsclinda:send("trace",{doit,status})
+
+function OSCFunc.show_filters()
+	prtable(OSCFunc.filters)
+end
+function OSCFunc.trace(doit,status,traceOscfunc)
+	udpsclinda:send("trace",{doit,status,traceOscfunc})
 end
 --this is called from scriptrun
 --and from ide

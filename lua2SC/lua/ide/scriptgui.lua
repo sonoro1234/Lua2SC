@@ -89,7 +89,7 @@ function wxKnob(parent,name,label,id,radio)
 			if wxwindow:HasCapture() then   
 				mx = event:GetX()
 				my = event:GetY()
-				CalcValue()				
+				--CalcValue()				
 				wxwindow:ReleaseMouse()
 				wxwindow:Refresh()
 			end
@@ -1482,9 +1482,11 @@ function CreateScriptGUI()
 		control.span = co.span
 		local ScriptGUI = ScriptWindows[co.window] or ScriptGUI
 		if co.typex=="toggle" then
-			control.control=wx.wxToggleButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20))
+			control.control=wx.wxToggleButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20),wx.wxBORDER_NONE)
+			control.control:SetToolTip(tostring(co.label))
 		elseif co.typex=="button" then
-			control.control=wx.wxButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20))
+			control.control=wx.wxButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20),wx.wxBORDER_NONE)
+			control.control:SetToolTip(tostring(co.label))
 		elseif co.typex=="vslider" then
 			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxSize(-1,100),wx.wxSL_VERTICAL ) --wxDefaultSize not working in GTK
 			if co.label then
@@ -1503,7 +1505,8 @@ function CreateScriptGUI()
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
 			end
 		elseif co.typex=="text" then
-			control.control=wx.wxTextCtrl(ScriptGUI,co.tag,tostring(co.value),wx.wxDefaultPosition,wx.wxSize(40,20),wx.wxTE_PROCESS_ENTER)
+			local flags = co.multiline and bit.bor(wx.wxTE_CHARWRAP,wx.wxTE_MULTILINE,wx.wxTE_PROCESS_ENTER) or wx.wxTE_PROCESS_ENTER
+			control.control=wx.wxTextCtrl(ScriptGUI,co.tag,tostring(co.value),wx.wxDefaultPosition,wx.wxSize(co.width or 40,co.height or 20),flags)
 			if co.label then
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
 			end
@@ -1546,7 +1549,7 @@ function CreateScriptGUI()
 		end
 		if not control.customclass then -- the not custom types (knob...)
 			if control.label or co.name then
-				local panel= wx.wxStaticBoxSizer(wx.wxVERTICAL, ScriptGUI,tostring(co.name))
+				local panel= wx.wxStaticBoxSizer(wx.wxVERTICAL, ScriptGUI,tostring(co.name or ""))
 				--local panel=wx.wxBoxSizer(wx.wxVERTICAL)
 				panel:Add(control.control,0,wx.wxALIGN_CENTER_HORIZONTAL)--+ wx.wxGROW)
 				if control.label then

@@ -519,7 +519,7 @@ Tract.gains.H = db2amp(10)
 
 Tract.noise = {}
 Tract.noise.F = {freqs={2000,7000},bw={0.1,0.5}} 
-Tract.noise.S = {freqs={7500,7500},bw={0.05,0.05}}
+Tract.noise.S = {freqs={5500,7500},bw={0.15,0.15}}
 --Tract.noise.Z = {freqs={700,8000},bw={2.7,2.7}}
 Tract.noise.Z = {freqs={4000,4500},bw={0.15,0.15}}
 Tract.noise.J = {freqs={800,1000},bw={2.5,2.5}}

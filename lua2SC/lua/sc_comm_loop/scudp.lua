@@ -4,6 +4,7 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 	local listenudp
 	local trace = false
 	local tracestatus = false
+	local traceOSCFunc = false
 	local lanes = require "lanes" --.configure()
     --[=[ logging
     local file  = io.open([[C:\LUA\lua2sc\logsctcp.txt]],"w+")
@@ -106,6 +107,8 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 			elseif key == "trace" then
                 trace = val[1]
 				tracestatus = val[2]
+				traceOSCFunc =val[3]
+				print("trace:",unpack(val))
 				prtable(Filters)
             elseif key == "exit" then
                 print("exit on udpsclinda")
@@ -167,12 +170,14 @@ local function ReceiveUDPLoop(tcppars,numsccomm)
 				scriptlinda:send("OSCReceive",msg)
 			elseif Filters[msg[1]] then
 				for onelinda,_ in pairs(Filters[msg[1]]) do
+					if traceOSCFunc then print("TCPSC: "..prOSC(msg)) end
 					onelinda:send("OSCReceive",msg)
 				end
 			elseif Filters.ALL then
 				msg[1] = "ALL"
 				for onelinda,_ in pairs(Filters.ALL) do
 					onelinda:send("OSCReceive",msg)
+					if traceOSCFunc then print("TCPSC: "..prOSC(msg)) end
 				end
 			--else --use OSCFunc.trace
 				--print("UDPSC: "..prOSC(msg))

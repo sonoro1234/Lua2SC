@@ -101,7 +101,8 @@ function scEventPlayer:Init(setnode)
 		msg ={"/s_new", {self.inst, self.node, self.headtail, self.group,"busin",{"int32",self.busin},"busout",{"int32",self.busout}}}
 		--prtable(msg)
 		sendBundle(msg)
-
+	else
+		prerror("dont init",self.name)
 	end
 	EventPlayer.Init(self)
 	if self.initTasks then
@@ -364,7 +365,7 @@ function Effect:Init()
 	
 	self.busin=self.channel.busin
 	self.busout=self.busin
-	scEventPlayer.Init(self)
+	scEventPlayer.Init(self,true)
 	--prtable(self)
 	--error("break error")
 end
@@ -530,7 +531,7 @@ function OscEventPlayer:Init()
 	self.inserts=self.inserts or {}
 	self._inserts={}
 	for i,insert in ipairs(self.inserts) do
-		self._inserts[i]=INS(insert,self)
+		self._inserts[i]=INS(insert,self, true)
 	end
 	self:MakeSends()
 	
@@ -1175,6 +1176,7 @@ table.insert(onFrameCallbacks,function()
 		
 	end
 	for i,v in ipairs(OSCPlayers) do
+		--prerror(v.name, "play")
 		v:Play()
 	end
 	doOscSchedule(curHostTime.ppqPos)

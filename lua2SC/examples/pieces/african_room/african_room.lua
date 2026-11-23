@@ -1,3 +1,10 @@
+--DONT_OPENGUI = true
+--DOAUTOGUI = false
+--DOAUTOGUI = true
+-- OSCFunc.trace(false, false, true)
+--OSCFunc.trace(false, false,false)
+-- OSCFunc.show_filters()
+--do return end
 -------------------------first the SynthDefs------------------------------
 -- we will getting requiring a lua file with synthdefs in this script folder
 -- and call sync for waiting to async complete
@@ -91,9 +98,9 @@ LS{PS(melody_press,talk)}:rep(2),SETEv"singer2",DOREST(8*2),
 SETINS(3,{bypass=1}),LS{PS(melody_press,talk)}:rep(2),DOREST(8-1),SETEv"zurdo",DOREST(8+1),
 LS{PS(melody_press,talk)}:rep(2),DOREST(8*2-1),SETEv"coros",DOREST(1),
 LS{LS{PS(melody_press,talk)}:rep(2),SETEv"solo_s",DOREST(8*2)},
-LS{LS{PS(melody_press,talk)}:rep(2),SETCHANS({pluk,pluk2,plukosti,shaker,bow,claper,zurdo},{unmute=0}),DOREST(8*2)},
-LS{LS{PS(melody_press,talk)}:rep(2),SETCHANS({pluk,pluk2,plukosti,shaker,bow,claper,zurdo},{unmute=1}),DOREST(8*2)},
-LS{LS{PS(melody_press,talk)}:rep(2),SETPLAYERS({Master},{level=ERAMP(1,db2amp(-120),Time2beats(100))}),DOREST(8*2)},
+LS{LS{PS(melody_press,talk)}:rep(2),SETCHANS(function() return{pluk,pluk2,plukosti,shaker,bow,claper,zurdo}end,{unmute=0}),DOREST(8*2)},
+LS{LS{PS(melody_press,talk)}:rep(2),SETCHANS(function() return{pluk,pluk2,plukosti,shaker,bow,claper,zurdo}end,{unmute=1}),DOREST(8*2)},
+LS{LS{PS(melody_press,talk)}:rep(2),SETPLAYERS(function() return{Master}end,{level=ERAMP(1,db2amp(-120),Time2beats(100))}),DOREST(8*2)},
 LOOP{LS{PS(melody_press,talk)}:rep(2),DOREST(8*2)}
 })
 -- singer2

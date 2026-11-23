@@ -222,7 +222,7 @@ piano.inserts = {{"soundboard"}}
 ActionEP():Bind{actions = LS{ACTION(42*10+0.5,theMetro.stop,theMetro)}}
 
 ---------- early reflections room simulation -----------------
-ER = require"sc.ER"(0.85,1,1,{part=true,N=5,L={20,30,6},Pr={10,5,1.2},compensation=true,bypass=true})
+ER = require"sc.ER"(0.85,1,1,{name= "kyrie ER globals", part=true,N=5,L={20,30,6},Pr={10,5,1.2},compensation=true,bypass=true})
 ER:setER(piano,-0.33,3)
 ER:setER(s1,-0.1)
 ER:setER(s2,-1)

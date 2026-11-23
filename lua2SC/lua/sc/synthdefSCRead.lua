@@ -109,11 +109,15 @@ function readSCSynthStream(inp)
     local N=str2int(inp:read(lenvint)) --nombre de parametros
     --assert(N==P)
     local Nt={}
+	local NameToIndex = {}
     for i=1,N do
         local cad=readpstring(inp)
-        Nt[str2int(inp:read(lenvint)) + 1]=cad
+		local index = str2int(inp:read(lenvint))
+        Nt[index + 1]=cad
+		NameToIndex[cad]=index
     end
     res.paramnames=Nt
+	res.NameToIndex = NameToIndex
     local U=str2int(inp:read(lenvint)) --ugens
 
     local Ut={}

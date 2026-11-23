@@ -265,7 +265,7 @@ function Slider(name,min,max,val,func)
 	local min = min or 0
 	local max = max or 1
 	local name = name or ""
-	local newcontrol = {panel=curr_panel,value =val or min,min=min,max=max, typex="vslider",label=0,name=name,
+	local newcontrol = {panel=curr_panel, value =val or min, min=min, max=max,label=0, typex="vslider", name=name,
 			callback = function(value,str,c) 
 					c:setLabel(string.format("%.2f",value),0)
 					func(value)
@@ -284,17 +284,28 @@ function Knob(name,min,max,val,func)
 	return addControl(newcontrol)
 end
 
-function Button(name,func)
-	local newcontrol = {panel=curr_panel,value =0, typex="button",clabel=name,name=name,
+function Button(name,func,dontinit)
+	local newcontrol = {panel=curr_panel,value =0, typex="button",clabel=name,
 	callback = function(value,str,c) 
 					--c:setLabel(string.format("%.2f",value),0)
 					func(value)
 	end}
+	if dontinit then newcontrol.value = nil end
+	return addControl(newcontrol)
+end
+
+function Text(name,val,func,w,h,multiline)
+	local newcontrol = {panel=curr_panel,value =val, typex="text",name=name,width=w,height=h,multiline=multiline,
+	callback = function(value,str,c) 
+					--c:setLabel(string.format("%.2f",value),0)
+					func(value)
+	end}
+	--if dontinit then newcontrol.value = nil end
 	return addControl(newcontrol)
 end
 
 function Toggle(name,func)
-	local newcontrol = {panel=curr_panel,value =0, typex="toggle",clabel=name,name=name,
+	local newcontrol = {panel=curr_panel,value =0, typex="toggle", clabel=name, --name=name,--,
 	callback = function(value,str,c) 
 					--c:setLabel(string.format("%.2f",value),0)
 					func(value)
@@ -438,4 +449,4 @@ function FScope(op)
 	msg ={"/b_alloc",{ co.scopebufnum, co.bins, 1,{"blob",toOSC(msg)}}}
 	sendBundle(msg)
 end
-gui = {default_control = "knob"}
+gui = {default_control = "knob",guiPanelTable=guiPanelTable}

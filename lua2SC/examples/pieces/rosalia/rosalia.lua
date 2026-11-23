@@ -416,7 +416,7 @@ ella:Bind(LS{
 
 el:Bind(LS{
 	WAITEv"jondo",
-	SETCHAN{level=db2amp(4)},
+	SETCHAN{level=db2amp(0)},
 	PS(ini_el,hombre:Talk(ini_frase_h,false,false)),
 	DOREST(4),
 	PS(melo_el1,hombre:Talk(frase_h1,true,true)),

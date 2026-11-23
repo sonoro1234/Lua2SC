@@ -29,7 +29,7 @@ end
 local Platform = {}
 Platform.userAppSupportDir = GetUserLocalDataDir()
 Platform.systemAppSupportDir = GetConfigDir()
-Platform.portableDir = lua2scpath
+Platform.portableDir = lua2scpath .. ".."
 local lfs = require"lfs"
 local Atk = {}
 Atk.userSupportDir = Platform.userAppSupportDir .. "/ATK";
@@ -38,7 +38,7 @@ Atk.userKernelDir = Atk.userSupportDir .. "/kernels";
 Atk.systemSupportDir = Platform.systemAppSupportDir .. "/ATK";		
 Atk.systemSoundsDir = Atk.systemSupportDir .. "/sounds";
 Atk.systemKernelDir = Atk.systemSupportDir .. "/kernels";
-Atk.portabSupportDir = lua2scpath .. "../ATK";
+Atk.portabSupportDir = Platform.portableDir .. "/ATK";
 Atk.portabSoundsDir = Atk.portabSupportDir .. "/sounds";
 Atk.portabKernelDir = Atk.portabSupportDir .. "/kernels";
 FoaDecoderKernel = {}
@@ -67,8 +67,11 @@ function FoaDecoderKernel:initPath()
 	elseif lfs.attributes(Atk.systemKernelDir) and lfs.attributes(Atk.systemKernelDir).mode == "directory" then
 		kernelLibPath = Atk.systemKernelDir
 	else
+		print("Could not find ATK inside of any of this folders:")
+		print(Atk.portabKernelDir)
 		prtable("ATK directories:",Platform)
-		error("are Atk kernels instaled in one of the above directories?")
+		error([[are Atk kernels instaled in one of the above directories?
+If not get them at: https://github.com/ambisonictoolkit/atk-kernels/releases/tag/v1.2.1 unzip and set in ATK folder inside any ]])
 	end
 	return kernelLibPath .. "/FOA/decoders/" .. self.kind
 end
@@ -118,7 +121,7 @@ function FoaDecoderKernel.newCIPIC(t)
 end
 
 
-AtkKernelConv = {}
+local AtkKernelConv = {}
 
 function AtkKernelConv.ar(inp,kernel,mul,add)
 	if not isSimpleTable(inp) then
@@ -153,6 +156,11 @@ function FoaPanB.ar(...)
 	local   inp, azimuth, elevation, mul, add   = assign({ 'inp', 'azimuth', 'elevation', 'mul', 'add' },{ nil, 0, 0, 1, 0 },...)
 	return FoaPanB:MultiNew{2,4,inp,azimuth,elevation}:madd(mul,add)
 end
+FoaDecoderKernel.kind = "dummy"
+FoaDecoderKernel:initPath()
+
+-- suceed so 
+AtkKernelConv = AtkKernelConv
 
 --[[
 dec = FoaDecoderKernel.newCIPIC()

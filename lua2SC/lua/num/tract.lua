@@ -163,7 +163,7 @@ DEFDUR = DEFDUR or 0.1
 DEFRATE = DEFRATE or 0.1
 local MINIMAL = 0 --1e-9
 
-local required = string.format("num.tract_male%d",NN)
+local required = string.format("num.male_folder.tract_male%d",NN)
 local Tract = require(required)
 Tract.NN = NN
 local function copy_phoneme(a,b)

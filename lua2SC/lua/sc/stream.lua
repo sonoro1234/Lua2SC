@@ -1197,11 +1197,13 @@ function SETSENDS(i,lev)
 					return {delta=0,dur=0,freq=NOP,_=fun}
 				end)
 end
-function SETCHANS(pls,parvals)
+function SETCHANS(plsf,parvals)
+	assert(type(plsf)=="function","players must be wrapped by function")
 	return FS(function(pl)
 			local beatLen = parvals.dur
 			parvals.dur = nil
 			local function fun(pll)
+				local pls = plsf()
 				local time = theMetro:ppq2time(pll.ppqPos)
 				for i,vpl in ipairs(pls) do
 					for k,v in pairs(parvals) do
@@ -1219,9 +1221,11 @@ function SETCHANS(pls,parvals)
 		end)
 end
 function SETPLAYERS(pls,parvals)
+	assert(type(pls)=="function","players must be wrapped by function")
 	return FS(function(pl)
 			local beatLen = parvals.dur
 			parvals.dur = nil
+			pls = pls()
 			local function fun(pll)
 				local time = theMetro:ppq2time(pll.ppqPos)
 				for i,vpl in ipairs(pls) do

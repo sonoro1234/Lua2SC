@@ -6,7 +6,8 @@ function ERmaker(B,Dist,Size,op)
 	Size = Size or 1
 	local sc = require"sclua.Server".Server()
 	local busB = sc.Bus()
-	curr_panel = addPanel{type="hbox",name="ER globals"}
+	--print("---------------- On ER MainUpPanel is",MainUpPanel)
+	curr_panel = addPanel{type="hbox",name=op.name or "ER globals", parent = MainUpPanel}
 	Slider("B",0,1,B,function(val) busB:set(val) end)
 	local busDist = sc.Bus()
 	Slider("Dist",0,8,Dist,function(val) busDist:set(val) end)
@@ -39,7 +40,7 @@ function ERmaker(B,Dist,Size,op)
 	synname = synname .. (op.name or "")
 	--SynthDef(synname,{busout=0,cbusB=busB.busIndex,dist=1,angle=0,azim=0},function()
 	SynthDef(synname,{busout=0,dist=1,angle=0,azim=0},function()
-		print("busB.busIndex",busB.busIndex)
+		print("ER busB.busIndex",busB.busIndex)
 		--local L=TA(op.L or {20,10,16})*In.kr(busSize.busIndex,1)
 		--local Ps = Ref(op.Pr or {9,3,1.2})
 		local sizefac = In.kr(busSize.busIndex,1)

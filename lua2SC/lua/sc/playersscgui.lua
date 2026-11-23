@@ -99,7 +99,7 @@ function SliderControl(name,min,max,val)
 	local min = min or 0
 	local max = max or 1
 	local name = name or ""
-	local newcontrol = {value =val or min,min=min,max=max, typex="vslider",label=0,name=name,
+	local newcontrol = {value =val or min, min=min,max=max, typex="vslider", label=0, name=name, panel = MainUpPanel,
 			callback=function(value,str,c) 
 					c:setLabel(string.format("%.2f",value),0)
 			end}
@@ -107,11 +107,21 @@ function SliderControl(name,min,max,val)
 	return FS(function() return elcontrol.value end,-1)
 end
 
+
 --GUIOPENED=false
+
+-- only creates first time called (to be used in script from ER for example)
+function SetMainPanel()
+	MainPanel = MainPanel or addPanel{type="vbox",noname="main panel"}
+	MainUpPanel = MainUpPanel or addPanel{type="hbox",parent = MainPanel, noname = "main_up"}
+end
+-- getkeywords would get crazy for guiAddPanel, so better call it on init
+-- SetMainPanel()
 function opengui()
 	print("opengui\n")
 	if DONT_OPENGUI then return end
-
+	
+	--prtable("guiPanelTable",gui.guiPanelTable)
 	----------------------------------------------
 	local function pan2gui(val)
 		return linearmap(1,-1,1,0,val)
@@ -119,7 +129,10 @@ function opengui()
 	local function gui2pan(val)
 		return linearmap(1,0,1,-1,val)
 	end
+	
+	SetMainPanel()
 	local panelMixer=addPanel{type="hbox",parent=MainPanel}
+	local SDefAutoGuis = {}
 	GUIPlayers= GUIPlayers or OSCPlayers
 	if #GUIPlayers >0 then
 		--paneles
@@ -135,6 +148,7 @@ function opengui()
 					panel=panelcanales, --panelcanales[i],
 					value=player.channel.params.unmute or 1,
 					variable={"unmute"},
+					--autogui = {node=player.channel.node,param="unmute",name=player.name.."_unmute"},
 					type=GUITypes.onOffButton,
 					label=player.name or i,
 					FormatLabel=function() return player.name or i end,
@@ -158,6 +172,7 @@ function opengui()
 					panel=panelcanales, --i,
 					value=db2faderPos(amp2db(player.channel.params.level or 1)),
 					variable={"level"},
+					autogui = {node=player.channel.node,param="level",name=player.name.."_vol"},
 					type=GUITypes.vSlider,
 					label=string.format("%.2f",amp2db(player.channel.params.level or 1)),
 					Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
@@ -184,6 +199,7 @@ function opengui()
 					panel=panelcanales, --i,
 					value=player.channel.params.pan or 0,
 					variable={"pan"},
+					autogui = {node=player.channel.node,param="pan",name=player.name.."_pan"},
 					--width = 40,
 					--height = 30,
 					type=GUITypes.knob, --GUITypes.hSlider,
@@ -216,6 +232,7 @@ function opengui()
 						--value=db2faderPos(amp2db(GUIPlayers[i].envios[i2].level)),
 						value = GUIPlayers[i].envios[i2].level,
 						variable={"level"},
+						autogui = {node=player.envios[i2].node,param="pan",name=player.name.."_sendfx"},
 						type=GUITypes.knob,--GUITypes.hSlider ,--GUITypes.knob,
 						label=string.format("%.2f",amp2db(GUIPlayers[i].envios[i2].level)),
                         Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
@@ -243,13 +260,16 @@ function opengui()
 				for i2,insert in ipairs(player._inserts) do
 					panelInsertsOne=addPanel{type="collapse",name=insert.name,parent=panelInserts}
 					--print("insert:",insert,insert.name,insert.params)
-					openSynthdefGui(insert,panelInsertsOne,true,insert.usetext,1)
+					assert(insert.node and insert.group)
+					local Sgui = openSynthdefGui(insert,panelInsertsOne,true,insert.usetext,1)
+					SDefAutoGuis[#SDefAutoGuis+1] = {Sgui=Sgui,group=insert.group,node=insert.node,insert=insert}
 				end
 			end
 		end	
 	end
 	--fx={}
 	---[[
+	if #Effects > 0 then
 	panelfxS=addPanel{type="hbox",name="Effects",parent=panelMixer}
 	for i,fx in ipairs(Effects) do
 		panelfx=addPanel{type="hbox",name=fx.name,parent=panelfxS}
@@ -259,6 +279,7 @@ function opengui()
 			panel=panelVolfx,
 			value=db2faderPos(amp2db(fx.channel.params.level or 1)),
 			variable={"level"},
+			autogui = {node = fx.channel.node, param = "level"},
 			type=GUITypes.vSlider,
 			label=string.format("%.2f",amp2db(fx.channel.params.level or 1)),
 			Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
@@ -275,7 +296,10 @@ function opengui()
 		fx.channel:RegisterControl(cont)
 		
 		panelParamfx=addPanel{type="flexi",cols=3,parent=panelfx}
-		openSynthdefGui(fx,panelParamfx,true,false,3)
+		
+		local Sgui = openSynthdefGui(fx,panelParamfx,true,false,3)
+		SDefAutoGuis[#SDefAutoGuis+1] = {Sgui=Sgui,group=fx.group,node=fx.node}
+	end
 	end
 	--]]
 	-------master
@@ -286,6 +310,7 @@ function opengui()
 				name="vol.",
 				panel=panelMaster, --i,
 				value=db2faderPos(amp2db(Master.params.level or 1),6),
+				autogui = {node = Master.node, param = "level", name = "master level"},
 				variable={"level"},
 				type=GUITypes.vSlider,
 				label=string.format("%.2f",amp2db(Master.params.level or 1)),
@@ -411,5 +436,58 @@ function opengui()
 	end
 	--------------
 	guiUpdate()
+
+	---------- autogui ---------------------------------------
+	----------------------------------------------------------
+---[[
+	DOAUTOGUI = true
+	local up_time = 0.1
+	-- first SDefAutoGuis
+	for i,ag in ipairs(SDefAutoGuis) do
+		--prtable("update for",ag.insert.name,ag.insert.params)
+		if DOAUTOGUI then
+			if not (ag.group and ag.node) then
+			prerror(ag.group, ag.node,ag.Sgui.name)
+			error"non inited"
+			--prtable(ag.Sgui)
+			end
+			--assert(ag.group and ag.node)
+			ag.Sgui.update(up_time,ag.group,ag.node)
+		end
+	end
+	-- then players
+	local auto_nodes = {}
+	for i,ctl in ipairs(GUIControls) do
+		if ctl.autogui then
+			assert(ctl.autogui.node)
+			auto_nodes[ctl.autogui.node] = auto_nodes[ctl.autogui.node] or {}
+			auto_nodes[ctl.autogui.node][ctl.autogui.param] = ctl
+		end
+	end
+	local Q = require"sc.queryTree"
+
+	local function get_ctl(params)
+		return function(syn)
+			for k,ctl in pairs(params) do
+				--print(syn.name,k,ctl.autogui.name,syn.mapped[k], syn.params[k] )
+				ctl:val(syn.mapped[k] or syn.params[k], false )
+			end
+		end
+	end
+	
+	local function update_controls()
+		for node,params in pairs(auto_nodes) do
+			Q.querySynthValues(node,get_ctl(params))
+		end
+		if DOAUTOGUI then
+			QueueAction(up_time,{update_controls})
+		end
+	end
+	if DOAUTOGUI then
+	QueueAction(up_time,{update_controls})
+	end
+	--prtable("guiPanelTable2",gui.guiPanelTable)
+--]]
 end
+
 table.insert(initCbCallbacks,opengui)

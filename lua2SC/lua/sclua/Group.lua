@@ -39,9 +39,9 @@ end
 
 function Group_metatable:queryTree(action,include_ctrl_vals)
 	action = action or function(msg) end
-	include_ctrl_vals = include_ctrl_vals or 0
+	include_ctrl_vals = include_ctrl_vals and 1 or 0
 	-- Replies to the sender with a /g_queryTree.reply message
-	OSCFunc.newfilter("/g_queryTree.reply",self.bufnum,action,true)
+	OSCFunc.newfilter("/g_queryTree.reply",{include_ctrl_vals, self.nodeID},action,true)
 	ThreadServerSend(self.server:Msg('/g_queryTree', self.nodeID, include_ctrl_vals ))
 end
 

@@ -36,7 +36,7 @@ function getSynthdefParams(synthname)
 	--return {paramnames=syntdef.paramnames,paramlens=longitudes}
 end
 -- for n_getn
-function getSynthdefParams_getn(t)
+local function getSynthdefParams_getn(t)
 	local tt = {}
 	for i,v in pairs(t.paramnames) do
 		table.insert(tt,v)
@@ -174,6 +174,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 						col = col + 1
 					end
 					newcontrol.variable={v,i2-i+1}
+					newcontrol.parameter = i2 - 1
 					newcontrol.callback=function(val,s,c)
 							params[v] = params[v] or {}
 							params[v][i2-i+1]=val;
@@ -199,6 +200,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 						textcontrol.pos={row2+1,col}
 					end
 					newcontrol.variable={v}
+					newcontrol.parameter = i2 - 1
 					newcontrol.callback=function(val,s,c)
 							params[v]=val;
 							--print(val,s)
@@ -221,7 +223,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					tecont.callback=function(val,str,c) 
 						--print("tecont.callback",val,str)
 						if str then
-							cont:val(tonumber(str)) --there is no loop: tecont uses str
+							cont:val(tonumber(str))--,false) --there is no loop: tecont uses str
 							cont:donotify() --simulate _valueChangedCb
 						end
 					end
@@ -236,19 +238,21 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 		end
 	end
 	--- prepare /s_getn
+	--[=[
 	local msgpars = getSynthdefParams_getn({paramnames=syntdef.paramnames,paramlens=syntdef.paramlens})
 	local controls = {}
 	for i,v in ipairs(parameterCtl) do 
-		if v.variable[2] then
-			controls[v.name]=controls[v.name] or {}
-			controls[v.name][v.variable[2]]=v
-		else
-			controls[v.name] = v
+		if v.name then
+			if v.variable[2] then
+				controls[v.name]=controls[v.name] or {}
+				controls[v.name][v.variable[2]]=v
+			else
+				controls[v.name] = v
+			end
 		end
 	end
---	parameterCtl.msgpars = msgpars
---	parameterCtl.controls = controls
-	function parameterCtl.update(time,nodeID)
+
+	function parameterCtl.updateONLYset(time,nodeID)
 		time = time or 0.5
 		OSCFunc.newfilter("/n_setn",nodeID, function(msg) 
 			local resp = msg[2]
@@ -271,6 +275,105 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 			QueueAction(time,{function() ThreadServerSend{"/s_getn",{nodeID,unpack(msgpars)}} end})
 		end)
 		QueueAction(time,{function() ThreadServerSend{"/s_getn",{nodeID,unpack(msgpars)}} end})
+	end
+	--]=]
+	-- nodeID is the group of synth
+	local parcontrols = {}
+	for i,v in ipairs(parameterCtl) do 
+		if v.parameter then
+			parcontrols[v.parameter] = v
+		end
+		if v.name then
+			if v.variable[2] then
+				if v.variable[2]==1 then
+					parcontrols[v.name]=v
+				end
+			else
+				parcontrols[v.name] = v
+			end
+		end
+	end
+	--print"parcontrols================="
+	--print(parcontrols.fA)
+	--for k,v in pairs(parcontrols) do print(k,v) end
+
+	function parameterCtl.updateBAD(time, nodeID, synnodeID)
+		time = time or 0.5
+		local mapped, mapped_inv
+		local function action(msg)
+				assert(msg[2][3]==1,"several nodes in group")
+				assert(msg[2][4]==synnodeID,"different ID")
+				assert(msg[2][5]==-1,"not a synth")
+				mapped, mapped_inv = {},{}
+				local data = msg[2]
+				for i=0,data[7]-1 do
+					local param = data[i*2+8]
+					local value = data[i*2+9]
+					if type(value)=="string" then
+						value = tonumber(value:sub(2))
+						mapped[param] = value
+						mapped_inv[value] = param
+					else
+						if parcontrols[param] then
+							parcontrols[param]:val(value)--, false)
+						else
+							--print("parcontrols",param, "not found")
+						end
+					end
+					--print(param,value)
+				end
+				if next(mapped) then
+					local qbuses = {}
+					for k,v in pairs(mapped) do
+						qbuses[#qbuses+1] = v
+					end
+					OSCFunc.newfilter("/c_set",nil,function(msg) 
+							local i=1
+							local data = msg[2]
+							while true do
+								local bus = data[i]
+								local value = data[i+1]
+								if bus then
+									local param = mapped_inv[bus]
+									if parcontrols[param] then
+										parcontrols[param]:val(value)--, false)
+									else
+										--print("parcontrols",param, "not found")
+									end
+								else
+									break
+								end
+								i = i + 2
+							end
+						end, true)
+					ThreadServerSend{"/c_get",qbuses}
+				end
+				QueueAction(time,{function() ThreadServerSend{'/g_queryTree', {nodeID, 1 }} end})
+		end
+		OSCFunc.newfilter("/g_queryTree.reply",{1, nodeID},action)
+		--ThreadServerSend(syn.server:Msg('/g_queryTree', nodeID, 1 ))
+		--ThreadServerSend{'/g_queryTree', {nodeID, 1 }}
+		QueueAction(time,{function() ThreadServerSend{'/g_queryTree', {nodeID, 1 }} end})
+	end
+	
+	function parameterCtl.update(time, groupnodeID, synnodeID)
+		local Q = require"sc.queryTree"
+		time = time or 0.5
+
+		local function update_controls()
+			local function action2(syn)
+				for k,ctl in pairs(parcontrols) do
+					--print(syn.name,k,ctl.autogui.name,syn.mapped[k], syn.params[k] )
+					ctl:val(syn.mapped[k] or syn.params[k],false )
+				end
+				if DOAUTOGUI then
+					QueueAction(time,{update_controls})
+				end
+			end
+			Q.querySynthValues(synnodeID, action2, groupnodeID)
+		end
+		
+		update_controls()
 	end
 	--guiUpdate()
 	return parameterCtl
