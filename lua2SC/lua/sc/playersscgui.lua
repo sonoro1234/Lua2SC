@@ -148,7 +148,7 @@ function opengui()
 					panel=panelcanales, --panelcanales[i],
 					value=player.channel.params.unmute or 1,
 					variable={"unmute"},
-					--autogui = {node=player.channel.node,param="unmute",name=player.name.."_unmute"},
+					autogui = {node=player.channel.node,param="unmute",name=player.name.."_unmute"},
 					type=GUITypes.onOffButton,
 					label=player.name or i,
 					FormatLabel=function() return player.name or i end,
@@ -440,7 +440,7 @@ function opengui()
 	---------- autogui ---------------------------------------
 	----------------------------------------------------------
 ---[[
-	DOAUTOGUI = true
+	if DOAUTOGUI==nil then DOAUTOGUI = true end
 	local up_time = 0.1
 	-- first SDefAutoGuis
 	for i,ag in ipairs(SDefAutoGuis) do

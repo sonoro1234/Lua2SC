@@ -327,7 +327,7 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 					for k,v in pairs(mapped) do
 						qbuses[#qbuses+1] = v
 					end
-					OSCFunc.newfilter("/c_set",nil,function(msg) 
+					OSCFunc.newfilter("/c_set",qbuses[1],function(msg) 
 							local i=1
 							local data = msg[2]
 							while true do
@@ -372,8 +372,9 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 			end
 			Q.querySynthValues(synnodeID, action2, groupnodeID)
 		end
-		
-		update_controls()
+		if DOAUTOGUI then
+			update_controls()
+		end
 	end
 	--guiUpdate()
 	return parameterCtl

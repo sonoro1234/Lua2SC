@@ -312,7 +312,7 @@ pl:Bind(LS{UNTILEv("frase",plpatini),plpat1,plpat})
 plpatc = deepcopy(plpat)
 plb:Bind(LS{WAITEv"synpa",plpatc})
 ella:Bind(LS{DONOP(8),
-	ellapatini2,ellapatini,SETEv"synpa",DONOP(12),SETEv"frase",ellapat(1.6),ellapat(1.3),SETCHANS({sitar},{level=db2amp(-5)}),DONOP(64*2),
+	ellapatini2,ellapatini,SETEv"synpa",DONOP(12),SETEv"frase",ellapat(1.6),ellapat(1.3),SETCHANS(function()return{sitar}end,{level=db2amp(-5)}),DONOP(64*2),
 	DONOP(1),
 	DOACTION(function() 
 		StopPlayer(theMetro.ppqPos,drone,tabla,btabla,tambourine)
@@ -336,5 +336,6 @@ synpa:Bind(LS{synpapat(0.18),WAITEv"synpa",synpapat(0.22),WAITEv"frase",DONOP(4)
 MASTER{level=db2amp(-8)}
 Effects={FX("dwgreverb",db2amp(0),nil,{c1=1.5,c3=16,len=5000,predelay=0.1})}
 --DiskOutBuffer("morning_in_india.wav")
+FScope()
 theMetro:tempo(105)
 theMetro:start()

@@ -304,6 +304,6 @@ ER:set(claper, {angle=-0.2,bypass=0,dist=2})
 
 ------------------- master -------------
 Effects={FX("dwgreverb",db2amp(1),nil,{c1=4.5,c3=20,len=5000})}
-
+FScope()
 theMetro:tempo(160)
 theMetro:start()

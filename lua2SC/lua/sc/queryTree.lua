@@ -261,7 +261,7 @@ function Q.querySynthValues(node, action2, group)
 				end
 				return false
 			end
-			--OSCFunc.newfilter("/c_set",v,function(msg)
+
 			OSCFunc.newfilter("/c_set",qbuses[1],function(msg) 
 						local i=1
 						local data = msg[2]
