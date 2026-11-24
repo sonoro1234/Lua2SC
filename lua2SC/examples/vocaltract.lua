@@ -1,16 +1,18 @@
+--DOAUTOGUI = false
 
 --local Tract = require"num.vocaltractB"(32,false,true)
---local Tract = require"num.ParametricTractC"(32,17)
-local Tract = require"num.tract"(26)
-
+local Tract = require"num.ParametricTractC"(32,17)
+--local Tract = require"num.tract"(26)
 
 
 local sclua = require "sclua.Server"
 local s = sclua.Server()
 local syn
 
-local vbox = addPanel{type="vbox",name="tract",panel = MainUpPanel}
-grafic = addControl{ typex="funcgraph",panel=vbox,width=300,height=300,miny=0,maxy=3}
+local vbox = addPanel{type="vbox",name="tract",parentNO = MainUpPanel}
+local hbox = addPanel{type="hbox",parent = vbox}
+grafic = addControl{ typex="funcgraph",panel=hbox,width=300,height=300,miny=0,maxy=3}
+grafic2 = addControl{ typex="funcgraph",panel=hbox,width=300,height=300,miny=0,maxy=3}
 
 local phons = {}
 for k,v in pairs(Tract.areas) do
@@ -45,6 +47,31 @@ local syn_group = s.ParGroup()
 
 local syn = s.Synth(Tract.sinteRdO2.name, phon1,syn_group)
 
+local function get_areas()
+	local synpars = getSynthdefParams(SynthDefs_path..Tract.sinteRdO2.name..".scsyndef")
+	local firstind = synpars.NameToIndex.Ar
+	local lenind = synpars.paramlens.Ar
+	local Q = require"sc.queryTree"
+	local up_time = 0.1
+
+	local function get_syn(syn)
+		local diam = {}
+		for j=1,lenind do
+			local argind = syn.args[firstind+j][1]
+			local val = syn.mapped[argind] or syn.params[argind]
+			diam[j] = math.sqrt(val)
+		end
+		grafic2:val(diam)
+	end
+
+	local function update_controls()
+			Q.querySynthValues(syn.nodeID,get_syn)
+			QueueAction(up_time,{update_controls})
+	end
+
+	QueueAction(up_time,{update_controls})
+end
+get_areas()
 
 function setsyn()
 	print("Setting",iph, phons[iph])
@@ -99,29 +126,29 @@ curr_panel = hbox
 ---[=[
 if Tract.vowel_coefs then
 local voc = "U"
-Slider("Opos1",0,1,Tract.vowel_coefs[voc][1],function(val) 
+Slider(voc.."pos1",0,1,Tract.vowel_coefs[voc][1],function(val) 
 	Tract.vowel_coefs[voc][1]=val--*Tract.n
 	Tract.areas[voc],Tract.Di[voc] = Tract.CalcAreas(voc)
 	setsyn()
 end)
-Slider("Opos2",0,1,Tract.vowel_coefs[voc][2],function(val) 
+Slider(voc.."pos2",0,1,Tract.vowel_coefs[voc][2],function(val) 
 	Tract.vowel_coefs[voc][2]=val
 	Tract.areas[voc],Tract.Di[voc] = Tract.CalcAreas(voc)
 	setsyn()
 end)
-Slider("Opos3",0,10,Tract.vowel_coefs[voc][3],function(val) 
+Slider(voc.."pos3",0,10,Tract.vowel_coefs[voc][3],function(val) 
 	Tract.vowel_coefs[voc][3]=val
 	Tract.areas[voc],Tract.Di[voc] = Tract.CalcAreas(voc)
 	setsyn()
 end)
-Slider("Opos4",0,5,Tract.vowel_coefs[voc][4],function(val) 
+Slider(voc.."pos4",0,5,Tract.vowel_coefs[voc][4],function(val) 
 	Tract.vowel_coefs[voc][4]=val
 	Tract.areas[voc],Tract.Di[voc] = Tract.CalcAreas(voc)
 	setsyn()
 end)
 end
 --]=]
-
+Slider("",0,1,0.2,function() end)
 -- several frases
 local frase = "DI-ME-KE-ME-KIE-RES-_v"
 --frase = "NE-LE-PE-KE-RE-ZE-DE-HE-FE-GE-XE-MvE-ME-TE-BE-SE-JE-NvE-_v"
@@ -153,7 +180,7 @@ Button("speack",function()
 	for k,v in pairs(ret2) do
 		if type(v)=="table" and v.is_ctrl_mapper then
 
-			local bund = v:verb(k,player,0,1)--self,beatTime,beatLen)
+			local bund = v:verb(k,player)--,0,1)--,beatTime,beatLen)
 			if bund then
 				for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
 			end
@@ -178,4 +205,4 @@ end, true)
 
 MASTER{level=0.15}
 syn:gui(0.1)--0.5)
-print"end script"
+
