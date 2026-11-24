@@ -393,21 +393,27 @@ function MASTER(t)
 end
 function MASTER_INIT1()
 	print"MASTER_INIT1"
+	local pars = deepcopy(Master.params2 or {})
 	Master.params2 = Master.params2 or {}
 	Master.params2.dur = Master.params2.dur or math.huge
 	Master.params2.inst = "channel"
 	Master.params2.level = Master.params2.level or 1
 	Master.params2.unmute =	Master.params2.unmute or 1
 	Master.params2.pan = Master.params2.pan or 0
-	--prtable(Master)
-	Master:Bind(Master.params2)
-	Master.inserts = Master.inserts or {}
-	Master._inserts = Master._inserts or {}
 	print("xxxxxxxxxxxxxxxxxxxxxxxmaster")
 	local msg={NEW_GROUP,{Master.group,1,ROOT_NODE}}
 	sendBundle(msg)
-	--sendBundle(msg,lanes.now_secs())
+	
+	Master:Bind(Master.params2)
+	Master.inserts = Master.inserts or {}
+	Master._inserts = Master._inserts or {}
+	
 	Master:Init(true)
+
+	--init params
+	Master.params = pars
+	Master:SendParams()
+	Master.params = {}
 end
 table.insert(initCbCallbacks,1,MASTER_INIT1)
 function MASTER_INIT2()
@@ -415,7 +421,6 @@ function MASTER_INIT2()
 	for i,insert in ipairs(Master.inserts) do
 		Master._inserts[i]=MASTER_INS(insert)
 	end
-	
 end
 function MASTER_INS(insert)
 	local ins= scEventPlayer:new{name=insert[1],inst=insert[1],params={},dontfree=true}

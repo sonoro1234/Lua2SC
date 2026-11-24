@@ -84,9 +84,10 @@ function Synth_metatable:getn(index, count, action)
 end
 
 function Synth_metatable.gui(syn,updatetime)
+
 	local notisink = {params=syn.args,node=syn.nodeID}
 	function notisink:notify(control)
-		print("notisssssssssssssss",control.name,control.parameter,control:val())
+		--print("notisssssssssssssss",control.name,control.parameter,control:val())
 		local on = {"/n_set", {self.node, control.parameter, {"float",control:val()}}}
 		--prtable(on)
 		sendBundle(on)
@@ -101,7 +102,7 @@ function Synth_metatable.gui(syn,updatetime)
 ---[[
 	--local panelInstOuter=addPanel{type="vbox",name="instrument",parent=parent}
 	local panelParamfx=addPanel{type="hbox",parent=panelInstOuter,name=syn.name}
-	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,true)
+	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,false)
 	print"syngui done"
 
 	if updatetime then tgui.update(updatetime, syn.group.nodeID, syn.nodeID) end

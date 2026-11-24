@@ -3,8 +3,9 @@ require("sc.synthdefSCRead")
 function openSynthdefGuiA(synthfile,panel,params,notified,dontusedefaults,usetext)
 	return openSynthdefGuiB(SynthDefs_path..synthfile..".scsyndef",panel,params,notified,dontusedefaults,usetext)
 end
+--openSynthdefGui(fx,panelParamfx,true,false,3)
 function openSynthdefGui(fx,panel,dontusedefaults,usetext,minrows)
-	return openSynthdefGuiB(SynthDefs_path..fx.name..".scsyndef",panel,fx.params,fx,dontusedefaults,usetext,minrows)
+	return openSynthdefGuiB(SynthDefs_path..fx.name..".scsyndef", panel, fx.params, fx, dontusedefaults,usetext,minrows)
 end
 function closeSynthdefGuiControls(parameterCtl)
 	for i,v in ipairs(parameterCtl) do
@@ -372,9 +373,9 @@ function openSynthdefGuiB(synthfile,panelC,params,notified,dontusedefaults,usete
 			end
 			Q.querySynthValues(synnodeID, action2, groupnodeID)
 		end
-		if DOAUTOGUI then
+		--if DOAUTOGUI then
 			update_controls()
-		end
+		--end
 	end
 	--guiUpdate()
 	return parameterCtl
