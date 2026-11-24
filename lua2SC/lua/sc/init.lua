@@ -12,20 +12,8 @@ require"sc.synthdefsc"
 
 require"sc.scbuffer"
 if not no_players then
-if typeshed == false then
 	require"sc.MetronomLanes"
-elseif typeshed then
-	require"sc.MetronomLanesSCH"
-else
-	error("typeshed is nil")
-end
-if typeshed == false then
 	require"sc.playerssc"
-elseif typeshed then
-	require"sc.playersscSCH"
-else
-	error("typeshed is nil")
-end
 else
 	require"sc.MetronomDummy"
 end --not no_players

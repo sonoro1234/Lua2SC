@@ -60,7 +60,6 @@ function ScriptRun(pars)
 	local script = pars.script
 	local debugging = pars.debugging
 	local profiling = pars.profiling
-	local typeshed = pars.typeshed
 	local no_players = pars.no_players
 	
 	local function prstak(stk)
@@ -408,7 +407,6 @@ function ScriptRun(pars)
 				debugging = debugging,
 				scriptname = script,
 				typerun = typerun,
-				typeshed = typeshed,
 				no_players = no_players,
 				sc_comm_type = SCSERVER.type,
 				MsgLoop = MsgLoop,

@@ -17,7 +17,6 @@
 	local ID_CLEAROUTPUT      = NewID()
 	local ID_SETTINGS              = NewID()
 	local ID_SHOWLANES              = NewID()
-	local ID_PREMETRO              = NewID()
 	local ID_NOPLAYERS              = NewID()
 -- Create the Debug menu and attach the callback functions
 function InitRunMenu()
@@ -29,7 +28,6 @@ function InitRunMenu()
 		{ ID_DEBUG,              "&Debug",               "Debug mode", wx.wxITEM_CHECK},
 		{ ID_PROFILE,              "&Profile",               "Profiling", wx.wxITEM_CHECK},
 		{ ID_NOPLAYERS,				"&No players",            "Run without players", wx.wxITEM_CHECK},
-		{ ID_PREMETRO,              "&SCHMETRO",               "SCHMETRO mode", wx.wxITEM_CHECK},
 		--{ ID_DEBUGPLAIN,              "&Debug plain lua",               "Debug the current file" },
 		{},
 		{ ID_CONTINUE,              "&Continue \tF9",               "Continue debugging" },
@@ -124,10 +122,6 @@ function InitRunMenu()
 			function (event)
 				local editor = GetEditor()
 				event:Enable((editor ~= nil) and (script_lane~=nil))
-			end)
-	frame:Connect(ID_PREMETRO, wx.wxEVT_UPDATE_UI,
-			function (event)
-				event:Enable((script_lane==nil))
 			end)
 	frame:Connect(ID_NOPLAYERS, wx.wxEVT_UPDATE_UI,
 			function (event)
@@ -241,7 +235,6 @@ function ideScriptRun(typerun)
     end
 	local debugging = menuBar:IsChecked(ID_DEBUG)
 	local profiling = menuBar:IsChecked(ID_PROFILE)
-	local typeshedpremetro = menuBar:IsChecked(ID_PREMETRO)
 	local no_players = menuBar:IsChecked(ID_NOPLAYERS)
 	local editor = GetEditor()
 	local id = editor:GetId()
@@ -271,7 +264,7 @@ function ideScriptRun(typerun)
 	
 	ClearScriptGUI()
 		
-	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,profiling=profiling,script=openDocuments[id].filePath,typeshed=typeshedpremetro,no_players=no_players})
+	mainlinda:send("ScriptRun",{typerun=typerun,Debuggerbp=Debuggerbp,debugging=debugging,profiling=profiling,script=openDocuments[id].filePath,no_players=no_players})
 	----------------------------------------
 	--if typerun == 1 then
 		---timer:Start(300,wx.wxTIMER_ONE_SHOT)

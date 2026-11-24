@@ -8,26 +8,16 @@ require"sc.sc_comm"
 --InitSCCOMM()
 require"sc.gui"
 require"sc.synthdefsc"
-if typeshed == false then
-	require"sc.playerssc"
-elseif typeshed then
-	require"sc.playersscSCH"
-else
-	error("typeshed is nil")
-end
+require"sc.playerssc"
+
 --table.insert(initCbCallbacks,MASTER_INIT1)
 require"sc.miditoosc"
 require"sc.playersscgui"
 require"sc.scbuffer"
 require"sc.ctrl_bus"
 require"sc.named_events"
-if typeshed == false then
-	require"sc.MetronomLanes"
-elseif typeshed then
-	require"sc.MetronomLanesSCH"
-else
-	error("typeshed is nil")
-end
+require"sc.MetronomLanes"
+
 theMetro:init()
     sendBundle = function(msg,ti)
 	end
