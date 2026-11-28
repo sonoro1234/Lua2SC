@@ -16,19 +16,22 @@ end
 _GUIAUTOMATE=true
 GUIControls={}
 
-function vumet(parent)
+function vumet(parent,busoff,width,height)
+	busoff = busoff or 0
 	parent = parent or panelMixer
 	local panelVUMETER=addPanel{type="flexi",cols=2,parent=parent}
 	for i=1,2 do
 		local newcontrol = {
-						name="vu "..i,
+						--name="vu "..i,
 						panel=panelVUMETER,
 						value={0,0},
 						typex="vumeter",
 						vumeter="vumeter1b",
-						busin=i-1,
-						label=0.00,
+						busin=busoff+i-1,
+						--label=0.00,
 						halfdb=18,
+						width = width,
+						height = height,
 						node = GetNode()
 					}
 		addControl(newcontrol)
@@ -114,26 +117,19 @@ end
 function SetMainPanel()
 	MainPanel = MainPanel or addPanel{type="vbox",noname="main panel"}
 	MainUpPanel = MainUpPanel or addPanel{type="hbox",parent = MainPanel, noname = "main_up"}
+	MainDownPanel = MainDownPanel or addPanel{type="hbox",parent = MainPanel, noname = "main_down"}
+	panelMixer = panelMixer or addPanel{type="hbox",parent=MainDownPanel}
+	MainRightPanel = MainRightPanel or addPanel{type="vbox",parent = MainDownPanel, noname = "main_right"}
 end
 -- getkeywords would get crazy for guiAddPanel, so better call it on init
 -- SetMainPanel()
-function opengui()
-	print("opengui\n")
-	if DONT_OPENGUI then return end
-	
-	--prtable("guiPanelTable",gui.guiPanelTable)
-	----------------------------------------------
-	local function pan2gui(val)
-		return linearmap(1,-1,1,0,val)
-	end
-	local function gui2pan(val)
-		return linearmap(1,0,1,-1,val)
-	end
-	
-	SetMainPanel()
-	local panelMixer=addPanel{type="hbox",parent=MainPanel}
-	local SDefAutoGuis = {}
-	GUIPlayers= GUIPlayers or OSCPlayers
+local function pan2gui(val)
+	return linearmap(1,-1,1,0,val)
+end
+local function gui2pan(val)
+	return linearmap(1,0,1,-1,val)
+end
+local function openchannels(SDefAutoGuis, panelMixer)
 	if #GUIPlayers >0 then
 		--paneles
 		-- for i=1, #GUIPlayers do
@@ -141,6 +137,7 @@ function opengui()
 		-- end
 		--local panelMixer=addPanel{type="hbox",cols=#GUIPlayers,parent=MainPanel}
 		local panelcanales=addPanel{type="flexi",cols=#GUIPlayers,parent=panelMixer}
+		--local panelcanales=addPanel{type="gridbag",cols=#GUIPlayers,parent=panelMixer}
 		--onoff={}
 		for i,player in ipairs(GUIPlayers) do 
 			if player.isOscEP then
@@ -267,10 +264,234 @@ function opengui()
 			end
 		end	
 	end
+end
+
+local function openchannelsGRID(SDefAutoGuis, panelMixer)
+	if #GUIPlayers >0 then
+		--paneles
+
+		local halfPos =  0 -- math.floor(#GUIPlayers/2)
+		local halfSpan = #GUIPlayers --- halfPos
+		local panelcanales=addPanel{type="gridbag",parent=panelMixer}
+
+		
+
+		local row = 0
+		-- solo
+		local SOLORESTORE
+		local SOLOcontrols  = {}
+		local SOLOon = {}
+		local function SOLOdo()
+			for j,v in ipairs(OSCEPPlayers) do
+				if SOLOon[j] then
+					v.channel.params.unmute = 1
+				else
+					v.channel.params.unmute = 0
+				end
+				v.channel:SendParam("unmute")
+			end
+		end
+		for i,player in ipairs(OSCEPPlayers) do 
+			SOLOcontrols[i] = Toggle("solo",function(val) 
+				--print("solo",player.name,val)
+				-- save unmute vals
+				if val==1 then
+					print("solo",player.name,val)
+					SOLOon[i] = true
+					if not SOLORESTORE then
+						SOLORESTORE = {}
+						for j,pl in ipairs(OSCEPPlayers) do 
+							SOLORESTORE[j]= pl.channel.params.unmute 
+						end
+					end
+					SOLOdo()
+
+				else
+					print("unsolo",player.name,val)
+					SOLOon[i] = nil
+					if not next(SOLOon) then
+						print"SOLORESTORE"
+						for j,pl in ipairs(OSCEPPlayers) do
+							pl.channel.params.unmute = SOLORESTORE[j]
+							pl.channel:SendParam("unmute") 
+						end
+						SOLORESTORE = nil
+					else
+						SOLOdo()
+					end
+				end
+				-- for j,ctl in ipairs(SOLOcontrols) do 
+					-- if i~=j then ctl:val(0,false) end
+				-- end
+			end, true,{panel = panelcanales, pos={row,i-1}})
+		end
+		-- unmute
+		row = row + 1
+		for i,player in ipairs(GUIPlayers) do 
+			if player.isOscEP then
+				local newcontrol = {
+					panel=panelcanales, --panelcanales[i],
+					pos =  {row,i-1},
+					value=player.channel.params.unmute or 1,
+					variable={"unmute"},
+					autogui = {node=player.channel.node,param="unmute",name=player.name.."_unmute"},
+					type=GUITypes.onOffButton,
+					label=player.name or i,
+					FormatLabel=function() return player.name or i end,
+					callback=function(value,str,c) 
+							--print("callback unmute ",player.channel.name," valor ",value)
+							player.channel.params.unmute = value;
+							player.channel:SendParam("unmute") 
+						end
+						--,notify={player.channel}
+				}
+				GUIControls[#GUIControls +1] = addControl(newcontrol)
+				player.channel:RegisterControl(GUIControls[#GUIControls])
+			end
+		end
+		row = row + 1
+		--volumenes={}
+		--addControl{typex="label", label="levels",panel=panelcanales, pos={row,halfPos},span={1,halfSpan}}
+		for i,player in ipairs(GUIPlayers) do
+			local panel = addPanel{type="hbox",parent=panelcanales,pos={row,i-1}}
+			vumet(panel,player.channel.busin,8,100)
+		end
+		row = row + 1
+		for i,player in ipairs(GUIPlayers) do
+			if player.isOscEP then
+				local newcontrol = {
+					--name="vol.",
+					panel=panelcanales, --i,
+					pos = {row,i-1},
+					value=db2faderPos(amp2db(player.channel.params.level or 1)),
+					variable={"level"},
+					autogui = {node=player.channel.node,param="level",name=player.name.."_vol"},
+					type=GUITypes.vSlider,
+					label=string.format("%.2f",amp2db(player.channel.params.level or 1)),
+					Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
+					Value2Gui=function(val) return db2faderPos(amp2db(val)) end,
+					FormatLabel=function(val) return string.format("%.2f",amp2db(val)) end,
+					--callback=function(value,str,c) 
+							--print("callback volumen ",player.channel.name," valor ",value," tag ",c.tag)
+							--player.channel.params.level = value
+							--player.channel:SendParam("level")
+						--end
+						notify={player.channel}
+				}
+                local cont=addControl(newcontrol)
+				GUIControls[#GUIControls +1] = cont
+				player.channel:RegisterControl(cont)
+			end
+		end
+		--pans={}
+		row = row + 1
+		addControl{typex="label", label="pans",panel=panelcanales, pos={row,halfPos},span={1,halfSpan}}
+		row = row + 1
+		for i,player in ipairs(GUIPlayers) do
+			if player.isOscEP then
+				local newcontrol = {
+					--name="pan.",
+					panel=panelcanales, --i,
+					pos = {row,i-1},
+					value=player.channel.params.pan or 0,
+					variable={"pan"},
+					autogui = {node=player.channel.node,param="pan",name=player.name.."_pan"},
+					--width = 40,
+					--height = 30,
+					type=GUITypes.knob, --GUITypes.hSlider,
+					label=string.format("%.2f",player.channel.params.pan or 0),
+					Gui2Value=function(val) return gui2pan(val) end,
+					Value2Gui=function(val) return pan2gui(val) end,
+					FormatLabel=function(val) return string.format("%.2f",val) end,
+					--callback=function(value,str,c) 
+							--print("callback volumen ",player.channel.name," valor ",value," tag ",c.tag)
+							--player.channel.params.level = value
+							--player.channel:SendParam("level")
+						--end
+						notify={player.channel}
+				}
+                local cont=addControl(newcontrol)
+				GUIControls[#GUIControls +1] = cont
+				player.channel:RegisterControl(cont)
+			end
+		end
+
+		--sends={}
+
+		for i2,fx in ipairs(Effects) do
+		row = row + 1
+		addControl{typex="label", label=fx.name.." send",panel=panelcanales, pos={row,halfPos},span={1,halfSpan}}
+		row = row + 1
+		for i,player in ipairs(GUIPlayers) do
+			--sends[i]={}
+			if player.isOscEP then
+				--for i2,fx in ipairs(Effects) do
+					local newcontrol = {
+						--name=fx.name,
+						panel=panelcanales, --i,
+						pos = {row,i-1},
+						--value=db2faderPos(amp2db(GUIPlayers[i].envios[i2].level)),
+						value = GUIPlayers[i].envios[i2].level,
+						variable={"level"},
+						autogui = {node=player.envios[i2].node,param="pan",name=player.name.."_sendfx"},
+						type=GUITypes.knob,--GUITypes.hSlider ,--GUITypes.knob,
+						label=string.format("%.2f",amp2db(GUIPlayers[i].envios[i2].level)),
+                        Gui2Value=function(val) return db2amp(faderPos2db(val)) end,
+                        Value2Gui=function(val) return db2faderPos(amp2db(val)) end,
+                        FormatLabel=function(val) return string.format("%.2f",amp2db(val)) end,
+						callback=function(value,str,c)
+							--print("callback send",value)
+							--error("bla bla")
+                                player.envios[i2].level=value
+                                player:SendLevel(i2,value) 
+                            end,
+						--notify={player.envios[i2]}
+					}
+					local cont = addControl(newcontrol)
+					GUIControls[#GUIControls +1] = cont
+					player.envios[i2].control = cont
+				--end
+			end
+		end
+		end
+		--inserts={}
+		row = row + 1
+		addControl{typex="label", label="inserts",panel=panelcanales, pos={row,halfPos},span={1,halfSpan}}
+		row = row + 1
+		for i,player in ipairs(GUIPlayers) do
+			panelInserts=addPanel{type="vbox",parent=panelcanales, pos = {row,i-1}}
+			if player.isOscEP then
+				for i2,insert in ipairs(player._inserts) do
+					panelInsertsOne=addPanel{type="collapse",name=insert.name,parent=panelInserts}
+					--print("insert:",insert,insert.name,insert.params)
+					assert(insert.node and insert.group)
+					local Sgui = openSynthdefGui(insert,panelInsertsOne,true,insert.usetext,1)
+					SDefAutoGuis[#SDefAutoGuis+1] = {Sgui=Sgui,group=insert.group,node=insert.node,insert=insert}
+				end
+			end
+		end	
+	end
+end
+
+function opengui()
+	print("opengui\n")
+	if DONT_OPENGUI then return end
+	
+	--prtable("guiPanelTable",gui.guiPanelTable)
+	----------------------------------------------
+
+	
+	SetMainPanel()
+	--local panelMixer=addPanel{type="hbox",parent=MainPanel}
+	local SDefAutoGuis = {}
+	GUIPlayers= GUIPlayers or OSCPlayers
+	
+	--openchannels(SDefAutoGuis, panelMixer)
+	openchannelsGRID(SDefAutoGuis, panelMixer)
 	--fx={}
 	---[[
 	if #Effects > 0 then
-	panelfxS=addPanel{type="hbox",name="Effects",parent=panelMixer}
+	panelfxS=MainRightPanel --addPanel{type="hbox",name="Effects",parent=panelMixer}
 	for i,fx in ipairs(Effects) do
 		panelfx=addPanel{type="hbox",name=fx.name,parent=panelfxS}
 		panelVolfx=addPanel{type="vbox",parent=panelfx}

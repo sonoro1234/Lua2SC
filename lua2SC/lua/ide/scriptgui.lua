@@ -14,8 +14,8 @@ function wxKnob(parent,name,label,id,radio)
 	local my=0
 	local radio=radio or 15
 	local diam=2*radio
-	local label_height=12
-	local name_height=14
+	local label_height=label and 12 or 0
+	local name_height= name and 14 or 0
 	local extra_w=5
 	local x1=radio+extra_w
 	local y1=radio+name_height
@@ -55,9 +55,9 @@ function wxKnob(parent,name,label,id,radio)
 		x2=-math.sin(alpha)*radio+x1
 		y2=math.cos(alpha)*radio+y1
 		dc:DrawLine(x1,y1, x2, y2);
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawLabel(wxwindow:GetLabel(),wx.wxRect(0, diam+name_height, diam+extra_w*2, label_height), wx.wxALIGN_CENTER)
-		dc:DrawLabel(name,wx.wxRect(0, 0, diam+extra_w*2-3, name_height))
+		if name then dc:DrawLabel(name,wx.wxRect(0, 0, diam+extra_w*2-3, name_height)) end
 		--dc:DrawText(name,0,0)
 		dc:SetPen(wx.wxNullPen)
 	end
@@ -141,9 +141,9 @@ function wxVuMeter(parent,name,label,id,params)
 	
 	local height=params.height or 200
 	local width= params.width or 10
-	local label_height=12
-	local name_height=14
-	local extra_w=10
+	local label_height=label and 12 or 0
+	local name_height= name and 14 or 0
+	local extra_w=width*0.5
 	local halfdb=params.halfdb or 18
 	local penwidth=1
 	
@@ -151,7 +151,7 @@ function wxVuMeter(parent,name,label,id,params)
 	wxwindow:SetMinSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
 	wxwindow:SetMaxSize(wx.wxSize(width+extra_w*2,height+label_height+name_height))
 	wxwindow:SetBackgroundColour(parent:GetBackgroundColour())
-	wxwindow:SetLabel(label)
+	--wxwindow:SetLabel(label)
 	
 	local VuMeterClass={value={0,0},window=wx.wxNULL,customclass="VuMeterClass"}
 	
@@ -163,13 +163,12 @@ function wxVuMeter(parent,name,label,id,params)
 	
 	function VuMeterClass.SetValue(_,val)
 		VuMeterClass.value={faderBaseLog^amp2db(val[1]),faderBaseLog^amp2db(val[2])}
-		wxwindow:SetLabel(string.format("%.2f",val[2]))
+		--wxwindow:SetLabel(string.format("%.2f",val[2]))
 		wxwindow:Refresh()
 	end
 	function VuMeterClass.SetLabel(_,val)
-		wxwindow:SetLabel(val)
-		wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
-		--wxwindow:RefreshRect()
+		-- wxwindow:SetLabel(val)
+		-- wxwindow:Refresh(true,wx.wxRect(0,height+name_height,width+extra_w*2,label_height))
 	end
 	
 
@@ -189,12 +188,14 @@ function wxVuMeter(parent,name,label,id,params)
 		dc:SetBrush(wx.wxRED_BRUSH)
 		dc:DrawRectangle(extra_w, name_height+height-alto2-2,width,2);
 		
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawLabel(wxwindow:GetLabel(),wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
-		dc:DrawText(name,0,0)
+		if name then dc:DrawText(name,0,0) end
 		
 		dc:SetPen(wx.wxBLACK_PEN)
-		for dbs=0,-46,-6 do
+		dc:SetFont(wx.wxSMALL_FONT)
+		local mindb = math.floor(height/200*46)
+		for dbs=0,-mindb,-6 do
 			--local dbs=amp2db(i)
 			local alto=name_height+height-height*faderBaseLog^dbs
 			dc:DrawLine(0,alto,width,alto)
@@ -202,7 +203,7 @@ function wxVuMeter(parent,name,label,id,params)
 		end
 		dc:SetPen(wx.wxNullPen)
 		dc:SetBrush(wx.wxNullBrush)
-
+		dc:SetFont(wx.wxSMALL_FONT)
 	end
 	
 	wxwindow:Connect(wx.wxEVT_PAINT, function(event)
@@ -269,7 +270,7 @@ function wxFuncGraph2(parent,name,label,id,co)
 	
 	local function Draw(dc)
 		dc:SetPen(wx.wxBLACK_PEN)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawRectangle(extra_w, name_height, width ,height);
 		local parts = 5
 		local widthf=width/parts
@@ -442,7 +443,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 	local function Draw(dc)
 		
 		dc:SetPen(wx.wxBLACK_PEN)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawRectangle(extra_w, name_height, width ,height);
 		local parts = 10
 		local widthf=width/parts
@@ -497,7 +498,7 @@ function wxFuncGraph3(parent,name,label,id,co)
 		end
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:SetBrush(wx.wxBLACK_BRUSH)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		local tlab = wxwindow:GetLabel()
 		--prtable(tlab)
 		dc:DrawLabel(tlab,wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
@@ -593,7 +594,7 @@ function wxFuncGraph3BAK(parent,name,label,id,co)
 	
 	local function Draw(dc)
 		dc:SetPen(wx.wxBLACK_PEN)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawRectangle(extra_w, name_height, width ,height);
 		local parts = 5
 		local widthf=width/parts
@@ -716,7 +717,7 @@ function wxTimePlot(parent,name,label,id,co)
 		
 		--dc:DrawRectangle(0, name_height, width+extra_w*2,height);
 		dc:SetPen(wx.wxBLACK_PEN)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:DrawRectangle(extra_w, name_height, width ,height);
 		local parts = 10
 		local widthf=width/parts
@@ -768,7 +769,7 @@ function wxTimePlot(parent,name,label,id,co)
 		end
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:SetBrush(wx.wxBLACK_BRUSH)
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		--local tlab = wxwindow:GetLabel()
 		--prtable(tlab)
 		--dc:DrawLabel(tlab,wx.wxRect(0,height+name_height,width+extra_w*2,label_height), wx.wxALIGN_CENTER)
@@ -1007,7 +1008,7 @@ function wxFreqScope(parent,name,label,id,co)
 		--local pen = TableToPen({ colour = { 0, 0, 0 }, width = penwidth, style = wx.wxSOLID })
 		--dc:SetPen(pen)
 		--pen:delete()
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:DrawRectangle(extra_w, name_height, width,height);
 		local widthf=width/10
@@ -1220,7 +1221,7 @@ function wxScope(parent,name,label,id,co)
 		--local pen = TableToPen({ colour = { 0, 0, 0 }, width = penwidth, style = wx.wxSOLID })
 		--dc:SetPen(pen)
 		--pen:delete()
-		dc:SetFont(wx.wxNORMAL_FONT)
+		dc:SetFont(wx.wxSMALL_FONT)
 		dc:SetPen(wx.wxBLACK_PEN)
 		dc:DrawRectangle(extra_w, name_height, width,height);
 		local widthf=width/10
@@ -1480,6 +1481,7 @@ function CreateScriptGUI()
 		control.typex=co.typex
 		control.pos = co.pos
 		control.span = co.span
+		--if co.span then print("SPAN",co.span[1],co.span[2]) end
 		local ScriptGUI = ScriptWindows[co.window] or ScriptGUI
 		if co.typex=="toggle" then
 			control.control=wx.wxToggleButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20),wx.wxBORDER_NONE)
@@ -1488,9 +1490,12 @@ function CreateScriptGUI()
 			control.control=wx.wxButton(ScriptGUI,co.tag, tostring(co.label),wx.wxDefaultPosition,wx.wxSize(40,20),wx.wxBORDER_NONE)
 			control.control:SetToolTip(tostring(co.label))
 		elseif co.typex=="vslider" then
-			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxSize(-1,100),wx.wxSL_VERTICAL ) --wxDefaultSize not working in GTK
+			control.control=wx.wxSlider(ScriptGUI,co.tag, val2pos(co.value or 0) , 0, 10000, wx.wxDefaultPosition,wx.wxSize(-1,100),wx.wxSL_VERTICAL )
+			control.control:SetFont(wx.wxSMALL_FONT)
+			--wxDefaultSize not working in GTK
 			if co.label then
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
+				control.label:SetFont(wx.wxSMALL_FONT)
 			end
 		elseif co.typex=="hslider" then
 			co.value = co.value or 0
@@ -1511,13 +1516,13 @@ function CreateScriptGUI()
 				control.label=wx.wxStaticText(ScriptGUI,  wx.wxID_ANY, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE)
 			end
 		elseif co.typex=="label" then
-			control.control=wx.wxStaticText(ScriptGUI,co.tag, tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, wx.wxALIGN_CENTRE) -- wx.wxST_NO_AUTORESIZE +
+			control.control=wx.wxStaticText(ScriptGUI,co.tag,tostring(co.label), wx.wxDefaultPosition,wx.wxDefaultSize, bit.bor(wx.wxALIGN_CENTRE,wx.wxBORDER_STATIC)) -- wx.wxST_NO_AUTORESIZE +
 		elseif co.typex=="knob" then
-			control.control=wxKnob(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co.radio) -- wx.wxST_NO_AUTORESIZE +
-			control.control.window:SetToolTip(tostring(co.name))
+			control.control=wxKnob(ScriptGUI,co.name and tostring(co.name) or nil, tostring(co.label),co.tag,co.radio) -- wx.wxST_NO_AUTORESIZE +
+			if co.name then control.control.window:SetToolTip(tostring(co.name)) end
 			control.customclass=true
 		elseif co.typex=="vumeter" then
-			control.control=wxVuMeter(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) -- wx.wxST_NO_AUTORESIZE +
+			control.control=wxVuMeter(ScriptGUI,co.name, co.label,co.tag,co) -- wx.wxST_NO_AUTORESIZE +
 			control.customclass=true
 		elseif co.typex=="newcontrol" then
 			control.control=wxNewControl(ScriptGUI,tostring(co.name), tostring(co.label),co.tag,co) 
@@ -1548,7 +1553,7 @@ function CreateScriptGUI()
 			control= {control=false}
 		end
 		if not control.customclass then -- the not custom types (knob...)
-			if control.label or co.name then
+			if (control.label or co.name) and co.typex~= "label" then
 				local panel= wx.wxStaticBoxSizer(wx.wxVERTICAL, ScriptGUI,tostring(co.name or ""))
 				--local panel=wx.wxBoxSizer(wx.wxVERTICAL)
 				panel:Add(control.control,0,wx.wxALIGN_CENTER_HORIZONTAL)--+ wx.wxGROW)
@@ -1665,6 +1670,7 @@ function CreateScriptGUI()
 	local function AddControl(const)
 		--print("xxxxxxxxxxxxxxxxAddControl control N:",const.tag)
 		--prtable(const)
+		--if const.span then print("Acontrol SPAN",const.span[1],const.span[2]) end
 
 		if const.window then
 			const.panel = const.panel or ScriptWindows[const.window]
@@ -1690,10 +1696,16 @@ function CreateScriptGUI()
 				control.pos = control.pos or {0,0}
 				control.span = control.span or {1,1}
 				assert((control.pos[1]>=0) and (control.pos[1]>=0))
-				local goodadd=container.sizer:Add(control.insobj,wx.wxGBPosition(control.pos[1],control.pos[2]),wx.wxGBSpan(control.span[1],control.span[2]))
+				local style = (control.span[2]>1 and wx.wxEXPAND or wx.wxALIGN_CENTER_HORIZONTAL)
+				local goodadd=container.sizer:Add(control.insobj,wx.wxGBPosition(control.pos[1],control.pos[2]),wx.wxGBSpan(control.span[1],control.span[2]),bit.bor( wx.wxALL,style))
+				--print("gridbag",control.pos[1],control.pos[2],"wx.wxGBSpan",control.span[1],control.span[2])
+				-- for jj=1,control.span[2] do
+					-- container.sizer:AddGrowableCol(control.pos[2]+jj-1)
+				-- end
 				if goodadd == wx.wxNULL then
 					--DisplayOutput("gridbag AddControl control bad position"..tostring(const.tag),true)
-					print("gridbag AddControl control bad position"..tostring(const.tag))
+					print("-- gridbag AddControl control bad position"..tostring(const.tag))
+					prtable(const)
 				end
 			else
 				container.sizer:Add(control.insobj,prop,style)
@@ -1726,13 +1738,14 @@ function CreateScriptGUI()
 		local height = 20
 		--local wxwindow = wx.wxControl(parent,ids,wx.wxDefaultPosition,wx.wxSize(width,height))--,wx.wxNO_BORDER)
 		local wxwindow = wx.wxWindow(parent,ids,wx.wxDefaultPosition,wx.wxSize(width,height))--,wx.wxNO_BORDER)
+		wxwindow:SetToolTip(texto)
 		wxwindow:Connect(wx.wxEVT_PAINT, function(event)
 			local dc = wx.wxPaintDC(wxwindow)
 			--local pen = collapsed and wx.wxBLACK_PEN or wx.wxGREY_PEN
 			dc:SetPen(wx.wxBLACK_PEN)
 			dc:SetBrush(wx.wxTRANSPARENT_BRUSH)
 			dc:DrawRectangle(0, 0, width,height);
-			dc:SetFont(wx.wxNORMAL_FONT)
+			dc:SetFont(wx.wxSMALL_FONT)
 			dc:SetTextBackground(wx.wxLIGHT_GREY)
 			dc:SetTextForeground(collapsed and wx.wxBLACK or wx.wxWHITE)
 
@@ -1944,7 +1957,7 @@ function CreateScriptGUI()
 			if parent.type=="gridbag" then
 				pan.pos = pan.pos or {0,0}
 				pan.span = pan.span or {1,1}
-				parent.sizer:Add(panel,wx.wxGBPosition(pan.pos[1],pan.pos[2]),wx.wxGBSpan(pan.span[1],pan.span[2]))
+				parent.sizer:Add(panel,wx.wxGBPosition(pan.pos[1],pan.pos[2]),wx.wxGBSpan(pan.span[1],pan.span[2]),style)
 			else
 				parent.sizer:Add(panel,prop,style)
 			end
@@ -1962,7 +1975,7 @@ function CreateScriptGUI()
 
 	ScriptGUI = wx.wxScrolledWindow(managedpanel, wx.wxID_ANY,wx.wxDefaultPosition, wx.wxDefaultSize)
 	ScriptGUI:SetScrollbars(20, 20, 50, 50);
-	--ScriptGUI:SetFont(wx.wxSMALL_FONT)
+	ScriptGUI:SetFont(wx.wxSMALL_FONT)
 	theScriptGUI.window = ScriptGUI
 	--[[
 	local font=ScriptGUI:GetFont()

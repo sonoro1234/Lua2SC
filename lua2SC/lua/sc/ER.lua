@@ -7,7 +7,7 @@ function ERmaker(B,Dist,Size,op)
 	local sc = require"sclua.Server".Server()
 	local busB = sc.Bus()
 	--print("---------------- On ER MainUpPanel is",MainUpPanel)
-	curr_panel = addPanel{type="hbox",name=op.name or "ER globals", parent = MainUpPanel}
+	curr_panel = addPanel{type="hbox",name=op.name or "ER globals", parent = MainRightPanel}
 	Slider("B",0,1,B,function(val) busB:set(val) end)
 	local busDist = sc.Bus()
 	Slider("Dist",0,8,Dist,function(val) busDist:set(val) end)

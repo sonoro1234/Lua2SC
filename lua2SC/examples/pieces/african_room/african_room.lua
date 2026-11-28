@@ -82,7 +82,7 @@ melody_press = {
 }
 
 frase = "HA-LE-KI-MO-SU-NI-LA-KA-ME-DI-NA-RE"
-talk = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,true,false)}}
+talk = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,false)}}
 singer = OscEP{inst=Tract.sinteRd.name,mono=true,sends={db2amp(-13)},channel={level=db2amp(-0)}}
 singer.inserts = {{ER.synname,{angle=-0.1,bypass=0}},{"BLowShelf",{db=-4,freqEQ=450,rs=0.7,bypass=0}},{"PPongF",{bypass=1,volumen=0.95,ffreq=1000,rq=1, fdback=0.6,delaytime=BeatTime(4/3)}}}
 
@@ -115,7 +115,7 @@ melodyos = {
 
 
 fraseos = "KI-U-_v-Eq-KI-E-_v-Eq-KI-U-_v-Eq-KI-E-A-I-O"
-talkos = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(fraseos,true,true,false)}}}
+talkos = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(fraseos,true,false)}}}
 singer2 = copyplayer(singer)
 singer2.channel.level = db2amp(-16)
 singer2:Bind(LS{WAITEv"singer2",ADV(LOOP{PS(melodyos,talkos)})})
@@ -132,7 +132,7 @@ mel_s3 = {
 	freq = LOOP{m0,m1u,m0 ,m1u,m51}
 }
 frase3 = "_v-HE-_v-_qE-MUMv"
-talk3 = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(frase3,true,false,false)}}}
+talk3 = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(frase3,false,false)}}}
 singer3 = copyplayer(singer2)
 singer3.channel.level = db2amp(-12)
 singer3:Bind(LS{WAITEv"singer3",DOREST(4),LOOP{PS(mel_s3,talk3)}})
@@ -148,7 +148,7 @@ solo = {
 	namp = 0.02, 
 }
 frase_solo = "KO-LE-RO-DO-MI-HA-LE"
-talk_solo = {[Tract20.paramskey_speak] = LOOP{LS{Tract20:doTalk(frase_solo,true,false,false)}}}
+talk_solo = {[Tract20.paramskey_speak] = LOOP{LS{Tract20:doTalk(frase_solo,false,false)}}}
 solo_s = copyplayer(singer2)
 solo_s.inst = Tract20.sinteRd.name
 solo_s.channel.level = db2amp(-16)
@@ -170,7 +170,7 @@ hmelo = {
 	degree = LOOP{1,REST,0} + 7*4,
 }
 hfrase = "Mv-_v-HAU"
-htalk = {[Tract22.paramskey_speak] = LOOP{LS{Tract:doTalk(hfrase,true,true,false)}}}
+htalk = {[Tract22.paramskey_speak] = LOOP{LS{Tract:doTalk(hfrase,true,false)}}}
 choir = OscEP{inst=Tract22.coralafri.name,mono=true,sends={db2amp(-5)},channel={level=db2amp(-16)}}
 choir:Bind(LS{WAITEv"coros",FinDur(1,SKIPdur(3,PS(hmelo,htalk))),LOOP{ADV(LS{PS(hmelo,htalk)}:rep(2))}})
 ER:set(choir, {angle=0.1,dist=1.6,bypass=0} )
@@ -196,7 +196,7 @@ hmelo2 = {
 	freq = LOOP{m0,m51,m0}
 }
 hfrase2 = "_v-HE-_v"
-htalk2 = {[Tract22.paramskey_speak] = LOOP{LS{Tract:doTalk(hfrase2,true,true,false)}}}
+htalk2 = {[Tract22.paramskey_speak] = LOOP{LS{Tract:doTalk(hfrase2,true,false)}}}
 choir3 = OscEP{inst=Tract22.coralafri.name,mono=true,sends={db2amp(-5)},channel={level=db2amp(-18)}}
 choir3:Bind(LS{WAITEv"coros",DONOP(1),LOOP{ADV(LS{PS(hmelo2,htalk2)}:rep(2))}})
 ER:set(choir3, {angle=0.0,dist=1.6,bypass=0})
@@ -304,6 +304,6 @@ ER:set(claper, {angle=-0.2,bypass=0,dist=2})
 
 ------------------- master -------------
 Effects={FX("dwgreverb",db2amp(1),nil,{c1=4.5,c3=20,len=5000})}
-FScope()
+--FScope()
 theMetro:tempo(160)
 theMetro:start()

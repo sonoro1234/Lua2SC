@@ -263,15 +263,15 @@ soprano1=OscEP{inst=Tract18.sinteRdO2.name,mono=true,sends ={db2amp(-15)},channe
     dur= RSinf{5,3,7},
 
     },
-	{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[SE-LI-NA-KO-FE-NO-MU-I]],true,true,true)},
+	{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[SE-LI-NA-KO-FE-NO-MU-I]],true,true)},
 	degree = LOOP{1,2,3,5-7,6-7,7-7,8-7} + 7*5}
 
 ))
 
-soprano2=copyplayer(soprano1):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MIA-LEI-OU-AE]],true,true,true)},degree = LOOP(TA{1,2,3,5-7,6-7,7-7,8-7}:reverse()) + 7*5} 
-soprano3=copyplayer(soprano1):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MOU-O-KOU-EI]],true,true,true)},degree = RSinf{1,2,3,5-7,6-7,7-7,8-7} + 7*5}
-soprano4=copyplayer(soprano3):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MA-EA-OA-AE]],true,true,true)}} 
-soprano5=copyplayer(soprano3):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MIAI-NEI-IOU-MAIE]],true,true,true)}}
+soprano2=copyplayer(soprano1):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MIA-LEI-OU-AE]],true,true)},degree = LOOP(TA{1,2,3,5-7,6-7,7-7,8-7}:reverse()) + 7*5} 
+soprano3=copyplayer(soprano1):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MOU-O-KOU-EI]],true,true)},degree = RSinf{1,2,3,5-7,6-7,7-7,8-7} + 7*5}
+soprano4=copyplayer(soprano3):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MA-EA-OA-AE]],true,true)}} 
+soprano5=copyplayer(soprano3):MergeBind{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk([[MIAI-NEI-IOU-MAIE]],true,true)}}
 
 ------------------------- structure -----------------------------
 actionlist = ActionEP{}:Bind{

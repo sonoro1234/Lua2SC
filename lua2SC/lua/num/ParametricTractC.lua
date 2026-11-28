@@ -11,7 +11,7 @@ I	={28/44,	0.4,1.6,1.3},--0.6
 --i	={29.084991982217,	0.05,1.1},--0.6
 E	= {26.811695886117/44,	0.75,1.1,1.1},
 --U	= {22/44,0.18,4,2},--{26,	0.76,4,2},--{26,	0.6,4,2},
-U	= {0.6,0.12,7.5,0.85},
+U	= {0.49,0.12,7.5,0.85},
 O	= {0.42,	0.22,3.2,1.5},--,
 Ae	= {13.969803375406/44,	0.8,1.1},
 A	= {12.755816060722/44,	0.6,1.6,1.1},
@@ -121,10 +121,10 @@ function  Tract:add_constriction(indexfac,diameter,Di)
     --Di = Di or self.targetDiameter
 	for i=1,#Di do resDi[i] = Di[i] end
 
-	local maxwidth = round(10*self.n/44)
-	local minwidth = round(5*self.n/44)
-	--local maxwidth = round(5*self.n/44)
-	--local minwidth = math.max(round(2.5*self.n/44),1)
+	-- local maxwidth = round(10*self.n/44)
+	-- local minwidth = round(5*self.n/44)
+	local maxwidth = round(5*self.n/44)
+	local minwidth = math.max(round(2.5*self.n/44),1)
 --[[
     local width=2;
     if (index<self.maxconstrictionwidth) then width = maxwidth;
@@ -423,8 +423,9 @@ for i=1,NNnose do
 	res1[i] = (Tract.noseDiameter[i])^2
 	res2[i] = res1[i]
 end
-
-res1[1]=res1[1]*0.5
+-- res1[NNnose]=res1[NNnose]*1.4 --less volumen
+-- res2[NNnose]=res2[NNnose]*1.4 --less volumen
+res1[1]=res1[1]*0.25
 res2[1]=0.01^2
 Tract.area1len = Tract.noseStart --0.45*Tract.NN
 Tract.AreaNose = res1
@@ -491,12 +492,17 @@ function Tract:MakeCoralSynth(name,freqs,resamp)
 	MakeCoralSynth(self,name,freqs,resamp)
 end
 
+local fratio = midi2ratio(0.05)
+local freqs = TA():gseries(10,1 * fratio^(-5),fratio)
+Tract:MakeCoralSynth("coral",freqs)
+Tract:MakeCoralSynth("coralO2",freqs,true)
+	
 function Tract:MakeSynth(syname,args,excifunc,resamp)
 	return MakeTractSynth(self,syname,args,excifunc,resamp)
 end
 
 Tract.cons = {}
-Tract.cons.M = {40/44,0} --41
+Tract.cons.M = {39/44,0} --41
 Tract.cons.N = {33/44,0}
 Tract.cons.L = {38/44,0.7}
 Tract.cons.B = {40/44,0}
@@ -557,7 +563,7 @@ Tract.krate.D = 0.06
 Tract.krate.K = 0.02
 Tract.krate.G = 0.06
 Tract.krate.S = 0.05
-Tract.krate.M = 0.03 --0.07
+Tract.krate.M = 0.07 --0.03 --0.07
 Tract.krate.N = 0.03 --0.07
 Tract.krate.H = 0.03
 
@@ -565,7 +571,7 @@ Tract.rate = {}
 Tract.rate.K  = 0.02
 Tract.rate.G  = 0.05
 Tract.rate.S  = 0.02
-Tract.rate.M = 0.03 --0.1 --0.05
+Tract.rate.M = 0.03 --0.07 --0.03 --0.1 --0.05
 Tract.rate.N = 0.03 --0.05
 Tract.rate.R = 0.03 --0.05
 Tract.rate.T = 0.02
@@ -576,7 +582,9 @@ Tract.rate.H = 0.01
 Tract.rate._v = 0.01
 
 Tract.gains.J = db2amp(16)
-Tract.gains.H = db2amp(10)
+Tract.gains.H = db2amp(0)
+Tract.gains.M = db2amp(-3)
+Tract.gains.N = db2amp(-3)
 
 Tract.noise = {}
 Tract.noise.F = {freqs={2000,7000},bw={0.1,0.5}} 
@@ -595,6 +603,7 @@ local function copy_phoneme(a,b)
 end
 copy_phoneme("Nv","N")
 copy_phoneme("Mv","M")
+Tract.rate.Mv = 0.2
 copy_phoneme(" ","Ae")
 Tract.glot[" "] = 0
 Tract.vocals[" "] = false
@@ -680,9 +689,14 @@ function Tract.doSpeak(syl,DURA,fade)
 		if vowel_coefs[ph] then
 			thisv_coef = vowel_coefs[ph]
 		else
-			thisv_coef = vowel_coefs[syl[syl.lastpos][1]]
-			--assert(self.thisv_coef)
-			--self.thisv_coef = self.thisv_coef or vowel_coefs["Ae"]
+			local voc
+			if ph == "Mv" or ph == "Nv" then
+				voc = "A"
+			else
+				voc = syl[syl.lastpos] and syl[syl.lastpos][1] or "Ae"
+			end
+			print(ph,"voc is",voc)
+			thisv_coef = vowel_coefs[voc]
 			constpars = assert(Tract.cons[ph])
 		end
 		thisv_coef = thisv_coef or vowel_coefs["Ae"]
@@ -756,7 +770,7 @@ function Tract.syl2phon(syl,allvocals)
 	for i,v in ipairs(syl) do
 		is_vocal = Tract.vocals[v] --or v==" "
 		numvocals = numvocals + (is_vocal and 1 or 0)
-		lastvocalpos = is_vocal and i or lastvocalpos
+		lastvocalpos = (is_vocal and vowel_coefs[v]) and i or lastvocalpos
 		dur = Tract.dur[v] or DEFDUR
 		totdur = totdur + dur
 	end
@@ -769,6 +783,7 @@ function Tract.syl2phon(syl,allvocals)
 		is_vocal = Tract.vocals[v] --or v==" "
 		if is_vocal then
 			rate = Tract.krate[syl[i-1]] or rate
+			if v=="Mv" then rate = Tract.rate[v] end
 			if allvocals or i == lastvocalpos then
 				--local DURA = beats2Time(DURAT)
 				--dur = (DURA - totdur +0.1) - rate

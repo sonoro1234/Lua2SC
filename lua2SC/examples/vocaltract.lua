@@ -1,9 +1,8 @@
---DOAUTOGUI = false
-
---local Tract = require"num.vocaltractB"(32,false,true)
-local Tract = require"num.ParametricTractC"(32,17)
---local Tract = require"num.tract"(26)
-
+-- DOAUTOGUI = false
+-- OSCFunc.trace(false,false,false)
+-- local Tract = require"num.vocaltractB"(32,false,true)
+local Tract = require"num.ParametricTractC"(24,17)
+-- local Tract = require"num.tract"(26)
 
 local sclua = require "sclua.Server"
 local s = sclua.Server()
@@ -38,7 +37,7 @@ function mod_areas(Ar,fAc,fAc2,fAc3,pos)
 	return Arc
 end
 
-local freq,fA,fPreoral,fAc,fAc2,fAc3,pos = 150,1,1,1,1,1,0.5
+local freq,fA,fPreoral,fAc,fAc2,fAc3,pos = 130,1,1,1,1,1,0.5
 local boca = 1
 local iph = 2
 local phon1 = Tract.phon.getArgs(phons[1])
@@ -47,7 +46,8 @@ local syn_group = s.ParGroup()
 
 local syn = s.Synth(Tract.sinteRdO2.name, phon1,syn_group)
 
-local function get_areas()
+--------------------------------------
+local function AreaPlotter()
 	local synpars = getSynthdefParams(SynthDefs_path..Tract.sinteRdO2.name..".scsyndef")
 	local firstind = synpars.NameToIndex.Ar
 	local lenind = synpars.paramlens.Ar
@@ -56,6 +56,7 @@ local function get_areas()
 
 	local function get_syn(syn)
 		local diam = {}
+		--if next(syn.mapped) then print"mapped " else print"not mapped" end
 		for j=1,lenind do
 			local argind = syn.args[firstind+j][1]
 			local val = syn.mapped[argind] or syn.params[argind]
@@ -64,15 +65,24 @@ local function get_areas()
 		grafic2:val(diam)
 	end
 
+	local work
 	local function update_controls()
 			Q.querySynthValues(syn.nodeID,get_syn)
-			QueueAction(up_time,{update_controls})
+			if work then QueueAction(up_time,{update_controls}) end
 	end
-
-	QueueAction(up_time,{update_controls})
+	local function run()
+		work = true
+		QueueAction(up_time,{update_controls})
+	end
+	local function stop()
+		work = false
+	end
+	return {run = run, stop = stop}
 end
-get_areas()
-
+Arp = AreaPlotter()
+Arp.run()
+-- Arp.stop()
+---------------------------------------------------------------
 function setsyn()
 	print("Setting",iph, phons[iph])
 	local phon = Tract.phon.getArgs(phons[iph])
@@ -123,7 +133,7 @@ local hbox = addPanel{type="hbox",parent=vbox}
 curr_panel = hbox
 
 -- only for parametric
----[=[
+--[=[
 if Tract.vowel_coefs then
 local voc = "U"
 Slider(voc.."pos1",0,1,Tract.vowel_coefs[voc][1],function(val) 
@@ -148,7 +158,7 @@ Slider(voc.."pos4",0,5,Tract.vowel_coefs[voc][4],function(val)
 end)
 end
 --]=]
-Slider("",0,1,0.2,function() end)
+
 -- several frases
 local frase = "DI-ME-KE-ME-KIE-RES-_v"
 --frase = "NE-LE-PE-KE-RE-ZE-DE-HE-FE-GE-XE-MvE-ME-TE-BE-SE-JE-NvE-_v"
@@ -158,10 +168,17 @@ local frase = "DI-ME-KE-ME-KIE-RES-_v"
 --frase = "AI-KE-A-ZER-AL-GO-_v"
 --frase = "MES-TOI-MAR_R-TXANv-DO-LE-JOS-DEA-KI -MES-TOI-MAR_R-TXANv-DO-_v"
 frase = "MES-TOI-MAR_R-TXAN-DO-LE-JOS-DEA-KI -MES-TOI-MAR_R-TXAN-DO-_v"
+--local frase = ""
 --for k,v in pairs(Tract.cons) do frase = frase .. "-"..k.."E" end
 --frase = frase:sub(2).."_v"
 frase = "LA-LUZ-BUS-KAN-DO-KEUN-DI-A-BI -LA-LUZ-BUS-KAN-DO-_v"
 --frase = "NAN-Nv-NEN-NIN-NON-NUN-_v"
+--frase = "OM-MA-NI-PAD-ME-HUMv- "
+--frase = "ME-HUMv"
+--frase = "HUMv- "
+--frase = "AMv-EMv-IMv-OMv-UMv- "
+--frase = "MAMv-_v-MEMv-_v-MIMv-_v-MOMv-_v-MUMv-_v"
+--frase = "LA-LUZ-LAZ-LUS-ES-GA-JA-ZA-LAZ-LUZ-_v"
 
 Text("frase",frase,function(val) frase=val end,200,75,true)
 local dura = 1
@@ -169,28 +186,27 @@ Slider("dur",0.1,2,dura,function(val) dura=val end)
 local player = {group=0,node=syn.nodeID}
 Button("speack",function()
 	print"SPEAK"
-	local syls = Tract.get_sylabes(frase,false)
+	local syls = Tract.get_sylabes(frase,true)
 	prtable(syls)
 	local now = lanes.now_secs()
 	for j,syl in ipairs(syls) do
-	local ret1 = Tract.syl2phon(syl,false)
-	local ret2 = Tract.doSpeak(ret1,Time2beats(dura))
-
-	local gbundle = {}
-	for k,v in pairs(ret2) do
-		if type(v)=="table" and v.is_ctrl_mapper then
-
-			local bund = v:verb(k,player)--,0,1)--,beatTime,beatLen)
-			if bund then
-				for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+		local ret1 = Tract.syl2phon(syl,false)
+		prtable(ret1)
+		local ret2 = Tract.doSpeak(ret1,Time2beats(dura))
+	
+		local gbundle = {}
+		for k,v in pairs(ret2) do
+			if type(v)=="table" and v.is_ctrl_mapper then
+	
+				local bund = v:verb(k,player)--,0,1)--,beatTime,beatLen)
+				if bund then
+					for i,vv in ipairs(bund) do table.insert(gbundle,vv) end
+				end
+			else
+				--print(k,type(v),v)
 			end
-		else
-			--print(k,type(v),v)
 		end
-	end
-
-	sendMultiBundle(now+(j-1)*dura,gbundle)
-
+		sendMultiBundle(now+(j-1)*dura,gbundle)
 	end
 end, true)
 

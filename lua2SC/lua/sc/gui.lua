@@ -284,13 +284,16 @@ function Knob(name,min,max,val,func)
 	return addControl(newcontrol)
 end
 
-function Button(name,func,dontinit)
-	local newcontrol = {panel=curr_panel,value =0, typex="button",clabel=name,
-	callback = function(value,str,c) 
+function Button(name,func,dontinit, mergeargs)
+	local newcontrol = {panel=curr_panel,value =0, typex="button",clabel=name}
+	newcontrol.callback = function(value,str,c) 
 					--c:setLabel(string.format("%.2f",value),0)
 					func(value)
-	end}
+	end
 	if dontinit then newcontrol.value = nil end
+	if mergeargs then
+		for k,v in pairs(mergeargs) do newcontrol[k]=v end
+	end
 	return addControl(newcontrol)
 end
 
@@ -304,12 +307,16 @@ function Text(name,val,func,w,h,multiline)
 	return addControl(newcontrol)
 end
 
-function Toggle(name,func)
+function Toggle(name,func,dontinit,mergeargs)
 	local newcontrol = {panel=curr_panel,value =0, typex="toggle", clabel=name, --name=name,--,
 	callback = function(value,str,c) 
 					--c:setLabel(string.format("%.2f",value),0)
 					func(value)
 	end}
+	if dontinit then newcontrol.value= nil end
+	if mergeargs then
+		for k,v in pairs(mergeargs) do newcontrol[k]=v end
+	end
 	return addControl(newcontrol)
 end
 
@@ -413,7 +420,7 @@ function FScope(op)
 	end):store(true)
 	local co = {scopebufnum = GetBuffNum(),node = GetNode(),bins=op.bins or 512*4,busin=op.busin or 0}
 	local hbox = addPanel{type="hbox",name="FScope"}
-	local grafic = addControl{panel=hbox, typex="funcgraph3",width=600,height=300,miny=-100,maxy=0,minx=0,maxx=22050}
+	local grafic = addControl{panel=hbox, typex="funcgraph3",width=600,height=300,miny=-140,maxy=0,minx=0,maxx=22050}
 	
 	local biasx = 1000
 	local smear = 1

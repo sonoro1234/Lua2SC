@@ -278,8 +278,7 @@ function Q.querySynthValues(node, action2, group)
 						end
 						action2(syn)
 					end, true)
-				--ThreadServerSend{"/c_get",{v}}
-			--end
+
 			ThreadServerSend{"/c_get",qbuses}
 
 		else

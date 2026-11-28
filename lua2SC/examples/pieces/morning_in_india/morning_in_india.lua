@@ -62,7 +62,7 @@ local ER = require"sc.ER"(0.75,1,1,{direct=true,compensation=true,N=2})
 ---------- 2 backvoices pl and plb
 
 local frase = "EUMv-_vO-OIUMv-_vO"
---TT = require"num.ParametricTract"(30,17.5)
+--TT = require"num.ParametricTractC"(30,17.5)
 TT = require"num.vocaltractB"(30,true,true)
 pl = OscEP{inst=TT.sinteRdO2.name,mono=true,sends={db2amp(-8)},channel={level=db2amp(-24)}}
 
@@ -207,7 +207,7 @@ tablapat=PS{
 	dectimes = LOOP{1.5,0.01,0.5,0.01,1,1,1, 1,0.01,0.75,0.01,0.2,1,
 					1.5,0.01,0.5,0.01,0.75,0.01,0.01, 1,0.01,0.75,0.01,1,1}
 }
-tabla.inserts = {{"FourBandEq"}}
+tabla.inserts = {{"FourBandEq",{db={{0,0,0,0}}}}}
 ER:setER(tabla,-0.2,2)
 
 --- tabla low

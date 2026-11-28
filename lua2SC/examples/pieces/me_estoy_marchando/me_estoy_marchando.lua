@@ -1,6 +1,9 @@
 --local NRT = require"sc.nrt":Gen(490)
 -----------------------------------------SynthDefs
 tract = require"num.tract"(32)
+--tract = require"num.vocaltractB"(32,true,true)
+--tract = require"num.vocaltract"(32,true,true)
+--tract = require"num.ParametricTractC"(32,17)--14.3)
 
 SynthDef("dwgreverb", { busin=0, busout=0,c1=4,c3=4,len=1200,mix = 1},function()
 	local source=Mix(In.ar(busin,2)); 	

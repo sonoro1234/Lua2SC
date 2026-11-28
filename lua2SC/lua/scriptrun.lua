@@ -99,7 +99,7 @@ function ScriptRun(pars)
 			local typev = type(v)
 			if (typev=="number") or (typev=="string") or (typev=="boolean") then
 				res[k]=v
-			elseif typev=="table" and (k=="pos" or k=="menu") then
+			elseif typev=="table" and (k=="pos" or k=="span" or k=="menu") then
 				res[k]=v
 			elseif typev=="function" then --and (k=="DrawCb") then
 				res[k]=v

@@ -4,12 +4,18 @@
 
 initCbCallbacks={}
 function _initCb()
-	print("_initCb\n")
+	print("_initCb n callbacks",#initCbCallbacks)
 	
 	--guiSizesDelayed=guiGetSize()
+	-- prtable(initCbCallbacks)
+--	for i,v in ipairs(initCbCallbacks) do
+--		print("prepared initCb",i, "from",#initCbCallbacks,debug.getinfo(v).short_src,debug.getinfo(v).linedefined)
+--	end
 	for i,v in ipairs(initCbCallbacks) do 
-		--print(debug.getinfo(v).short_src)
+		print("initCb",i, "from",#initCbCallbacks,debug.getinfo(v).short_src,debug.getinfo(v).linedefined)
+		--prtable(debug.getinfo(v))
 		v() 
+		--print("end initCb",i, "from",#initCbCallbacks)
 	end
     if initCb then
         initCb()

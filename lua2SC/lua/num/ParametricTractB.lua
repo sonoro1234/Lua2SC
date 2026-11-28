@@ -6,7 +6,7 @@ local function round(a)
 	return math.floor(a+0.5)
 end
 local vowel_coefs = {
-I	={28,	0.14,1.1,1.3},--0.6	
+I	={28, 0.14,1.1,1.3},--0.6	
 --i	={29.084991982217,	0.05,1.1},--0.6
 E	= {26.811695886117,	0.75,1.1,1.1},
 U	= {26,	0.26*2,6,1.3},
@@ -17,15 +17,15 @@ A	= {12.755816060722,	0.3,1.1,1.1},
 E2	= {20.756675819539,	1.03,1.1,1.1}
 }
 local vowel_coefs = {
-I	={28,	0.4,1.6,1.3},--0.6	
+I	={28/44,	0.4,1.6,1.3},--0.6	
 --i	={29.084991982217,	0.05,1.1},--0.6
-E	= {26.811695886117,	0.75,1.1,1.1},
-U	= {26,	0.6,4,2},
+E	= {26.811695886117/44,	0.75,1.1,1.1},
+U	= {22/44,0.18,4,2},--{26,	0.76,4,2},--{26,	0.6,4,2},
 --U	= {0.6*44,	0.05,1.65},
-O	= {21,	0.5,3.2,1.5},
-Ae	= {13.969803375406,	0.8,1.1},
-A	= {12.755816060722,	0.6,1.6,1.1},
-E2	= {20.756675819539,	1.03,1.1,1.1}
+O	= {0.42,	0.22,3.2,1.5},--{21/44,	0.22,3.2,1.5},
+Ae	= {13.969803375406/44,	0.8,1.1},
+A	= {12.755816060722/44,	0.6,1.6,1.1},
+E2	= {20.756675819539/44,	1.03,1.1,1.1}
 }
 
 local Tract = {
@@ -61,7 +61,7 @@ function Tract:init(N,len)
         this.restDiameter[i+1]  = diameter;
     end
 	for k,v in pairs(vowel_coefs) do
-		v[1] = v[1]*N/44
+		v[1] = v[1]*N --/44
 	end
 	Tract.bladeStart = round(N*10/44)
 	--Tract.tipStart  = round(N*39/44)
@@ -184,6 +184,7 @@ local function CalcAreas(voc)
 	--prtable(voc,Tract.targetDiameter)
 	return A,D
 end
+Tract.CalcAreas = CalcAreas
 local function CalcAreasPars(index,diameter,curvecoef,co2)
 	local A,D = {},{}
 	Tract:set_vocalpars(index,diameter,curvecoef,co2)
@@ -466,10 +467,10 @@ Tract.cons.P = {43/44,0}
 Tract.cons.D = {35/44,0}
 Tract.cons.T = {35/44,0} --35
 Tract.cons.K = {22/44,0}
-Tract.cons.R = {38/44,0}
+Tract.cons.R = {0.89,0}--{38/44,0}
 Tract.cons.Z = {43/44,0.5}
 Tract.cons.F = {42/44,0.5}
-Tract.cons.S = {43/44,0.5}
+Tract.cons.S = {0.78,0.5}
 Tract.cons.G = {22/44,0}
 Tract.cons.J = {22/44,0}
 Tract.cons.H = {5/44,1}
@@ -542,9 +543,9 @@ Tract.gains.H = db2amp(10)
 
 Tract.noise = {}
 Tract.noise.F = {freqs={2000,7000},bw={0.1,0.5}} 
-Tract.noise.S = {freqs={7500,7500},bw={0.05,0.05}}
+Tract.noise.S = {freqs={5500,7500},bw={0.15,0.15}}
 --Tract.noise.Z = {freqs={700,8000},bw={2.7,2.7}}
-Tract.noise.Z = {freqs={4000,4500},bw={0.15,0.15}}
+Tract.noise.Z = {freqs={4000,4500},bw={1,1}}--{freqs={4000,4500},bw={0.15,0.15}}
 Tract.noise.J = {freqs={800,1000},bw={2.5,2.5}}
 Tract.noise.H = {freqs={1800,1000},bw={2.5,2.5}}
 
@@ -607,7 +608,7 @@ local function makeenv_tgate(t,name,t1,t2)
 	table.insert(t[name][2],t1)
 	table.insert(t[name][2],t2)
 end
-function Tract:doSpeak(syl,DURA,fade)
+function Tract.doSpeak(syl,DURA,fade)
 	assert(DURA)
 	--print("DURA",DURA)
 	DURA = beats2Time(DURA)
@@ -623,8 +624,8 @@ function Tract:doSpeak(syl,DURA,fade)
 		local lenT = Tract.len[ph] or Tract.deflen
 
 		local noise = Tract.noise[ph]
-		--local noiseloc = noise and Tract.cons[ph][1]*Tract.n or 0
-		local noiseloc = noise and Tract.n-1 or 0
+		local noiseloc = noise and Tract.cons[ph][1]*Tract.n or 0
+		--local noiseloc = noise and Tract.n-1 or 0
 		local noisefreq = noise and noise.freqs or {2500,7500}
 		local noisebw = noise and noise.bw or {0.1,0.1}
 
@@ -638,19 +639,19 @@ function Tract:doSpeak(syl,DURA,fade)
 		end
 		
 		local constpars
-
+		local thisv_coef
 		if vowel_coefs[ph] then
-			self.thisv_coef = vowel_coefs[ph]
+			thisv_coef = vowel_coefs[ph]
 		else
-			self.thisv_coef = vowel_coefs[syl[syl.lastpos][1]]
+			thisv_coef = vowel_coefs[syl[syl.lastpos][1]]
 			--assert(self.thisv_coef)
 			--self.thisv_coef = self.thisv_coef or vowel_coefs["Ae"]
-			constpars = assert(self.cons[ph])
+			constpars = assert(Tract.cons[ph])
 		end
-		self.thisv_coef = self.thisv_coef or vowel_coefs["Ae"]
+		thisv_coef = thisv_coef or vowel_coefs["Ae"]
 		constpars = constpars or {0.5,4}
 
-		local ind,ra,co,co2 = unpack(self.thisv_coef)
+		local ind,ra,co,co2 = unpack(thisv_coef)
 		local Ar,Di = CalcAreasPars(ind,ra,co,co2)
 		Di = Tract:add_constriction(constpars[1],constpars[2],Di)
 		for i=1,#Di do Ar[i]=Di[i]*Di[i] end

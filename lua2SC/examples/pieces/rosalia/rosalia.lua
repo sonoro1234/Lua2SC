@@ -11,7 +11,7 @@ escale = newScale({0,1,3.86,5,7.02,8,10})
 escale = {escale}
 ------------- early reflection synths ------------------
 
-local ER = require"sc.ER"(0.85,1,1,{direct=false,compensation=true,part=true,N=5})
+local ER = require"sc.ER"(0.85,1,1,{direct=false,compensation=true,part=true,N=5,atk=false})
 local ERdir = require"sc.ER"(0.85,1,1,{direct=true,compensation=true,part=true,N=2,allpass=0.7})
 
 --------------------- players and patterns ---------------------------
@@ -19,7 +19,7 @@ local ERdir = require"sc.ER"(0.85,1,1,{direct=true,compensation=true,part=true,N
 
 local frase = "Mv-UMv-OMv-Mv-OIUMv-EUMv"
 local frase2 = "Mv-EUMv-OIUMv"
---TT = require"num.ParametricTract"(25,17.5)
+--TT = require"num.ParametricTractC"(30,17.5)
 TT = require"num.vocaltractB"(30,true,true)
 drone = {
 	escale = escale,
@@ -471,5 +471,6 @@ bass:Bind(LS{
 MASTER{level=db2amp(-15)}
 Master.inserts = {{"to_mono",{bypass=1}}}
 Effects={FX("dwgreverb3band",db2amp(0),nil,{rtlow=1.5,rtmid=1.2,predelay=0.14}),FX("dwgreverb",db2amp(0),nil,{c1=1,c3=10,len=5000,predelay=0.14})}
+FScope()
 theMetro:tempo(110)
 theMetro:start()

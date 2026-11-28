@@ -5,6 +5,8 @@
 -------------------synthdefs ----------------
 -- two throats for male and female
 Tract = require"num.tract"(22)
+--Tract = require"num.vocaltractB"(22,true,true)
+--Tract = require"num.ParametricTractC"(22, 17)
 Tract18 = require"num.tract"(18) 
 
 -- using pcall in case you dont have atk kernels
@@ -85,14 +87,14 @@ om_melody = {
 frase = "OM-MA-NI-PAD-ME-HUMv- "
 
 -- player not playing (not OscEP in OSCPlayers) to be copied by players
-player = OscEventPlayer:new{inst=Tract.sinteRd.name,mono=true,dontfree=false,sends={db2amp(0)},channel={level=0.2,pan=0}}
+player = OscEventPlayer:new{inst=Tract.sinteRdO2.name,mono=true,dontfree=false,sends={db2amp(0)},channel={level=0.2,pan=0}}
 
 -- first mantra player singing until grfinish
 om1 = copyplayer(player)
 om_melodysolo = deepcopy(om_melody)
 om1.sends = {db2amp(-3)}
 om1.channel.level = 0.15
-om1talk = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(frase,true,true,false)}:rep(3),Tract:doTalk(frase,true,true,true)}}
+om1talk = {[Tract.paramskey_speak] = LOOP{LS{Tract:doTalk(frase,true,false)}:rep(3),Tract:doTalk(frase,true,true)}}
 om1seq = UNTILEv("grfinish",LOOP{PS(om_melodysolo,om1talk),MARK()})
 om1:Bind(om1seq)
 om1.inserts = {{"atkpan",{azim=SINE(0.05,math.pi,0.15)}}}
@@ -106,13 +108,13 @@ om_melodycoral = deepcopy(om_melody)
 om_melodycoral.pan = 0
 om_melodycoral.fout = 3500
 om_melodycoral.Rd = 0.8
-coraltalk = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,true,false)}}
+coraltalk = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,false)}}
 om1seqcoral = UNTILEv("grfinish",LOOP{PS(om_melodycoral,coraltalk),MARK()},true)
 om1coral:Bind(LS{DOREST(32-8),om1seqcoral})
 
 ---- 0m2 and om3 singers slowly changing vocal
 frasevoc = "OMv-A-I-A-O-UMv- "
-speakseqvoc = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frasevoc,true,true,true)}}
+speakseqvoc = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frasevoc,true,true)}}
 
 -- om2 a fifth above om1 and four times slower
 om2 = copyplayer(player)
@@ -135,7 +137,7 @@ om3.channel.level = db2amp(-18)
 om3.inserts = {{"atkpan",{azim=0.25}}}
 
 -- om4 one octave higher and four times quicker
-speakseq4 = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,true,true)}}
+speakseq4 = {[Tract.paramskey_speak] = LOOP{Tract:doTalk(frase,true,true)}}
 om4 = copyplayer(player)
 om4.channel.level = db2amp(-18)
 om4.sends = {db2amp(3)}
@@ -176,11 +178,16 @@ gs2.dur = LS{LS{1}:rep(6),2,LS{1}:rep(4),6,6}
 gs2.Rd = LOOP{LS{0.5}:rep(7),LS{0.7}:rep(4),ENVr({0.7,0.7,0.5,1.2},{0,0.25,0.75},"exp")}
 
 -- whole female phrase
-girlseq = PS(LS{PS(gs1),PS(gs1),PS(gs2)},{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk(gfrase,true)}})
+girlseq = PS(LS{PS(gs1),PS(gs1),PS(gs2)},{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk(gfrase)}})
 
 -- first female singer
-girl = OscEP{inst=Tract18.sinteRd.name,mono=true,dontfree=false,sends={1},channel={level=db2amp(-16)}}:Bind(LS{DONOP(16*12),SETEv"girlbegin",LS{girlseq}:rep(3),DOREST(16*4),LS{girlseq}:rep(2)})
-girl.inserts = {{"atkpan",{azim=-0.15}}} 
+girl = OscEP{inst=Tract18.sinteRdO2.name,mono=true,dontfree=false,sends={db2amp(1)},channel={level=db2amp(-16)}}:Bind(LS{DONOP(16*12),SETEv"girlbegin",LS{girlseq}:rep(3),DOREST(16*4),LS{girlseq}:rep(2)})
+girl.inserts = {
+	--{"atkpan",{azim=-0.15}}
+	{"atkpan",{azim=SINE(0.05,0,1)}}
+} 
+-- option2
+-- girl.sends={db2amp(-15)}
 
 -- second female stuff
 -- plays two times slower and a fourth below
@@ -193,16 +200,19 @@ gs2b.dur = gs2b.dur * 2
 gs2b.degree = gs2b.degree -7 +4
 gs2b.pan = 0
 
-girlseqb = PS(LS{PS(gs1b),PS(gs1b),PS(gs2b)},{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk(gfrase,true)}})
+girlseqb = PS(LS{PS(gs1b),PS(gs1b),PS(gs2b)},{[Tract18.paramskey_speak] = LOOP{Tract18:doTalk(gfrase)}})
 
 -- the second female player
 girl2 = copyplayer(girl)
+-- option2
+-- girl2.sends[1] = db2amp(-8) 
 girl2.channel.level = db2amp(-18)
 girl2:Bind(LS{DONOP(16*12 + 16*2 +24),LS{girlseqb}:rep(1),DOREST(16*4),girlseqb})
 girl2.inserts = {{"atkpan",{azim=0.15}}}
 
 ---------------------- Master --------------------------------------------
-Effects={FX("dwgreverb",db2amp(1),nil,{c1=4,len=6000})}
+--Effects={FX("dwgreverb",db2amp(1),nil,{c1=4,len=6000})}
+Effects={FX("dwgreverb",db2amp(1),nil,{c1=2.22,c3=2.6,len=6000})}
 MASTER{level=db2amp(-2)}
 --DiskOutBuffer"Om.wav"
 theMetro:tempo(100)

@@ -636,8 +636,8 @@ function Tract:TalkS(pat,tex,sologuion,allvocals,fade)
 		return ret2 
 	end)
 end
-function Tract:doTalk(tex,sologuion,allvocals,fade)
-	local syls = self.get_sylabes(tex,sologuion)
+function Tract:doTalk(tex,allvocals,fade)
+	local syls = self.get_sylabes(tex,true)
 	--prtable(syls)
 	local syls2 = {}
 	for i,v in ipairs(syls) do

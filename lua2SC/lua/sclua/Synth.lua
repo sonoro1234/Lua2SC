@@ -102,7 +102,7 @@ function Synth_metatable.gui(syn,updatetime)
 ---[[
 	--local panelInstOuter=addPanel{type="vbox",name="instrument",parent=parent}
 	local panelParamfx=addPanel{type="hbox",parent=panelInstOuter,name=syn.name}
-	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,false)
+	local tgui = openSynthdefGuiA(syn.name,panelParamfx,notisink.params,notisink,true,true)
 	print"syngui done"
 
 	if updatetime then tgui.update(updatetime, syn.group.nodeID, syn.nodeID) end

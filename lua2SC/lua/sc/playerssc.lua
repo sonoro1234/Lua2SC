@@ -1143,6 +1143,7 @@ function CrearEnvios()
 	end
 end
 OSCPlayers={}
+OSCEPPlayers = {}
 Effects={}
 function initOSCplayers()
 	print("initOSCplayers")
@@ -1155,6 +1156,9 @@ function initOSCplayers()
 	for i,v in ipairs(OSCPlayers) do
 		--v.name = v.name or v:findMyName()
 		v:Init()
+		if v.isOscEP then
+			table.insert(OSCEPPlayers, v)
+		end
 	end
 	--CrearEnvios()
 end
@@ -1187,6 +1191,12 @@ table.insert(onFrameCallbacks,function()
 	doOscSchedule(curHostTime.ppqPos)
 end)
 ------------
+function MutePlayers()
+	for i,v in ipairs(OSCEPPlayers) do
+		v.channel.params.unmute = 0
+		v.channel:SendParam("unmute")
+	end
+end
 function copyplayer(player)
 	local player2 = deepcopy_values(player) --deepcopy_values(player) 
 	OSCPlayers[#OSCPlayers+1]=player2

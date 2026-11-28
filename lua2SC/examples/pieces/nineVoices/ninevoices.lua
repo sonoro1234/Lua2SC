@@ -28,8 +28,8 @@ patronH={
 
 --the words to be singed
 frase = "Ate-Ete-Ite-Ote-Ute" --"A-E-I-O-U" Ate is vocal A with bell canto impostation
-talk = {[tract.paramskey_speak] = LOOP{tract:doTalk(frase,true,true,false)}}
-talk18 = {[tract18.paramskey_speak] = LOOP{tract18:doTalk(frase,true,true,false)}}
+talk = {[tract.paramskey_speak] = LOOP{tract:doTalk(frase,true,false)}}
+talk18 = {[tract18.paramskey_speak] = LOOP{tract18:doTalk(frase,true,false)}}
 
 
 MAXINST=4

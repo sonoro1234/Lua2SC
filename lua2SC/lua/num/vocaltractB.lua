@@ -160,7 +160,7 @@ local function Rd2Times(Rd)
 	
 	local num =34.83839405219 -9.3865444973664*Rd
 	local den = 1 + 7.9184898828409*Rd
-	alpha = num/den
+	local alpha = num/den
 
 	--local Ee = freq/(110*Rd)
 	local Ee = 1/(Rd)
